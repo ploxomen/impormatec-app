@@ -1,0 +1,17 @@
+.avatar-form{
+    position: absolute;
+    left: 50%;
+    top: -40px;
+    transform: translateX(-50%);
+}
+.avatar-form > .btn-add-img{
+    position: absolute;
+    bottom: -10px;
+    height: 30px;
+    width: 30px;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 100%;
+}

@@ -1,0 +1,230 @@
+:root{
+    --color-principal:#2A4153;
+    --color-secundario: #ffff;
+    --color-panel: #F5F5F7;
+    --color-letra-parrafo: #B3A6AD;
+    --color-letra-title: #6C757D;
+    --hover-menu: #dedede30;
+    --bg-p-red: #FA5C7C;
+    --bg-p-blue: #727CF5;
+    --bg-p-green:#0ACF97;
+    --bg-p-black: #6C757D;
+    --width-panel: 280px;
+    --activeli : #c8c8c86b;
+    --verde:#7AB324;
+    --gris:#4A4A4A;
+    --azul-granete:#1F2B53;
+    --azul-prototipo:#004AAD;
+}
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+label{
+    color: var(--color-letra-title);
+    font-size: 15px;
+}
+.btn-import{
+    display: flex;
+    outline: none;
+    justify-content: center;
+    border-radius: 50%;
+    width: 50px;
+    align-items: center;
+}
+form label{
+    font-weight: bold !important;
+}
+.btn-import .material-icons{
+    font-size: 23px;
+    color: var(--color-secundario);
+}
+.btn-primary{
+    background: var(--bg-p-blue) !important;
+}
+.btn-danger{
+    background: var(--bg-p-red) !important;
+}
+form fieldset legend{
+    color: var(--color-letra-title) !important;
+}
+table thead tr th{
+    color: var(--color-letra-title) !important;
+    font-weight: 500;
+}
+.navegacion{
+    background: var(--color-principal);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--width-panel);
+    bottom: 0;
+    overflow: hidden;
+}
+.mi-perfil .info-perfil{
+    color: white;
+    font-size: 12px;
+}
+.navegacion .mi-logo{
+    height: 50px;
+}
+.sub-menu .activeli{
+    background: var(--activeli) !important;
+}
+.menu .activesub{
+    background: #0095ff !important;
+}
+.menu .activesub .title+span{
+    transform: rotate(180deg) !important;
+}
+.navegacion ul{
+    list-style: none; 
+}
+.navegacion ul > li {
+    /* border-top-left-radius: 30px; */
+    /* border-bottom-left-radius: 30px; */
+    padding: 10px 15px;
+    position: relative;
+}
+.navegacion ul li a{
+    color: var(--color-secundario);
+    display: flex;
+    align-items: center;
+    font-weight: 200;
+    font-size: 12px;
+    text-decoration: none;
+    position: relative;
+}
+.navegacion ul li a .title {
+    width: calc(100% - 35px);
+}
+.menu .material-icons{
+    font-size: 20px;
+    margin-right: 10px;
+}
+.navegacion ul .hover-menu:hover {
+    background: var(--hover-menu);
+}
+label:has(> .material-icons){
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.panel{
+    width: calc(100% - var(--width-panel));
+    margin-left: var(--width-panel);
+}
+.sub-menu li{
+    padding-left: 20px !important;
+    /* display: none; */
+}
+.info-person{
+    display: flex;
+    justify-content: space-between;
+}
+.btn-info-menu{
+    outline: none;
+    border: none;
+    padding: 10px 5px;
+    background: transparent;
+    transition: background .3s ease-in-out;
+    cursor: pointer;
+}
+.btn-info-menu span{
+    color: var(--bg-p-blue);
+    font-size: 30px;
+}
+.btn-info-menu:hover{
+    background: rgba(206, 206, 206, 0.247);
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+table thead tr th{
+    text-align: center;
+}
+table tbody tr td{
+    vertical-align: middle !important;
+}
+button i,
+button span{
+    pointer-events: none;
+    user-select: none;
+}
+#menuDesplegable{
+    display: none;
+}
+.menu-activos{
+    display: none;
+}
+.avatar-menu-img{
+    object-fit: contain;
+    border-radius: 100%;
+}
+@media screen and (max-width: 950px) {
+    #menuDesplegable{
+        display: inline-block;
+    }
+    .menu-activos{
+        display: none;
+        position: fixed;
+        width: calc(100% - 280px);
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2;
+        bottom: 0;
+        margin-left: 280px;
+        background: rgba(0, 0, 0, 0.733);
+    }
+    .navegacion{
+        position: fixed;
+        left: -280px;
+        z-index: 2;
+    }
+    .nav-active{
+        left: 0 !important;
+    }
+    .cuerpo-panel {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+    .panel{
+        width: 100%;
+        margin-left: 0;
+    }
+}
+input[type=number] { -moz-appearance:textfield; }
+.cuerpo-panel{
+    height: calc(100vh - 57px);
+    width: calc(100% - var(--width-panel));
+    overflow-y: auto;
+    margin-left: var(--width-panel);
+    padding: 20px 10px;
+    background:var(--color-panel);
+}
+.legend-add{
+    font-size: 0.8rem;
+}
+button small,
+button small i{
+    user-select: none;
+    pointer-events: none;
+}
+.form-group:has(input:required,select:required)>label::after {
+    content: "*";
+    color: red;
+}
+.box-my{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+.dropdown-menu a{
+    font-size: 13px;
+}
