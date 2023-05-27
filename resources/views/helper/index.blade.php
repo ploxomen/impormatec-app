@@ -26,7 +26,8 @@
                     <img src="{{$urlPerfil}}" class="avatar-menu-img" width="70px" height="70px">
                 </div>
                 <div class="info-perfil">
-                    <span class="d-block pt-3">{{auth()->user()->nombres}}</span>
+                    <span class="d-block pt-3 pb-1">{{auth()->user()->nombres}}</span>
+                    <span class="d-block">{{auth()->user()->roles()->where('activo',1)->first()->nombreRol}}</span>
                 </div>
             </div>
             <ul class="menu" id="menuIntranet">

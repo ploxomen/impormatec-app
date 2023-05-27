@@ -1,0 +1,47 @@
+.item-img{
+    width: 350px;
+    padding: 5px;
+    position: relative;
+    text-align: center;
+}
+.item-img img{
+    display: block;
+    width: 100%;
+    object-fit: contain;
+}
+.select2-img{
+    object-fit: contain;
+}
+table *{
+    font-size: 0.8rem;
+}
+.tdimagen-producto{
+    object-fit: contain;
+    width: 40px;
+    height: 40px;
+}
+.material-icons{
+    user-select: none;
+    pointer-events: none;
+}
+.boton-close{
+    background: #007bff;
+    position: absolute;
+    top: 0;
+    outline: none;
+    border: none;
+    right: 0;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    text-align: center;
+}
+.lista-imagen{
+    display: flex; 
+    justify-content: center;
+    flex-wrap: wrap; 
+    column-gap: 15px; 
+    list-style: none; 
+    row-gap: 15px;
+}

@@ -59,6 +59,7 @@ class Clientes extends Controller
         $datosUsuario = $request->only("correo","password","tipoDocumento","nroDocumento","telefono","celular","direccion");
         $datosUsuario['password'] = Hash::make($datosUsuario['password']);
         $datosUsuario['estado'] = 2;
+        $datosUsuario['nombres'] = $request->nombreCliente;
         DB::beginTransaction();
         try {
             $usuario = User::create($datosUsuario);
@@ -98,6 +99,7 @@ class Clientes extends Controller
         DB::beginTransaction();
         try {
             $datosUsuario = $request->only("tipoDocumento","nroDocumento","telefono","celular","direccion");
+            $datosUsuario['nombres'] = $request->nombreCliente;
             $datosCliente = $request->only("nombreCliente");
             $datosCliente['estado'] = $request->has("estado") ? 1 : 0;
             User::where('id',$cliente->id_usuario)->update($datosUsuario);
