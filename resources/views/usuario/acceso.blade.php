@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     @include('helper.meta')
-    <link rel="stylesheet" href="{{asset('usuario/login.css')}}">
-    <script src="{{asset('usuario/login.js')}}"></script>
+    <link rel="stylesheet" href="/usuario/login.css">
+    <script src="/usuario/login.js"></script>
     <title>Acceso</title>
 </head>
 <body>
@@ -11,7 +11,7 @@
         <div class="row justify-content-center">
             <div class="col-10 col-md-5 col-lg-5 formulario">
                 <div class="mb-3 logo">
-                    <img src="{{asset('img/logo.png')}}" alt="" class="img-fluid">
+                    <img src="/img/logo.png" alt="" class="img-fluid">
                 </div>
 
                 <div class="mb-4 text-center">
