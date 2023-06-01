@@ -1,15 +1,15 @@
 @extends('helper.index')
 @section('head')
-    <script src="{{asset('general.js')}}"></script>
+    <script src="/general.js"></script>
     @include('helper.headDatatable')
-    <script src="{{asset('usuario/modulo.js')}}"></script>
+    <script src="/usuario/modulo.js"></script>
     <title>Modulos</title>
 @endsection
 @section('body')
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 300px;">
-                <img src="{{asset('img/modulo/modular.png')}}" alt="Imagen de modulo" width="120px" class="img-fluid d-block m-auto">
+                <img src="/img/modulo/modular.png" alt="Imagen de modulo" width="120px" class="img-fluid d-block m-auto">
                 <h4 class="text-center text-primary my-2">Administración de módulos</h4>
             </div>
         </div>

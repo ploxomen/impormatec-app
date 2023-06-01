@@ -1,14 +1,14 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="{{asset('productos/adminMarca.js')}}"></script>
+    <script src="/productos/adminMarca.js"></script>
     <title>Marcas</title>
 @endsection
 @section('body')
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 400px;">
-                <img src="{{asset('img/modulo/marca.png')}}" alt="Imagen de marcas" width="120px" class="img-fluid d-block m-auto">
+                <img src="/img/modulo/marca.png" alt="Imagen de marcas" width="120px" class="img-fluid d-block m-auto">
                 <h4 class="text-center text-primary my-2">Administración de marcas</h4>
             </div>
         </div>

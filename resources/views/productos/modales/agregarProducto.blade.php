@@ -132,7 +132,7 @@
                 <div class="form-group col-12 col-md-4">
                     <label class="mb-0">Imagen Previa</label>
                     <div>
-                        <img src="{{asset('img/imgprevproduc.png')}}" id="imgPrevio" alt="Imagen del producto" width="80px">
+                        <img src="/img/imgprevproduc.png" id="imgPrevio" alt="Imagen del producto" width="80px">
                     </div>
                 </div>
                 <div class="form-group col-12">

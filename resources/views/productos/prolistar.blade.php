@@ -1,9 +1,9 @@
 @extends('general.index')
 @section('head')
     <title>Mis productos</title>
-    <script src="{{asset('asset/general.js')}}"></script>
-    <script src="{{asset('asset/productos/productos.js')}}"></script>
-    <script src="{{asset('asset/productos/pListar.js')}}"></script>
+    <script src="/general.js"></script>
+    <script src="/productos/productos.js"></script>
+    <script src="/productos/pListar.js"></script>
 @endsection
 @section('body')
     <style>
@@ -42,7 +42,7 @@
         </article>
         <article>
             <div class="form-group text-right">
-                <a href="{{route('addProduct')}}" class="btn btn-success btn-sm mb-2"><span class="material-icons">add</span></a>
+                <a href="{{route('addProduct" class="btn btn-success btn-sm mb-2"><span class="material-icons">add</span></a>
                 <a href="" class="btn btn-danger btn-sm mb-2"><span class="material-icons">download</span></a>
             </div>
             <div class="table-responsive">

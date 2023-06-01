@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     @include('helper.meta')
-    <script src="{{asset('home.js')}}"></script>
+    <script src="/home.js"></script>
     @yield('head')
     <title>@yield('title')</title>
 </head>
@@ -19,7 +19,7 @@
                     if(!empty($usuario->urlAvatar)){
                         $urlPerfil = route("urlImagen",["avatars",$usuario->urlAvatar]);
                     }else{
-                        $urlPerfil = asset('img/usuario/perfil_' . $urlPerfil .'.png');
+                        $urlPerfil = '/img/usuario/perfil_' . $urlPerfil .'.png';
                     }
                 @endphp
                 <div>

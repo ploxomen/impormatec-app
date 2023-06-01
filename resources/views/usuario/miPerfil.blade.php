@@ -1,8 +1,8 @@
 @extends('helper.index')
 @section('head')
-    <script src="{{asset('general.js')}}"></script>
-    <link rel="stylesheet" href="{{asset('usuario/miPerfil.css')}}">
-    <script src="{{asset('usuario/miPerfil.js')}}"></script>
+    <script src="/general.js"></script>
+    <link rel="stylesheet" href="/usuario/miPerfil.css">
+    <script src="/usuario/miPerfil.js"></script>
     <title>Mi Perfil</title>
 @endsection
 @section('body')
@@ -16,7 +16,7 @@
                         if(!empty($usuario->urlAvatar)){
                             $urlPerfil = route("urlImagen",["avatars",$usuario->urlAvatar]);
                         }else{
-                            $urlPerfil = asset('img/modulo/perfil_' . $urlPerfil .'.png');
+                            $urlPerfil = '/img/modulo/perfil_' . $urlPerfil .'.png';
                         }
                     @endphp
                     <img src="{{$urlPerfil}}" class="avatar-menu-img" width="80px" height="80px" alt="Imagen de avatar" id="previewAvatar">

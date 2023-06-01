@@ -1,14 +1,14 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="{{asset('productos/adminPresentacion.js')}}"></script>
+    <script src="/productos/adminPresentacion.js')}}"></script>
     <title>Presentación</title>
 @endsection
 @section('body')
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 400px;">
-                <img src="{{asset('img/modulo/presentacion.png')}}" alt="Imagen de presentacion" width="120px" class="img-fluid d-block m-auto">
+                <img src="/img/modulo/presentacion.png')}}" alt="Imagen de presentacion" width="120px" class="img-fluid d-block m-auto">
                 <h4 class="text-center text-primary my-2">Administración de presentación</h4>
             </div>
         </div>

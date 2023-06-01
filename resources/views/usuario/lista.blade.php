@@ -1,15 +1,15 @@
 @extends('helper.index')
 @section('head')
-    <script src="{{asset('asset/general.js')}}"></script>
+    <script src="/general.js"></script>
     @include('helper.headDatatable')
-    <script src="{{asset('usuario/users.js')}}"></script>
+    <script src="/usuario/users.js"></script>
     <title>Usuarios</title>
 @endsection
 @section('body')
 <section class="p-3">
     <div class="mb-4">
         <div class="m-auto" style="max-width: 400px;">
-            <img src="{{asset('img/modulo/usuario.png')}}" alt="Imagen de una persona con roles" width="120px" class="img-fluid d-block m-auto">
+            <img src="/img/modulo/usuario.png" alt="Imagen de una persona con roles" width="120px" class="img-fluid d-block m-auto">
             <h4 class="text-center text-primary my-2">Administración de usuarios</h4>
         </div>
     </div>

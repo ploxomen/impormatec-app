@@ -1,8 +1,8 @@
 @extends('general.index')
 @section('head')
     <title>Agregar usuarios</title>
-    <script src="{{asset('asset/general.js')}}"></script>
-    <script src="{{asset('usuario/users.js')}}"></script>
+    <script src="/general.js"></script>
+    <script src="/usuario/users.js"></script>
 @endsection
 @section('body')
     <section class="bg-white p-2">

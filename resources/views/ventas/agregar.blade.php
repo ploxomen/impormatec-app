@@ -1,9 +1,9 @@
 @extends('general.index')
 @section('head')
     @if ($caja == 'caja abierta')
-        <script src="{{asset('asset/general.js')}}"></script>
-        <link rel="stylesheet" href="{{asset('asset/productos/pestilos.css')}}">
-        <script src="{{asset('asset/ventas/nuevaVenta.js')}}"></script>
+        <script src="/general.js')}}"></script>
+        <link rel="stylesheet" href="/productos/pestilos.css')}}">
+        <script src="/ventas/nuevaVenta.js')}}"></script>
     @endif
     <title>Nueva venta</title>
 @endsection
@@ -12,7 +12,7 @@
         <section class="p-3">
             <div class="mb-4">
                 <div class="m-auto" style="max-width: 400px;">
-                    <img src="{{asset('asset/img/modulo/ventas.png')}}" alt="Imagen de ventas" width="120px" class="img-fluid d-block m-auto">
+                    <img src="/img/modulo/ventas.png')}}" alt="Imagen de ventas" width="120px" class="img-fluid d-block m-auto">
                     <h4 class="text-center text-primary my-2">Nueva Venta</h4>
                 </div>
             </div>
@@ -222,7 +222,7 @@
     <section class="container">
         <div class="bg-white p-3">
             <div class="form-group">
-                <img src="{{asset('asset/img/modulo/caja_cerrada.png')}}" alt="Imagen de cerrar caja" width="160px" class="img-fluid d-block m-auto">
+                <img src="/img/modulo/caja_cerrada.png')}}" alt="Imagen de cerrar caja" width="160px" class="img-fluid d-block m-auto">
             </div>
             <div class="form-group">
                 <h3 class="text-center">{{$fechaLarga}}</h3>

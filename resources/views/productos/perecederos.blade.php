@@ -1,15 +1,15 @@
 @extends('general.index')
 @section('head')
-    <script src="{{asset('asset/general.js')}}"></script>
+    <script src="/general.js')}}"></script>
     @include('headDatatable')
-    <script src="{{asset('asset/productos/perecederos.js')}}"></script>
+    <script src="/productos/perecederos.js')}}"></script>
     <title>Perecederos</title>
 @endsection
 @section('body')
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 400px;">
-                <img src="{{asset('asset/img/modulo/fechaVencimiento.png')}}" alt="Imagen de perecederos" width="120px" class="img-fluid d-block m-auto">
+                <img src="/img/modulo/fechaVencimiento.png')}}" alt="Imagen de perecederos" width="120px" class="img-fluid d-block m-auto">
                 <h4 class="text-center text-primary my-2">Administración de perecederos</h4>
             </div>
         </div>
