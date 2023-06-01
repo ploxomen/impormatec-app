@@ -44,7 +44,7 @@
                     <i class="fas fa-paper-plane"></i>
                     <span>Ingresar</span>
                 </button>
-                <a href="{{route('login')}}" class="btn btn-outline-danger">
+                <a href="{{route('salirRestaurar')}}" class="btn btn-outline-danger">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Salir</span>
                 </a>

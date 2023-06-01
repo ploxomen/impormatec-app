@@ -34,7 +34,15 @@ class Usuario extends Controller
     public function retaurarContra()
     {
         if (isset($_COOKIE['login_first'])) {
-            return view('usuario.cambiocontra');
+            return view('usuario.cambioContra');
+        }
+        return redirect(route('login'));
+    }
+    public function salirLoginFirst()
+    {
+        if (isset($_COOKIE['login_first'])) {
+            unset($_COOKIE['login_first']);
+            setcookie('login_first',"", time() - 3600, '/');
         }
         return redirect(route('login'));
     }

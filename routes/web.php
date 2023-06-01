@@ -196,6 +196,7 @@ Route::get("/",function(){
 Route::middleware(['guest'])->prefix('intranet')->group(function () {
     Route::get('acceso', [Usuario::class, 'loginView'])->name('login');
     Route::get("restaurar", [Usuario::class, 'retaurarContra'])->name('restaurarContra');
+    Route::get("restaurar/salir", [Usuario::class, 'salirLoginFirst'])->name('salirRestaurar');
     Route::post("autenticacion", [Usuario::class, 'autenticacion']);
     Route::post("restaurar", [Usuario::class, 'restaurarContrasena']);
 });
