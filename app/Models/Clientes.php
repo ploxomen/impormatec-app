@@ -28,14 +28,14 @@ class Clientes extends Model
     {
         return $query->select("clientes.id","tipo_documento.documento","usuarios.nroDocumento","usuarios.correo","clientes.nombreCliente","usuarios.celular","usuarios.telefono","usuarios.direccion","clientes.estado")
         ->join("usuarios","usuarios.id","=",'clientes.id_usuario')
-        ->join("tipo_documento","usuarios.tipoDocumento","=","tipo_documento.id","left");
+        ->join("tipo_documento","usuarios.tipoDocumento","=","tipo_documento.id","left")->get();
     }
     public function scopeObenerCliente($query,$idCliente)
     {
         $cliente = $query->select("clientes.id","usuarios.tipoDocumento","usuarios.nroDocumento","clientes.nombreCliente","usuarios.celular","usuarios.telefono","usuarios.direccion","clientes.estado")
         ->join("usuarios","usuarios.id","=",'clientes.id_usuario')
         ->join("tipo_documento","usuarios.tipoDocumento","=","tipo_documento.id","left")
-        ->where(['clientes.estado' => 1, 'clientes.id' => $idCliente])->first();
+        ->where(['clientes.id' => $idCliente])->first();
         if(!empty($cliente)){
             $cliente->contactos = DB::table('clientes_contactos')->select("id","nombreContacto","numeroContacto")->where('idCliente',$cliente->id)->get();
         }

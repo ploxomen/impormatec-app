@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="/library/bootstrap/bootstrap.min.css">
     <script src="/library/jquery/external/jquery/jquery.js"></script>
     <script src="/library/bootstrap/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="/cambioContrasena.css">
+    <link rel="stylesheet" href="/usuario/cambioContrasena.css">
 
     <script src="/usuario/restaurar.js"></script>
     <title>Restaurar Contraseña</title>

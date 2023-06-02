@@ -39,7 +39,6 @@ class Clientes extends Controller
             return response()->json(['session' => true]); 
         }
         $clientes = ModelsClientes::obenerClientes();
-        // ->with("tipoDocumento:id,tipoDocumento,documento");
         return DataTables::of($clientes)->toJson();
     }
     public function store(Request $request)

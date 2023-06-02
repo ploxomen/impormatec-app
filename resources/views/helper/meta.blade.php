@@ -10,8 +10,8 @@
 <meta name="csrf-token" content="{{csrf_token()}}">
 <script src="/general.js"></script>
 <link rel="stylesheet" href="/iconos/fontawesome/css/all.css">
-<link rel="stylesheet" href="/general.css">
 <link rel="stylesheet" href="/library/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" href="/general.css">
 <script src="/library/jquery/external/jquery/jquery.js"></script>
 <script src="/library/bootstrap/bootstrap.min.js"></script>
 <link rel="stylesheet" href="/library/alertify/alertify.min.css">

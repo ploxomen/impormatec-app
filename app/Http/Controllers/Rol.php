@@ -57,7 +57,7 @@ class Rol extends Controller
                 return response()->json(['success' => 'rol agregado correctamente']);
             break;
             case 'verModulos':
-                $modulos = ModelsRol::find($request->rol)->modulos()->select("modulo_roles.moduloFk")->get()->makeHidden("pivot");
+                $modulos = ModelsRol::find($request->rol)->modulos()->select("modulo_roles.moduloFk")->where('estado',1)->get()->makeHidden("pivot");
                 return response()->json(['modulos' => $modulos]);
             break;
             case 'editarRol':

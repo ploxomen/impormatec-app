@@ -1,5 +1,5 @@
 :root{
-    --color-principal:#2A4153;
+    --color-principal:#1F2B53;
     --color-secundario: #ffff;
     --color-panel: #F5F5F7;
     --color-letra-parrafo: #B3A6AD;
@@ -15,6 +15,8 @@
     --gris:#4A4A4A;
     --azul-granete:#1F2B53;
     --azul-prototipo:#004AAD;
+    --activo-li-navegacion:#76B21F;
+    --color-titulos:#1F2B53;
 }
 * {
     padding: 0;
@@ -25,6 +27,23 @@
 label{
     color: var(--color-letra-title);
     font-size: 15px;
+}
+.btn-outline-primary{
+    box-shadow: none !important;
+    color: var(--activo-li-navegacion) !important;
+    border-color: var(--activo-li-navegacion) !important;
+}
+.btn-outline-primary:active{
+    background: var(--activo-li-navegacion) !important;
+    color: var(--color-secundario) !important;
+}
+.btn-outline-primary:hover{
+    color: var(--color-secundario) !important;
+    border-color: var(--activo-li-navegacion) !important;
+    background: var(--activo-li-navegacion) !important;
+}
+.text-primary{
+    color: var(--color-titulos) !important;
 }
 .btn-import{
     display: flex;
@@ -74,7 +93,7 @@ table thead tr th{
     background: var(--activeli) !important;
 }
 .menu .activesub{
-    background: #0095ff !important;
+    background: var(--activo-li-navegacion) !important;
 }
 .menu .activesub .title+span{
     transform: rotate(180deg) !important;
@@ -132,8 +151,14 @@ label:has(> .material-icons){
     transition: background .3s ease-in-out;
     cursor: pointer;
 }
+.dropdown-menu .active{
+    background-color: var(--activo-li-navegacion) !important;
+}
+.dropdown-menu .dropdown-item:active{
+    background-color: var(--activo-li-navegacion) !important;
+}
 .btn-info-menu span{
-    color: var(--bg-p-blue);
+    color: var(--activo-li-navegacion);
     font-size: 30px;
 }
 .btn-info-menu:hover{
