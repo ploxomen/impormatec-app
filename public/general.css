@@ -33,6 +33,11 @@ label{
     color: var(--activo-li-navegacion) !important;
     border-color: var(--activo-li-navegacion) !important;
 }
+.btn-primary{
+    background-color: var(--activo-li-navegacion) !important;
+    border-color: var(--activo-li-navegacion) !important;
+    box-shadow: none !important;
+}
 .btn-outline-primary:active{
     background: var(--activo-li-navegacion) !important;
     color: var(--color-secundario) !important;
@@ -59,9 +64,6 @@ form label{
 .btn-import .material-icons{
     font-size: 23px;
     color: var(--color-secundario);
-}
-.btn-primary{
-    background: var(--bg-p-blue) !important;
 }
 .btn-danger{
     background: var(--bg-p-red) !important;
@@ -234,13 +236,14 @@ input[type=number] { -moz-appearance:textfield; }
 }
 .legend-add{
     font-size: 0.8rem;
+    font-weight: bold;
 }
 button small,
 button small i{
     user-select: none;
     pointer-events: none;
 }
-.form-group:has(input:required,select:required)>label::after {
+.form-group:has(input:required,select:required,textarea:required)>label::after {
     content: "*";
     color: red;
 }

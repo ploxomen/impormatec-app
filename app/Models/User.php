@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -56,6 +56,10 @@ class User extends Authenticatable
     public function cliente()
     {
         return $this->hasOne(Clientes::class,'id_usuario');
+    }
+    public static function validarTecnico(array $idRoles)
+    {
+        return DB::table("rol")->where('nombreRol','tecnico')->whereIn('id',$idRoles)->count();
     }
     // public function cotizador()
     // {

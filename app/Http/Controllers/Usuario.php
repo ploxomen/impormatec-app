@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\MisProductos;
 use App\Models\Rol;
+use App\Models\Tecnico;
 use App\Models\TipoDocumento;
 use App\Models\User;
 use App\Models\UsuarioRol;
@@ -184,6 +185,10 @@ class Usuario extends Controller
                     $usuario = User::create($datos);
                     foreach($datos['roles'] as $rol){
                         UsuarioRol::create(['rolFk' => $rol,'usuarioFk' => $usuario->id]);
+                    }
+                    $validarTecnico = User::validarTecnico($datos['roles']);
+                    if($validarTecnico){
+                        Tecnico::create(['idUsuario' => $usuario->id]);
                     }
                     DB::commit();
                     return response()->json(['success' => 'Usuario creado correctamente, recuerde que su contraseña temporal es ' . $request->password]);

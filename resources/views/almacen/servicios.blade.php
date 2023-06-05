@@ -1,0 +1,36 @@
+@extends('helper.index')
+@section('head')
+    @include('helper.headDatatable')
+    <script src="/almacen/misServicios.js"></script>
+    <title>Mis servicios</title>
+@endsection
+@section('body')
+    <section class="p-3">
+        <div class="mb-4">
+            <div class="m-auto" style="max-width: 400px;">
+                <img src="/img/modulo/atencion-al-cliente.png" alt="Imagen de servicios" width="120px" class="img-fluid d-block m-auto">
+                <h4 class="text-center text-primary my-2">Administración de servicios</h4>
+            </div>
+        </div>
+        <div class="form-group text-right">
+            <button class="btn btn-outline-primary" data-toggle="modal" data-target="#agregarServicio">
+                <i class="fas fa-plus"></i>
+                <span>Agregar</span>
+            </button>
+        </div>
+       <div class="bg-white p-3 border">
+        <table class="table table-sm table-bordered" id="tablaServicios">
+            <thead class="text-center">
+                <tr>
+                    <th>N° Servicio</th>
+                    <th>Servicio</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+        </table>
+       </div>
+    </section>
+    @include('almacen.modales.agregarServicio')
+@endsection

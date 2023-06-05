@@ -15,6 +15,8 @@ use App\Http\Controllers\Rol;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Clientes;
+use App\Http\Controllers\PreCotizacion;
+use App\Http\Controllers\Servicio;
 // use App\Http\Controllers\Ventas\Comprobantes;
 // use App\Http\Controllers\Ventas\Cotizacion;
 // use App\Http\Controllers\Ventas\Ventas;
@@ -39,6 +41,14 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('administrador', [Usuario::class, 'inicioAdministrador']);
     });
     Route::prefix('almacen')->group(function () {
+        Route::prefix('servicio')->group(function () {
+            Route::get('/', [Servicio::class, 'index'])->name('admin.servicios');
+            Route::post('listar', [Servicio::class, 'listar']);
+            Route::get('listar/{servicio}', [Servicio::class, 'show']);
+            Route::post('crear', [Servicio::class, 'store']);
+            Route::post('editar/{servicio}', [Servicio::class, 'update']);
+            Route::delete('eliminar/{servicio}', [Servicio::class, 'destroy']);
+        });
         Route::prefix('marca')->group(function () {
             Route::get('/', [Marca::class, 'index'])->name('admin.marca.index');
             Route::post('listar', [Marca::class, 'listar']);
@@ -151,15 +161,18 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('contacto/eliminar/{contacto}', [Clientes::class, 'eliminarContacto']);
         });
     });
-//     Route::prefix('cotizaciones')->group(function () {
-//         Route::get('nuevo', [Cotizacion::class, 'indexNuevaCotizacion'])->name('cotizacion.registrar.index');
-//         Route::get('comprobante/{cotizacion}', [Cotizacion::class, 'comprobanteCotizacion']);
-//         Route::post('registrar', [Cotizacion::class, 'registrarCotizacion']);
-//         Route::get('listar/producto/{producto}', [Cotizacion::class, 'obtenerProducto']);
-//         Route::get('mostrar', [Cotizacion::class, 'verCotizacionesAdminIndex'])->name('admin.cotizaciones.index');
-//         Route::post('listar', [Cotizacion::class, 'verCotizacionesAdmin']);
-//         Route::delete('eliminar/{cotizacion}', [Cotizacion::class, 'eliminarCotizacion']);
-//     });
+    Route::prefix('cotizaciones')->group(function () {
+        Route::prefix('precotizacion')->group(function () {
+            Route::get('nuevo', [PreCotizacion::class, 'indexNuevaPreCotizacion'])->name('cotizacion.precotizacion.nueva');
+            Route::get('lista', [PreCotizacion::class, 'indexMisPreCotizaciones'])->name('cotizacion.precotizacion.lista');
+        });
+        // Route::get('comprobante/{cotizacion}', [Cotizacion::class, 'comprobanteCotizacion']);
+        // Route::post('registrar', [Cotizacion::class, 'registrarCotizacion']);
+        // Route::get('listar/producto/{producto}', [Cotizacion::class, 'obtenerProducto']);
+        // Route::get('mostrar', [Cotizacion::class, 'verCotizacionesAdminIndex'])->name('admin.cotizaciones.index');
+        // Route::post('listar', [Cotizacion::class, 'verCotizacionesAdmin']);
+        // Route::delete('eliminar/{cotizacion}', [Cotizacion::class, 'eliminarCotizacion']);
+    });
 //     Route::prefix('caja')->group(function () {
 //         Route::get('nueva', [Caja::class, 'indexAbrirCaja'])->name("admin.caja.abrir");
 //         Route::post('abrir', [Caja::class, 'abrirCaja']);
