@@ -65,7 +65,7 @@ class Clientes extends Controller
             UsuarioRol::create(['rolFk' => $rolCliente->id,'usuarioFk' => $usuario->id]);
             $cliente = ModelsClientes::create(['id_usuario' => $usuario->id,'nombreCliente' => $request->nombreCliente,'estado' => 1]);
             if(isset($request->contactoNombres)){
-                for ($i=0; $i < count($request->contactoNombres); $i++) { 
+                for ($i=0; $i < count($request->contactoNombres); $i++) {
                     $contactos = [
                         'idCliente' => $cliente->id,
                         'nombreContacto' => isset($request->contactoNombres[$i]) ? $request->contactoNombres[$i] : null,

@@ -2,7 +2,8 @@ function loadPage(){
     $(".select2-simple").select2({
         theme: 'bootstrap',
         width: '100%',
-        placeholder: !$(this).data("placeholder") ? "Seleccione una opción" : $(this).data("placeholder"),   
+        placeholder: !$(this).data("placeholder") ? "Seleccione una opción" : $(this).data("placeholder"),
+        tags: !$(this).data("tags") ? false : true
     });
     $(".select2-new").select2({
         theme: 'bootstrap',

@@ -57,6 +57,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(Clientes::class,'id_usuario');
     }
+    public function tecnico()
+    {
+        return $this->hasOne(Tecnico::class,'idUsuario');
+    }
     public static function validarTecnico(array $idRoles)
     {
         return DB::table("rol")->where('nombreRol','tecnico')->whereIn('id',$idRoles)->count();

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Clientes;
 use App\Http\Controllers\PreCotizacion;
 use App\Http\Controllers\Servicio;
+use App\Http\Controllers\Tecnico;
 // use App\Http\Controllers\Ventas\Comprobantes;
 // use App\Http\Controllers\Ventas\Cotizacion;
 // use App\Http\Controllers\Ventas\Ventas;
@@ -165,6 +166,12 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::prefix('precotizacion')->group(function () {
             Route::get('nuevo', [PreCotizacion::class, 'indexNuevaPreCotizacion'])->name('cotizacion.precotizacion.nueva');
             Route::get('lista', [PreCotizacion::class, 'indexMisPreCotizaciones'])->name('cotizacion.precotizacion.lista');
+            Route::post('acciones', [PreCotizacion::class, 'accionesPreCotizacion']);
+        });
+        Route::prefix('tecnico')->group(function () {
+            Route::get('pre-cotizacion', [Tecnico::class, 'indexPrimeraVisitaPreCotizacion'])->name('cotizacion.tecnico.visita.pre');
+            Route::post('acciones', [Tecnico::class, 'accionesPreCotizacion']);
+            
         });
         // Route::get('comprobante/{cotizacion}', [Cotizacion::class, 'comprobanteCotizacion']);
         // Route::post('registrar', [Cotizacion::class, 'registrarCotizacion']);

@@ -24,6 +24,7 @@ class General{
     validarVacio(dato) {
         return !dato ? "Sin Registro" : dato;
     }
+    banerLoader = document.querySelector("#banerCargando")
     seleccionarCheckbox(claseSeleccionar,$selecionarTodo){
         let cantidadClase = 0;
         const claseSeleccionar2 = document.querySelectorAll(claseSeleccionar);

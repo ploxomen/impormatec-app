@@ -1,0 +1,21 @@
+.contenedor-botones-filtro{
+    gap: 20px;
+    justify-content: center;
+}
+.filtro-fecha{
+    max-width: 300px;
+    gap: 10px
+}
+.form-reportar{
+    max-width: 500px;
+    margin: auto
+}
+.lista-visitas .card-body{
+    font-size: 0.95rem;
+}
+.lista-visitas .card-body strong{
+    color: var(--activo-li-navegacion);
+}
+#contenidoServicios .contenido i,span{
+    font-size: 0.9rem !important;
+}
