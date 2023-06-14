@@ -157,6 +157,98 @@ function loadPage() {
             $('#modalPrimeraVisita').modal("show");
         }
     }
+    const btnImg = document.querySelector("#btnImagen");
+    const imgCopia = document.querySelector("#imgCopia");
+    const imgOriginal = document.querySelector("#imgsOriginal");
+    const renderImg = document.querySelector("#renderImg");
+    btnImg.onclick = e => imgCopia.click();
+    function coinsidenciaImg(files,name){
+        for (let i = 0; i < files.length; i++) {
+            if(files[i].name == name){
+                return 1;
+            }
+        }
+        return 0;
+    }
+    function renderImagen(file){
+        const render = new FileReader();
+        render.onload = function(){
+            const contenido = document.createElement("div");
+            contenido.className = "form-group col-12 col-xl-6 d-flex align-items-center";
+            contenido.style = "gap:5px;"
+            let img = new Image();
+            img.src = this.result;
+            img.classList.add('img-guias');
+            img.title = file.name;
+            let txtDescripcion = document.createElement("textarea");
+            txtDescripcion.name = "descripcionImagen[]";
+            txtDescripcion.className = "form-control form-control-sm txtdescripcion";
+            txtDescripcion.placeholder = "Añadir descripción";
+            const btnDelete = document.createElement('button');
+            btnDelete.classList.add('img-btn-delete','btn','btn-sm','btn-light');
+            btnDelete.dataset.file = file.name;
+            btnDelete.innerHTML = `<i class="fas fa-trash-alt"></i>`;
+            btnDelete.addEventListener('click',deleteImg);
+            contenido.append(img,txtDescripcion,btnDelete);
+            renderImg.append(contenido);
+        }
+        render.readAsDataURL(file);
+    }
+    function deleteImg(){
+        const nameImg = this.dataset.file;
+        const newDataTrnasfer = new DataTransfer();
+        const filesParent = imgOriginal;
+        let deleteDom = false;
+        for (let i = 0; i < filesParent.files.length; i++) {
+            if(filesParent.files[i].name != nameImg){
+                newDataTrnasfer.items.add(filesParent.files[i]);
+            }else{
+                deleteDom = true;
+            }
+        }
+        filesParent.files = newDataTrnasfer.files;
+        if(deleteDom){
+            this.parentElement.remove();
+            alertify.success('imagen eliminada');
+        }
+        if(!imgOriginal.files.length){
+            renderImg.innerHTML = `
+            <div class="form-grop col-12 text-center">
+                <span>No se subieron imagenes</span>
+            </div>
+            `;
+        }
+    }
+    imgCopia.addEventListener("change",function(e){
+        if(!this.files.length){
+            return
+        }
+        if(!imgOriginal.files.length){
+            renderImg.innerHTML = "";
+        }
+        let countImgRepetidas = 0;
+        const pattern = /image-*/;
+        const transfer = new DataTransfer();
+        for (let ed = 0; ed < imgOriginal.files.length; ed++) {
+            transfer.items.add(imgOriginal.files[ed]);             
+        }
+        for (let i = 0; i < this.files.length; i++) {
+            if(!this.files[i].type.match(pattern)){
+                return alertify.alert("Mensaje", "El archivo " + this.files[i].name +" no es una imagen");
+            }
+            if(coinsidenciaImg(imgOriginal.files,this.files[i].name)){
+                countImgRepetidas++;
+                continue;
+            }
+            renderImagen(this.files[i]);
+            transfer.items.add(this.files[i]);
+        }
+        if(countImgRepetidas){
+            alertify.alert('Mensaje','Se detectaron ' + countImgRepetidas + ' imagen(es) que ya se cargaron, recuerda que no se perminte imágenes duplicadas.');
+        }
+        imgOriginal.files = transfer.files;
+    })
+    // $('#modalPrimeraVisita').modal("show");
     tinymce.init({
         selector: '#sumernotePreCotizacion',
         language: 'es',

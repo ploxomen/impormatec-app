@@ -20,31 +20,6 @@ class PreCotizaion extends Model
         ->join("cotizacion_pre_tecnicos AS cpt","cp.id","=","cpt.id_pre_cotizacion")
         ->where(['cpt.id_tecnico'=>$idTecnico,'cp.estado' => 1])->groupByRaw("DATE_FORMAT(cp.fecha_hr_visita,'%d/%m/%Y')")->orderBy("cp.fecha_hr_visita")->get();
     }
-    public static function actualizarReporteTecnico($idPreCotizacion,$html,$servicios,$idTecnico,$usuario)
-    {
-        DB::beginTransaction();
-        try {
-            if(self::validarPrecotizacionResponsable($idPreCotizacion,$idTecnico,1) === 0){
-                return ['alerta' => 'Usted no tiene autorizado la modificacion de esta Pre - Cotizacion'];
-            }
-            PreCotizacionServicios::where('id_pre_cotizacion',$idPreCotizacion)->delete();
-            for ($i=0; $i < count($servicios) ; $i++) { 
-                if(isset($servicios[$i])){
-                    $serviciosList = [
-                        'id_pre_cotizacion' => $idPreCotizacion,
-                        'id_servicios' => $servicios[$i],
-                    ];
-                    PreCotizacionServicios::create($serviciosList);
-                }
-            }
-            PreCotizaion::find($idPreCotizacion)->update(['html_primera_visita' => $html,'estado' => 2,'usuario_modificado' => $usuario]);
-            DB::commit();
-            return ['success' => 'Reporte generado con éxito'];
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return ['error' => $th->getMessage()];
-        }
-    }
     public static function validarPrecotizacionResponsable($idPreCotizacion,$idTecnico,$estado)
     {
         return DB::table("cotizacion_pre AS cp")

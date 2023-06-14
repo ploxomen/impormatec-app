@@ -19,3 +19,14 @@
 #contenidoServicios .contenido i,span{
     font-size: 0.9rem !important;
 }
+.img-guias{
+    display: block;
+    width: 200px;
+    min-width: 200px;
+    object-fit: contain;
+    height: 100px;
+}
+.txtdescripcion{
+    min-width: 250px;
+    height: 100px !important;
+}

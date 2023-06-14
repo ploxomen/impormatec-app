@@ -70,7 +70,7 @@ class Usuario extends Controller
         $credenciales = $request->only("correo","password");
         $credenciales['estado'] = 1;
         $message = [];
-        if (Auth::attempt($credenciales,$request->has('recordar') ? true : false)) {
+        if (Auth::attempt($credenciales,$request->has('recordar'))) {
             $request->session()->regenerate();
             $message = ['success' => true];
         } else {

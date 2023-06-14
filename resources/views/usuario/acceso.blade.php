@@ -28,6 +28,12 @@
                       <label for="txtContrasena" class="form-label">Contraseña</label>
                       <input type="password" class="form-control form-control-lg" name="password" id="txtContrasena">
                     </div>
+                    <div class="mb-3">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" name="recordar" id="customCheck1">
+                        <label class="custom-control-label" for="customCheck1">Recordarme</label>
+                      </div>
+                    </div>
                     {{-- <div class="mb-3">
                       <a href="#" class="text-center d-block enlace-olvide">¿Olvidaste tu contraseña?</a>
                     </div> --}}

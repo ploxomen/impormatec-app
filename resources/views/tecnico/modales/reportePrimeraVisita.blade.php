@@ -11,27 +11,45 @@
             <div class="mb-4">
                 <textarea id="sumernotePreCotizacion"></textarea>
             </div>
-            <h5 class="text-primary">
+            <div class="d-flex align-items-center mb-3" style="gap: 10px;">
+              <h5 class="text-primary">
                 <i class="fas fa-caret-right"></i>
-                Seleccionar servicios
-            </h5>
-            <div class="form-group">
-                <div style="max-width: 500px;" class="mb-3">
-                    <label for="cbServicio">Servicio:</label>
-                    <select name="servicio" id="cbServicio" class="select2-simple" data-placeholder="Seleccione los servicios">
-                        <option value=""></option>
-                        @foreach ($servicios as $s)
-                            <option value="{{$s->id}}">{{$s->servicio}}</option>                        
-                        @endforeach
-                    </select>
-                </div>
-                <form id="contenidoServicios" class="d-flex flex-wrap" style="gap: 10px;">
-                    <div class="mb-2" id="txtNoServi">
-                        <span>Sin servicios seleccionados</span>
-                    </div>
-                    <input type="submit" id="btnFrom" hidden>
-                </form>
+                Seleccionar imagenes
+              </h5>
+              <button class="btn btn-sm btn-primary" type="button" id="btnImagen" title="Añadir imagenes">
+                <i class="fas fa-images"></i>
+              </button>
+              <input type="file" hidden id="imgCopia" multiple accept="image/*">
             </div>
+            <form id="contenidoServicios">
+              <div class="mb-4 row" id="renderImg" style="overflow-y: auto;">
+                <div class="form-grop col-12 text-center">
+                  <span>No se subieron imagenes</span>
+                </div>
+              </div>
+              <h5 class="text-primary">
+                  <i class="fas fa-caret-right"></i>
+                  Seleccionar servicios
+              </h5>
+              <div class="form-group">
+                  <div style="max-width: 500px;" class="mb-3">
+                      <label for="cbServicio">Servicio:</label>
+                      <select name="servicio" id="cbServicio" class="select2-simple" data-placeholder="Seleccione los servicios">
+                          <option value=""></option>
+                          @foreach ($servicios as $s)
+                              <option value="{{$s->id}}">{{$s->servicio}}</option>                        
+                          @endforeach
+                      </select>
+                  </div>
+                  <div class="d-flex flex-wrap" style="gap: 10px;">
+                      <input type="file" hidden name="imagenes[]" multiple accept="image/*" id="imgsOriginal">
+                      <div class="mb-2" id="txtNoServi">
+                          <span>Sin servicios seleccionados</span>
+                      </div>
+                      <input type="submit" id="btnFrom" hidden>
+                  </div>
+              </div>
+            </form>
         </div>
         <div class="modal-footer">
           <button type="button" id="btnGenerarReporte" class="btn btn-outline-primary"><i class="far fa-save"></i> Generar reporte</button>

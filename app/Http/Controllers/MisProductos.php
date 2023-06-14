@@ -136,4 +136,19 @@ class MisProductos extends Controller
         $request->file($key)->storeAs($disk,$archivoNombreAlmacenamiento);
         return $archivoNombreAlmacenamiento;
     }
+    public function guardarArhivoMasivo($request,$key,$disk)
+    {
+        $tiempo = time();
+        $archivosAlmacenados = [];
+        for ($i=0; $i < count($request->file($key)); $i++) { 
+            $tiempo++;
+            $nombreOriginal = $request->file($key)[$i]->getClientOriginalName();
+            $nombreArchivo = pathinfo($nombreOriginal,PATHINFO_FILENAME);
+            $extension = $request->file($key)[$i]->getClientOriginalExtension();
+            $archivoNombreAlmacenamiento = $nombreArchivo.'_'.$tiempo.'.'.$extension;
+            $request->file($key)[$i]->storeAs($disk,$archivoNombreAlmacenamiento);
+            $archivosAlmacenados[] = ['url_imagen' => $archivoNombreAlmacenamiento,'nombre_real' => $nombreArchivo];
+        }
+        return $archivosAlmacenados;
+    }
 }
