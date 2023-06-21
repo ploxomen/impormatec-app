@@ -52,6 +52,7 @@ function loadPage(){
         ]
     });
     let idServicio = null;
+    let serviciosSeleccionados = 0;
     const btnModalSave = document.querySelector("#btnGuardarFrm");
     const formServicio = document.querySelector("#formServicio");
     formServicio.addEventListener("submit",async function(e){
@@ -78,14 +79,56 @@ function loadPage(){
     });
     const switchEstado = document.querySelector("#idModalestado");
     const modalTitulo = document.querySelector("#tituloServicio");
-    $('#agregarservicio').on("hidden.bs.modal",function(e){
+    const cbProducto = document.querySelector("#cbProductos");
+    const tablaProducto = document.querySelector("#detalleProductos");
+    $('#agregarServicio').on("hidden.bs.modal",function(e){
+        serviciosSeleccionados = 0;
         idServicio = null;
-        modalTitulo.textContent = "Crear servicio";
+        modalTitulo.textContent = "Crear Servicio";
         switchEstado.disabled = true;
         switchEstado.checked = true;
         switchEstado.parentElement.querySelector("label").textContent = "VIGENTE";
         formServicio.reset();
+        tablaProducto.innerHTML = `
+        <tr>
+            <td class="text-center" colspan="4">No se seleccionaron productos</td>
+        </tr>`;
+        for (const oAlmacen of cbProducto.querySelectorAll("option")) {
+            oAlmacen.disabled = false;
+        }
+        $(cbProducto).val("").trigger("change");
+        btnModalSave.querySelector("span").textContent = "Guardar";
     });
+    function agregarProducto(idProducto,nombreProducto,cantidadProducto,urlProducto,tipo = "new") {
+        const tr = document.createElement("tr");
+        tr.dataset.tipo = tipo;
+        tr.dataset.producto = idProducto;
+        let $idProducto = idProducto ? `<input type="hidden" value="${idProducto}" name="idProducto[]">` : "";
+        tr.innerHTML = 
+        `
+        <td><img class="img-vistas-pequeña" src="${window.origin + "/intranet/storage/productos/" + urlProducto}"></td>
+        <td>${$idProducto}${nombreProducto}</td>
+        <td><input title="Cantidad a utilizar" type="number" name="cantidadProducto[]" min="1" required class="form-control form-control-sm" value="${cantidadProducto}" placeholder="Stock"></td>
+        <td>
+            <div class="col-12 text-rigth col-md-1 form-group">
+                <button type="button" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </td>
+        `
+        return tr;
+    }
+    $(cbProducto).on("select2:select",function(e){
+        let selectedOption = cbProducto.options[cbProducto.selectedIndex];
+        if(!serviciosSeleccionados){
+            tablaProducto.innerHTML = "";
+        }
+        tablaProducto.append(agregarProducto($(this).val(),selectedOption.text,"",selectedOption.dataset.url));
+        alertify.success("producto agregado");
+        selectedOption.disabled = true;
+        serviciosSeleccionados++;
+    })
     btnModalSave.onclick = e => document.querySelector("#btnFrmEnviar").click();
     tablaServicio.addEventListener("click",async function(e){
         if (e.target.classList.contains("btn-outline-info")){
@@ -97,12 +140,23 @@ function loadPage(){
                 if (response.session) {
                     return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
                 }
-                modalTitulo.textContent = "Editar servicio";
+                modalTitulo.textContent = "Editar Servicio";
                 idServicio = e.target.dataset.servicio;
                 for (const key in response.servicio) {
                     if (Object.hasOwnProperty.call(response.servicio, key)) {
                         const valor = response.servicio[key];
                         const dom = document.querySelector("#idModal" + key);
+                        if (key == "listaProductos"){
+                            serviciosSeleccionados = valor.length;
+                            if(serviciosSeleccionados){
+                                tablaProducto.innerHTML = ``;
+                            }
+                            valor.forEach(pro => {
+                                tablaProducto.append(agregarProducto(pro.idProducto,pro.nombreProducto,pro.cantidadUsada,pro.urlImagen,"old"));
+                                cambioOpcionCbProducto(pro.idProducto,true);
+                            });
+                            continue;
+                        }
                         if (key == "estado"){
                             const label = switchEstado.parentElement.querySelector("label");
                             label.textContent = valor === 1 ? switchEstado.dataset.selected : switchEstado.dataset.noselected;
@@ -143,6 +197,60 @@ function loadPage(){
             
         }
     })
+    function cambioOpcionCbProducto(idProducto,disabled) {
+        for (const oAlmacen of cbProducto.querySelectorAll("option")) {
+            if(oAlmacen.value == idProducto){
+                oAlmacen.disabled = disabled;
+            }
+        }
+    }
+    tablaProducto.onclick = function(e){
+        if(e.target.classList.contains("btn-danger")){
+            const li = e.target.parentElement.parentElement.parentElement;
+            const idProducto = li.dataset.producto;
+            if(li.dataset.tipo == "new"){
+                li.remove();
+                cambioOpcionCbProducto(idProducto,false);
+                alertify.success("se a eliminado el produco del servicio");
+                $(cbProducto).val("").trigger("change");
+            }else if(li.dataset.tipo == "old"){
+                alertify.confirm("Mensaje","¿Estas seguro de eliminar el producto de este sercivio?",async () => {
+                    try {
+                        gen.cargandoPeticion(e.target, gen.claseSpinner, true);
+                        let datos = new FormData();
+                        datos.append("idServicio",idServicio);
+                        datos.append("idProducto",idProducto);
+                        const response = await gen.funcfetch("servicio/producto/eliminar",datos,"POST");
+                        if (response.session) {
+                            return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                        }
+                        li.remove();
+                        alertify.success(response.success);
+                        if(!tablaProducto.children.length){
+                            tablaProducto.innerHTML = `
+                            <tr>
+                                <td class="text-center" colspan="4">No se seleccionaron productos</td>
+                            </tr>
+                            `;
+                        }
+                        cambioOpcionCbProducto(idProducto,false);
+                        $(cbProducto).val("").trigger("change");
+                    }catch(error){
+                        console.error(error);
+                        alertify.error("error al eliminar el producto del servicio")
+                    }finally{
+                        gen.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
+                    }
+                },()=>{})
+            }
+            if(!tablaProducto.children.length){
+                tablaProducto.innerHTML = `
+                <tr>
+                    <td class="text-center" colspan="4">No se seleccionaron productos</td>
+                </tr>`;
+            }
+        }
+    }
 }
 window.addEventListener("DOMContentLoaded",loadPage);
 

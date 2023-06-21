@@ -1,14 +1,14 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="/productos/adminProductos.js')}}"></script>
+    <script src="/productos/adminProductos.js"></script>
     <title>Productos</title>
 @endsection
 @section('body')
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 400px;">
-                <img src="/img/modulo/productos.png')}}" alt="Imagen de productos" width="120px" class="img-fluid d-block m-auto">
+                <img src="/img/modulo/clasificacion.png" alt="Imagen de productos" width="120px" class="img-fluid d-block m-auto">
                 <h4 class="text-center text-primary my-2">Administración de productos</h4>
             </div>
         </div>
@@ -23,13 +23,9 @@
             <thead class="text-center">
                 <tr>
                     <th>N°</th>
-                    <th>Código/Barra</th>
                     <th>Producto</th>
-                    <th>Marca</th>
-                    <th>Categoría</th>
-                    <th>Stock</th>
+                    <th>descripcion</th>
                     <th>Stock Min.</th>
-                    <th>Presentación</th>
                     <th>P. Venta</th>
                     <th>P. Compra</th>
                     <th>Estado</th>

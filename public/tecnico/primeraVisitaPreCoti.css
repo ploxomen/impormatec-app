@@ -16,7 +16,7 @@
 .lista-visitas .card-body strong{
     color: var(--activo-li-navegacion);
 }
-#contenidoServicios .contenido i,span{
+#contenidoServicios .contenido i,#contenidoServicios .contenido span{
     font-size: 0.9rem !important;
 }
 .img-guias{

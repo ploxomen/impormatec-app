@@ -1,6 +1,5 @@
 @extends('helper.index')
 @section('head')
-    <script src="/general.js"></script>
     @include('helper.headDatatable')
     <script src="/usuario/users.js"></script>
     <title>Usuarios</title>

@@ -9,7 +9,7 @@ use App\Http\Controllers\Categoria;
 use App\Http\Controllers\Marca;
 use App\Http\Controllers\MisProductos;
 // use App\Http\Controllers\Producto\Perecedero;
-use App\Http\Controllers\Presentacion;
+use App\Http\Controllers\Almacenes;
 use App\Http\Controllers\Usuario;
 use App\Http\Controllers\Rol;
 use Illuminate\Support\Facades\File;
@@ -47,6 +47,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('listar', [Servicio::class, 'listar']);
             Route::get('listar/{servicio}', [Servicio::class, 'show']);
             Route::post('crear', [Servicio::class, 'store']);
+            Route::post('producto/eliminar', [Servicio::class, 'eliminarProducto']);
             Route::post('editar/{servicio}', [Servicio::class, 'update']);
             Route::delete('eliminar/{servicio}', [Servicio::class, 'destroy']);
         });
@@ -74,18 +75,19 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('editar/{categoria}', [Categoria::class, 'update']);
             Route::delete('eliminar/{categoria}', [Categoria::class, 'destroy']);
         });
-        Route::prefix('presentacion')->group(function () {
-            Route::get('/', [Presentacion::class, 'index'])->name('admin.presentacion.index');
-            Route::post('listar', [Presentacion::class, 'listar']);
-            Route::get('listar/{presentacion}', [Presentacion::class, 'show']);
-            Route::post('crear', [Presentacion::class, 'store']);
-            Route::post('editar/{presentacion}', [Presentacion::class, 'update']);
-            Route::delete('eliminar/{presentacion}', [Presentacion::class, 'destroy']);
+        Route::prefix('almacenes')->group(function () {
+            Route::get('/', [Almacenes::class, 'index'])->name('admin.almacenes.index');
+            Route::post('listar', [Almacenes::class, 'listar']);
+            Route::get('listar/{almacen}', [Almacenes::class, 'show']);
+            Route::post('crear', [Almacenes::class, 'store']);
+            Route::post('editar/{almacen}', [Almacenes::class, 'update']);
+            Route::delete('eliminar/{almacen}', [Almacenes::class, 'destroy']);
         });
         Route::prefix('producto')->group(function () {
             Route::get('/', [MisProductos::class, 'index'])->name('admin.producto.index');
             Route::post('listar', [MisProductos::class, 'listar']);
             Route::get('listar/{producto}', [MisProductos::class, 'show']);
+            Route::post('almacen/eliminar', [MisProductos::class, 'eliminarAlmacen']);
             Route::post('crear', [MisProductos::class, 'store']);
             Route::post('editar/{producto}', [MisProductos::class, 'update']);
             Route::delete('eliminar/{producto}', [MisProductos::class, 'destroy']);

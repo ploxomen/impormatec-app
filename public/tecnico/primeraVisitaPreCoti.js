@@ -147,8 +147,10 @@ function loadPage() {
     }
     cargarVisitas();
     contenidoFiltro.onclick = function(e){
-        txtFechaVisita.value = e.target.dataset.fecha;
-        cargarVisitas();
+        if(e.target.dataset.fecha){
+            txtFechaVisita.value = e.target.dataset.fecha;
+            cargarVisitas();
+        }
     }
     let idVisita = null;
     contenidoVisitas.onclick = function(e){

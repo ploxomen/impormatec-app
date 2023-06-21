@@ -10,20 +10,20 @@ class Productos extends Model
     protected $table = 'productos';
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-    protected $fillable = ['codigoBarra','nombreProducto','descripcion','cantidad','cantidadMin','precioVenta','precioVentaPorMayor','precioCompra','categoriaFk','marcaFk','presentacionFk','urlImagen','estado','igv'];
+    protected $fillable = ['nombreProducto','descripcion','stockMin','precioVenta','precioCompra','urlImagen','estado'];
 
-    public function marca()
-    {
-        return $this->belongsTo(Marca::class,'marcaFk');
-    }
-    public function categoria()
-    {
-        return $this->belongsTo(Categoria::class,'categoriaFk');
-    }
-    public function presentacion()
-    {
-        return $this->belongsTo(Presentacion::class,'presentacionFk');
-    }
+    // public function marca()
+    // {
+    //     return $this->belongsTo(Marca::class,'marcaFk');
+    // }
+    // public function categoria()
+    // {
+    //     return $this->belongsTo(Categoria::class,'categoriaFk');
+    // }
+    // public function presentacion()
+    // {
+    //     return $this->belongsTo(Presentacion::class,'presentacionFk');
+    // }
     // public function perecederos()
     // {
     //     return $this->hasMany(Perecedero::class,'productoFk');

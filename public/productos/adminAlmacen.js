@@ -1,9 +1,12 @@
 function loadPage(){
     const general = new General();
-    const tablaPresentacion = document.querySelector("#tablaPresentacion");
-    const tablaPresentacionDataTable = $(tablaPresentacion).DataTable({
+    for (const swhitchOn of document.querySelectorAll(".change-switch")) {
+        swhitchOn.addEventListener("change",general.switchs);
+    }
+    const tablaAlmacen = document.querySelector("#tablaAlmacen");
+    const tablaAlmacenDataTable = $(tablaAlmacen).DataTable({
         ajax: {
-            url: 'presentacion/listar',
+            url: 'almacenes/listar',
             method: 'POST',
             headers: general.requestJson,
             data: function (d) {
@@ -17,10 +20,14 @@ function loadPage(){
             }
         },
         {
-            data: 'nombrePresentacion'
+            data: 'nombre'
         },
         {
-            data: 'siglas'
+            data: 'descripcion'
+        }
+        ,
+        {
+            data: 'direccion'
         }
         ,{
             data: 'estado',
@@ -37,13 +44,13 @@ function loadPage(){
         {
             data: 'id',
             render : function(data){
-                return `<div class="d-flex justify-content-center" style="gap:5px;"><button class="btn btn-sm btn-outline-info p-1" data-presentacion="${data}">
+                return `<div class="d-flex justify-content-center" style="gap:5px;"><button class="btn btn-sm btn-outline-info p-1" data-almacen="${data}">
                     <small>
                     <i class="fas fa-pencil-alt"></i>
                     Editar
                     </small>
                 </button>
-                <button class="btn btn-sm btn-outline-danger p-1" data-presentacion="${data}">
+                <button class="btn btn-sm btn-outline-danger p-1" data-almacen="${data}">
                     <small>    
                     <i class="fas fa-trash-alt"></i>
                         Eliminar
@@ -53,43 +60,53 @@ function loadPage(){
         },
         ]
     });
-    const txtPresentacion = document.querySelector("#txtPresentacion");
-    const txtSiglas = document.querySelector("#txtSiglas");
-    const formPresentacion = document.querySelector("#formPresentacion");
-    const btnGuardarForm = document.querySelector("#btnGuardarForm");
-    const checkEstado = document.querySelector("#customSwitch1");
-    let idPresentacion = null;
-    tablaPresentacion.onclick = async function(e){
+    const formAlmacen = document.querySelector("#formAlmacen");
+    const btnGuardarForm = document.querySelector("#btnGuardarFrm");
+    const switchEstado = document.querySelector("#idModalestado");
+    const modalTitulo = document.querySelector("#tituloAlmacen");
+    let idAlmacen = null;
+    btnGuardarForm.onclick = e => document.querySelector("#btnFrmEnviar").click();
+    tablaAlmacen.onclick = async function(e){
         if (e.target.classList.contains("btn-outline-info")){
             try {
                 general.cargandoPeticion(e.target, general.claseSpinner, true);
-                const response = await general.funcfetch("presentacion/listar/" + e.target.dataset.presentacion,null, "GET");
+                const response = await general.funcfetch("almacenes/listar/" + e.target.dataset.almacen,null, "GET");
                 general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);
                 if(response.session){
                     return alertify.alert([...alertaSesion],() => {window.location.reload()});
                 }
-                if(response.success){
-                    alertify.success("pendiente para editar");
-                    const presentacion = response.success;
-                    txtPresentacion.value = presentacion.nombrePresentacion;
-                    idPresentacion = presentacion.id;
-                    txtSiglas.value = presentacion.siglas;
-                    checkEstado.checked = presentacion.estado;
-                    btnGuardarForm.querySelector("span").textContent = "Editar";
+                modalTitulo.textContent = "Editar Almacen";
+                idAlmacen = e.target.dataset.almacen;
+                for (const key in response.success) {
+                    if (Object.hasOwnProperty.call(response.success, key)) {
+                        const valor = response.success[key];
+                        const dom = document.querySelector("#idModal" + key);
+                        if (key == "estado"){
+                            switchEstado.parentElement.querySelector("label").textContent = valor === 1 ? "VIGENTE" : "DESCONTINUADO";
+                            switchEstado.checked = valor === 1 ? true : false;
+                            continue;
+                        }
+                        if(!dom){
+                            continue;
+                        }
+                        dom.value = valor;
+                    }
                 }
+                switchEstado.disabled = false;
+                $('#agregarAlmacen').modal("show");
             } catch (error) {
                 general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);
-                idPresentacion = null;
+                idAlmacen = null;
                 console.error(error);
-                alertify.error("error al obtener la presentación")
+                alertify.error("error al obtener el almacen")
             }
 
         }
         if (e.target.classList.contains("btn-outline-danger")) {
-            alertify.confirm("Alerta","¿Deseas eliminar esta presentación?",async () => {
+            alertify.confirm("Alerta","¿Deseas eliminar este almacen?",async () => {
                 try {
                     general.cargandoPeticion(e.target, general.claseSpinner, true);
-                    const response = await general.funcfetch("presentacion/eliminar/" + e.target.dataset.presentacion,null,"DELETE");
+                    const response = await general.funcfetch("almacenes/eliminar/" + e.target.dataset.almacen,null,"DELETE");
                     general.cargandoPeticion(e.target, 'fas fa-trash-alt', true);
                     if (response.session) {
                         return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
@@ -100,25 +117,20 @@ function loadPage(){
                     if (response.error) {
                         return alertify.alert("Alerta", response.error);
                     }
-                    tablaPresentacionDataTable.draw();
+                    tablaAlmacenDataTable.draw();
                     return alertify.success(response.success);
                 } catch (error) {
                     general.cargandoPeticion(e.target, 'fas fa-trash-alt', true);
                     console.error(error);
-                    alertify.error('error al eliminar la presentación');
+                    alertify.error('error al eliminar el almacen');
                 }
             },() => {})
         }
     }
-    formPresentacion.onreset = function(e){
-        btnGuardarForm.querySelector("span").textContent = "Guardar";
-        checkEstado.checked = 0;
-        idPresentacion = null;
-    }
-    formPresentacion.onsubmit = async function(e){
+    formAlmacen.onsubmit = async function(e){
         e.preventDefault();
         let datos = new FormData(this);
-        const url = idPresentacion != null ? "presentacion/editar/" + idPresentacion : 'presentacion/crear';
+        const url = idAlmacen != null ? "almacenes/editar/" + idAlmacen : 'almacenes/crear';
         try {
             general.cargandoPeticion(btnGuardarForm, general.claseSpinner, true);
             const response = await general.funcfetch(url, datos, "POST");
@@ -128,16 +140,24 @@ function loadPage(){
             }
             if (response.success) {
                 alertify.success(response.success);
-                tablaPresentacionDataTable.draw();
-                formPresentacion.reset();
-                idPresentacion = null;
+                tablaAlmacenDataTable.draw();
+                formAlmacen.reset();
+                idAlmacen = null;
+                $('#agregarAlmacen').modal("hide");
             }
         } catch (error) {
-            idPresentacion = null;
+            idAlmacen = null;
             console.error(error);
-            alertify.error(idPresentacion != null ? "error al editar la presentación" : 'error al agregar la presentación')
+            alertify.error(idAlmacen != null ? "error al editar el almacen" : 'error al agregar el almacen')
         }
-
     }
+    $('#agregarAlmacen').on("hidden.bs.modal",function(e){
+        idAlmacen = null;
+        modalTitulo.textContent = "Agregar Almacen";
+        switchEstado.disabled = true;
+        switchEstado.checked = true;
+        switchEstado.parentElement.querySelector("label").textContent = "VIGENTE";
+        formAlmacen.reset();
+    });
 }
 window.addEventListener("DOMContentLoaded",loadPage);

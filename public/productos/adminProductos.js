@@ -25,31 +25,16 @@ function loadPage(){
             }
         },
         {
-            data: 'codigoBarra'
-        },
-        {
             data: 'nombreProducto'
         },
         {
-            data: 'marca.nombreMarca',
-            name : 'marca.nombreMarca'
+            data: 'descripcion'
         },
         {
-            data : 'categoria.nombreCategoria',
-            name : 'categoria.nombreCategoria'
-        },
-        {
-            data: 'cantidad'
-        },
-        {
-            data: 'cantidadMin',
+            data: 'stockMin',
             render : function(data){
                 return isNaN(parseInt(data)) ? 0 : parseInt(data);
             }
-        },
-        {
-            data : 'presentacion.nombrePresentacion',
-            name : 'presentacion.nombrePresentacion'
         },
         {
             data: 'precioVenta',
@@ -67,9 +52,9 @@ function loadPage(){
             data : 'estado',
             render : function(data){
                 if(data === 1){
-                    return '<span class="badge badge-success">Activo</span>';
+                    return '<span class="badge badge-success">VIGENTE</span>';
                 }else if(data === 0){
-                    return '<span class="badge badge-danger">Descontinuado</span>';
+                    return '<span class="badge badge-danger">DESCONTINUADO</span>';
                 }else{
                     return '<span class="text-danget">No establecido</span>';
                 }
@@ -127,6 +112,9 @@ function loadPage(){
             gen.cargandoPeticion(btnModalSave, 'fas fa-save', false);
         }
     });
+    const cbAlmacen = document.querySelector("#cbAlmacen");
+    const listaAlmacen = document.querySelector("#listaAlmacenes");
+    const txtSinAlamacen = document.querySelector("#txtSinAlmacen");
     const modalTitulo = document.querySelector("#tituloProducto");
     $('#agregarProducto').on("hidden.bs.modal",function(e){
         idProducto = null;
@@ -134,15 +122,98 @@ function loadPage(){
         switchEstado.disabled = true;
         switchEstado.checked = true;
         switchEstado.parentElement.querySelector("label").textContent = "VIGENTE";
-        switchIgv.checked = true;
-        switchIgv.parentElement.querySelector("label").textContent = "CON IGV";
         document.querySelector("#customFileLang").value = "";
         formProducto.reset();
-        $('#agregarProducto .select2-simple').trigger("change");
-        prevImagen.src = window.origin + "/asset/img/imgprevproduc.png";
+        $('#agregarProducto .select2-simple').val("").trigger("change");
+        prevImagen.src = window.origin + "/img/imgprevproduc.png";
+        listaAlmacen.innerHTML = "";
+        txtSinAlamacen.hidden = false;
+        for (const oAlmacen of cbAlmacen.querySelectorAll("option")) {
+            oAlmacen.disabled = false;
+        }
+        btnModalSave.querySelector("span").textContent = "Guardar";
     });
+    
+    $(cbAlmacen).on("select2:select",function(e){
+        let selectedOption = cbAlmacen.options[cbAlmacen.selectedIndex];
+        listaAlmacen.append(agregarAlmacen($(this).val(),selectedOption.text,""));
+        if(listaAlmacen.children.length){
+            txtSinAlamacen.hidden = true;
+        }
+        alertify.success("almacen agregado");
+        selectedOption.disabled = true;
+    })
+    function agregarAlmacen(idAlmacen,nombreAlmacen,stock,tipo = "new") {
+        const lista = document.createElement("li");
+        lista.dataset.tipo = tipo;
+        lista.dataset.almacen = idAlmacen;
+        let $idAlmacen = idAlmacen ? `<input type="hidden" value="${idAlmacen}" name="idAlmacen[]">` : "";
+        lista.innerHTML = 
+        `<div class="form-row">
+            ${$idAlmacen}
+            <div class="col-12 col-md-7 form-group">
+                <span>${nombreAlmacen}</span>
+            </div>
+            <div class="col-12 col-md-4 form-group">
+                <input title="Stock del producto por almacen" type="number" name="stockAlmacen[]" min="1" required class="form-control form-control-sm" value="${stock}" placeholder="Stock">
+            </div>
+            <div class="col-12 text-rigth col-md-1 form-group">
+                <button type="button" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+        `
+        return lista;
+    }
+    function habilitarOpcionAlmacen(idAlmacen,disabled) {
+        for (const oAlmacen of cbAlmacen.querySelectorAll("option")) {
+            if(oAlmacen.value == idAlmacen){
+                oAlmacen.disabled = disabled;
+            }
+        }
+    }
+    listaAlmacen.onclick = function(e){
+        if(e.target.classList.contains("btn-danger")){
+            const li = e.target.parentElement.parentElement.parentElement;
+            const almacen = li.dataset.almacen;
+            if(li.dataset.tipo == "new"){
+                li.remove();
+                habilitarOpcionAlmacen(almacen,false);
+                alertify.success("se a eliminado el produco del almacen");
+                $(cbAlmacen).val("").trigger("change");
+            }else if(li.dataset.tipo == "old"){
+                alertify.confirm("Mensaje","¿Estas seguro de eliminar el producto de este almacen?",async () => {
+                    try {
+                        gen.cargandoPeticion(e.target, gen.claseSpinner, true);
+                        let datos = new FormData();
+                        datos.append("idProducto",idProducto);
+                        datos.append("idAlmacen",almacen);
+                        const response = await gen.funcfetch("producto/almacen/eliminar",datos,"POST");
+                        if (response.session) {
+                            return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                        }
+                        li.remove();
+                        alertify.success(response.success);
+                        if(!listaAlmacen.children.length){
+                            txtSinAlamacen.hidden = false;
+                        }
+                        habilitarOpcionAlmacen(almacen,false);
+                        $(cbAlmacen).val("").trigger("change");
+                    }catch(error){
+                        console.error(error);
+                        alertify.error("error al eliminar el producto del almacen ")
+                    }finally{
+                        gen.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
+                    }
+                },()=>{})
+            }
+            if(!listaAlmacen.children.length){
+                txtSinAlamacen.hidden = false;
+            }
+        }
+    }
     const switchEstado = document.querySelector("#idModalestado");
-    const switchIgv = document.querySelector("#idModaligv");
     btnModalSave.onclick = e => document.querySelector("#btnFrmEnviar").click();
     tablaProducto.addEventListener("click",async function(e){
         if (e.target.classList.contains("btn-outline-info")){
@@ -160,12 +231,19 @@ function loadPage(){
                     if (Object.hasOwnProperty.call(response.producto, key)) {
                         const valor = response.producto[key];
                         const dom = document.querySelector("#idModal" + key);
-                        if (key == "estado"){
-                            switchEstado.checked = valor === 1 ? true : false;
+                        if (key == "listaAlmacen"){
+                            valor.forEach(al => {
+                                listaAlmacen.append(agregarAlmacen(al.id_almacen,al.nombre,al.stock,"old"));
+                                habilitarOpcionAlmacen(al.id_almacen,true);
+                            });
+                            if(listaAlmacen.children.length){
+                                txtSinAlamacen.hidden = true;
+                            }
                             continue;
                         }
-                        if (key == "igv"){
-                            switchIgv.checked = valor === 1 ? true : false;
+                        if (key == "estado"){
+                            switchEstado.parentElement.querySelector("label").textContent = valor === 1 ? "VIGENTE" : "DESCONTINUADO";
+                            switchEstado.checked = valor === 1 ? true : false;
                             continue;
                         }
                         if((!dom || !valor) && key != 'urlProductos'){
