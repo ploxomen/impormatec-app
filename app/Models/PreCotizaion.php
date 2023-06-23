@@ -20,6 +20,34 @@ class PreCotizaion extends Model
         ->join("cotizacion_pre_tecnicos AS cpt","cp.id","=","cpt.id_pre_cotizacion")
         ->where(['cpt.id_tecnico'=>$idTecnico,'cp.estado' => 1])->groupByRaw("DATE_FORMAT(cp.fecha_hr_visita,'%d/%m/%Y')")->orderBy("cp.fecha_hr_visita")->get();
     }
+    public static function obtenerPreCotizacionEditar($idPreCotizacion){
+        $preCotizacion = DB::table("cotizacion_pre AS cp")
+        ->select("cp.detalle","cp.id","cp.id_cliente","u.correo","u.tipoDocumento","u.nroDocumento","u.telefono","u.celular","u.direccion")
+        ->selectRaw("DATE_FORMAT(cp.fecha_hr_visita,'%Y-%m-%d %H:%i') AS fechaHrProgramada")
+        ->join("clientes AS c","c.id","=","cp.id_cliente")
+        ->join("usuarios AS u","u.id","=","c.id_usuario")
+        ->where('cp.id',$idPreCotizacion)->first();
+        if(!empty($preCotizacion)){
+            $preCotizacion->contactos = ClientesContactos::where('idCliente',$preCotizacion->id_cliente)->get();
+            $preCotizacion->contactosAsignados = PreCotizaionContacto::where('id_cotizacion_pre',$preCotizacion->id)->get();
+            $preCotizacion->tecnicos = PreCotizaionTecnico::where('id_pre_cotizacion',$preCotizacion->id)->get();
+        }
+        return $preCotizacion;
+
+    }
+    public static function obtenerPreCotizaciones()
+    {
+        return DB::table("cotizacion_pre AS cp")
+        ->select("cp.id","c.nombreCliente","u.nombres AS nombreTecnico","u.apellidos AS aspellidosTecnico","cp.estado")
+        ->selectRaw("DATE_FORMAT(cp.fecha_hr_visita,'%d/%m/%Y %h:%i %p') AS fechaHrProgramada,LPAD(cp.id,5,'0') AS nroPreCotizacion")
+        ->join("clientes AS c","c.id","=","cp.id_cliente")
+        ->join("cotizacion_pre_tecnicos AS cpt",function($join){
+            $join->on("cp.id","=","cpt.id_pre_cotizacion")
+            ->where('cpt.responsable','=',1);
+        })->join("tecnicos AS t","t.id","=","cpt.id_tecnico")
+        ->join("usuarios AS u","u.id","=","t.idUsuario")
+        ->groupBy("cp.id")->get();
+    }
     public static function validarPrecotizacionResponsable($idPreCotizacion,$idTecnico,$estado)
     {
         return DB::table("cotizacion_pre AS cp")

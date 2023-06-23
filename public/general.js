@@ -84,4 +84,25 @@ class General{
         const mes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Setiembre','Octubre','Noviembre','Diciembre'];
         return mes[numeroMes - 1];
     }
+    seleccionarServicios(cbJq,frmServicios,txtNoServicios){
+        if(cbJq.val() == ""){
+            return
+        }
+        const cb = $(cbJq)[0];
+        const optionCb = cb.options[cb.selectedIndex];
+        const div = document.createElement("div");
+        div.className = "contenido rounded-pill bg-light p-2";
+        div.innerHTML = `
+        <input type="hidden" value="${cbJq.val()}" name="servicios[]">
+        <span>${optionCb.textContent}</span>
+        <button type="button" class="btn btn-sm p-1" data-valor="${cbJq.val()}"><i class="fas fa-trash-alt"></i></button>
+        `
+        frmServicios.append(div);
+        if(frmServicios.children.length >= 1){
+            txtNoServicios.hidden = true;
+        }
+        optionCb.disabled = true;
+        cbJq.val("").trigger("change");
+    }
+    urlImagenesPreCotizacion = window.location.origin + "/intranet/storage/imgCotizacionPre/"; 
 }

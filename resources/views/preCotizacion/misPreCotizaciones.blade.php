@@ -1,6 +1,10 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
+    <script src="/library/tinyeditor/tinyeditor.js"></script>
+    <script src="/library/tinyeditor/es.js"></script>
+    <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.2">
+    <script src="/preCotizacion/misPreCotizaciones.js"></script>
     <title>Mis Pre - Cotizaciones</title>
 @endsection
 @section('body')
@@ -12,14 +16,12 @@
             </div>
         </div>
        <div class="bg-white p-3 border">
-        <table class="table table-sm table-bordered" id="tablaServicios">
+        <table class="table table-sm table-bordered" id="tablaPreCotizaciones">
             <thead class="text-center">
                 <tr>
                     <th>N° Pre - Cotización</th>
                     <th>Cliente</th>
-                    <th>Contacto</th>
-                    <th>Servicio</th>
-                    <th>Técnico</th>
+                    <th>Técnico Responsable</th>
                     <th>Fecha y Hr. programada</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -28,4 +30,6 @@
         </table>
        </div>
     </section>
+    @include('tecnico.modales.reportePrimeraVisita')
+    @include('preCotizacion.modales.editarPreCotizacion')
 @endsection

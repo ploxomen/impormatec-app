@@ -176,7 +176,7 @@ class MisProductos extends Controller
             $extension = $request->file($key)[$i]->getClientOriginalExtension();
             $archivoNombreAlmacenamiento = $nombreArchivo.'_'.$tiempo.'.'.$extension;
             $request->file($key)[$i]->storeAs($disk,$archivoNombreAlmacenamiento);
-            $archivosAlmacenados[] = ['url_imagen' => $archivoNombreAlmacenamiento,'nombre_real' => $nombreArchivo];
+            $archivosAlmacenados[] = ['url_imagen' => $archivoNombreAlmacenamiento,'nombre_real' => $nombreArchivo . '.' . $extension];
         }
         return $archivosAlmacenados;
     }

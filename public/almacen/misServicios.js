@@ -108,7 +108,7 @@ function loadPage(){
         `
         <td><img class="img-vistas-pequeña" src="${window.origin + "/intranet/storage/productos/" + urlProducto}"></td>
         <td>${$idProducto}${nombreProducto}</td>
-        <td><input title="Cantidad a utilizar" type="number" name="cantidadProducto[]" min="1" required class="form-control form-control-sm" value="${cantidadProducto}" placeholder="Stock"></td>
+        <td><input title="Cantidad a utilizar" type="number" name="cantidadProducto[]" min="1" required class="form-control form-control-sm" value="${cantidadProducto}" placeholder="Cantidad"></td>
         <td>
             <div class="col-12 text-rigth col-md-1 form-group">
                 <button type="button" class="btn btn-sm btn-danger">

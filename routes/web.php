@@ -168,7 +168,16 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::prefix('precotizacion')->group(function () {
             Route::get('nuevo', [PreCotizacion::class, 'indexNuevaPreCotizacion'])->name('cotizacion.precotizacion.nueva');
             Route::get('lista', [PreCotizacion::class, 'indexMisPreCotizaciones'])->name('cotizacion.precotizacion.lista');
+            Route::post('lista-precotizacion', [PreCotizacion::class, 'obtenerPreCotizaciones']);
+            Route::get('lista/{precotizacion}', [PreCotizacion::class, 'showPreCotizacion']);
             Route::post('acciones', [PreCotizacion::class, 'accionesPreCotizacion']);
+            Route::post('eliminar/imagen', [PreCotizacion::class, 'eliminarImagenPreCotizacion']);
+            Route::post('actualizar', [PreCotizacion::class, 'actualizarPreCotizacion']);
+            Route::post('agregar/imagen', [PreCotizacion::class, 'agregarImagenPreCotizacion']);
+            Route::get('listar-pre/{precotizacion}', [PreCotizacion::class, 'obtenerPreCotizacionEditar']);
+            Route::post('editar', [PreCotizacion::class, 'editarPreCotizacion']);
+            Route::post('obtener/clientes', [PreCotizacion::class, 'obtenerClientesEditar']);
+
         });
         Route::prefix('tecnico')->group(function () {
             Route::get('pre-cotizacion', [Tecnico::class, 'indexPrimeraVisitaPreCotizacion'])->name('cotizacion.tecnico.visita.pre');

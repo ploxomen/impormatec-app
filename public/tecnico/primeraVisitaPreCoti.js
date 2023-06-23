@@ -172,6 +172,7 @@ function loadPage() {
         }
         return 0;
     }
+    
     function renderImagen(file){
         const render = new FileReader();
         render.onload = function(){
@@ -250,76 +251,44 @@ function loadPage() {
         }
         imgOriginal.files = transfer.files;
     })
-    // $('#modalPrimeraVisita').modal("show");
     tinymce.init({
         selector: '#sumernotePreCotizacion',
         language: 'es',
         plugins: 'anchor autolink charmap codesample emoticons image link lists searchreplace table visualblocks wordcount',
         toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-        /* enable title field in the Image dialog*/
         image_title: true,
         branding: false,
         height: "500px",
-        /* enable automatic uploads of images represented by blob or data URIs*/
         automatic_uploads: true,
-        /*
-            URL of our upload handler (for more details check: https://www.tiny.cloud/docs/configure/file-image-upload/#images_upload_url)
-            images_upload_url: 'postAcceptor.php',
-            here we add custom filepicker only to Image dialog
-        */
         file_picker_types: 'image',
-        /* and here's our custom image picker*/
         file_picker_callback: (cb, value, meta) => {
             const input = document.createElement('input');
             input.setAttribute('type', 'file');
             input.setAttribute('accept', 'image/*');
-
             input.addEventListener('change', (e) => {
             const file = e.target.files[0];
-
             const reader = new FileReader();
             reader.addEventListener('load', () => {
-                /*
-                Note: Now we need to register the blob in TinyMCEs image blob
-                registry. In the next release this part hopefully won't be
-                necessary, as we are looking to handle it internally.
-                */
                 const id = 'blobid' + (new Date()).getTime();
                 const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
                 const base64 = reader.result.split(',')[1];
                 const blobInfo = blobCache.create(id, file, base64);
                 blobCache.add(blobInfo);
-
-                /* call the callback and populate the Title field with the file name */
                 cb(blobInfo.blobUri(), { title: file.name });
             });
             reader.readAsDataURL(file);
             });
-
             input.click();
         },
     });
     const frmServicios = document.querySelector("#contenidoServicios");
     const txtNoServicios = document.querySelector("#txtNoServi");
+    const listaServicios = document.querySelector("#contenidoListaServicios");
     const cbServicios = $('#cbServicio');
     cbServicios.on("select2:select",function(e){
-        const cb = $(this)[0];
-        const optionCb = cb.options[e.target.selectedIndex];
-        const div = document.createElement("div");
-        div.className = "contenido rounded-pill bg-light p-2";
-        div.innerHTML = `
-        <input type="hidden" value="${cbServicios.val()}" name="servicios[]">
-        <span>${optionCb.textContent}</span>
-        <button type="button" class="btn btn-sm p-1" data-valor="${cbServicios.val()}"><i class="fas fa-trash-alt"></i></button>
-        `
-        frmServicios.append(div);
-        if(frmServicios.elements.length >= 1){
-            txtNoServicios.hidden = true;
-        }
-        optionCb.disabled = true;
-        cbServicios.val("").trigger("change");
+        general.seleccionarServicios(cbServicios,listaServicios,txtNoServicios)
     });
-    frmServicios.onclick = function(e){
+    listaServicios.onclick = function(e){
         if(e.target.classList.contains("btn-sm")){
             for (const cb of cbServicios[0].options) {
                 if(cb.value == e.target.dataset.valor){
@@ -338,7 +307,7 @@ function loadPage() {
         e.preventDefault();
         const contenido = tinymce.activeEditor.getContent();
         if(!contenido){
-            alertify.error("por favor redacte el informe");
+            return alertify.error("por favor redacte el informe");
         }
         const data = new FormData(this);
         data.append("acciones","generar-reporte");
@@ -369,7 +338,7 @@ function loadPage() {
     })
     $('#modalPrimeraVisita').on('hidden.bs.modal', function (event) {
         txtNoServicios.hidden = false;
-        for (const c of frmServicios.querySelectorAll(".contenido")) {
+        for (const c of listaServicios.querySelectorAll(".contenido")) {
             c.remove();
         }
         for (const cb of cbServicios[0].options) {

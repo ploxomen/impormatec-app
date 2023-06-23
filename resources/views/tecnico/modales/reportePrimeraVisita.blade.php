@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="staticBackdropLabel">Reporte de Pre - Cotización</h5>
+          <h5 class="modal-title" id="tituloReporteCotizcion">Reporte de Pre - Cotización</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -23,7 +23,7 @@
             </div>
             <form id="contenidoServicios">
               <div class="mb-4 row" id="renderImg" style="overflow-y: auto;">
-                <div class="form-grop col-12 text-center">
+                <div class="form-grop col-12 text-center" id="txtSinImagenes">
                   <span>No se subieron imagenes</span>
                 </div>
               </div>
@@ -34,26 +34,28 @@
               <div class="form-group">
                   <div style="max-width: 500px;" class="mb-3">
                       <label for="cbServicio">Servicio:</label>
-                      <select name="servicio" id="cbServicio" class="select2-simple" data-placeholder="Seleccione los servicios">
+                      <select id="cbServicio" class="select2-simple" data-placeholder="Seleccione los servicios">
                           <option value=""></option>
                           @foreach ($servicios as $s)
                               <option value="{{$s->id}}">{{$s->servicio}}</option>                        
                           @endforeach
                       </select>
                   </div>
-                  <div class="d-flex flex-wrap" style="gap: 10px;">
-                      <input type="file" hidden name="imagenes[]" multiple accept="image/*" id="imgsOriginal">
-                      <div class="mb-2" id="txtNoServi">
-                          <span>Sin servicios seleccionados</span>
-                      </div>
-                      <input type="submit" id="btnFrom" hidden>
+                  <div class="d-flex flex-wrap mb-2" style="gap: 10px;" id="contenidoListaServicios"></div>
+                  <div id="txtNoServi">
+                    <span>Sin servicios seleccionados</span>
                   </div>
+                  <input type="file" hidden name="imagenes[]" multiple accept="image/*" id="imgsOriginal">
+                  <input type="submit" id="btnFrom" hidden>
               </div>
             </form>
         </div>
         <div class="modal-footer">
-          <button type="button" id="btnGenerarReporte" class="btn btn-outline-primary"><i class="far fa-save"></i> Generar reporte</button>
-          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="far fa-times-circle"></i> Cancelar</button>
+          <button type="button" id="btnGenerarReporte" class="btn btn-outline-primary">
+            <i class="far fa-save"></i> 
+            <span>Generar reporte</span>
+          </button>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal"><i class="far fa-times-circle"></i> Cerrar</button>
         </div>
       </div>
     </div>
