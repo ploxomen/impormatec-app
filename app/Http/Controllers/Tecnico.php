@@ -56,25 +56,29 @@ class Tecnico extends Controller
                     if(PreCotizaion::validarPrecotizacionResponsable($idPreCotizacion,$idTecnico,1) === 0){
                         return ['alerta' => 'Usted no tiene autorizado la modificacion de esta Pre - Cotizacion'];
                     }
-                    $guardarImgs = new MisProductos();
-                    $listaImgs = $guardarImgs->guardarArhivoMasivo($request,"imagenes","imgCotizacionPre");
-                    CotizacionImagenes::where('id_pre_cotizacion',$idPreCotizacion)->delete();
-                    for ($i=0; $i < count($request->file("imagenes")) ; $i++) { 
-                        CotizacionImagenes::create([
-                            'id_pre_cotizacion' => $idPreCotizacion,
-                            'url_imagen' => $listaImgs[$i]['url_imagen'],
-                            'nombre_original_imagen' => $listaImgs[$i]['nombre_real'],
-                            'descripcion' => isset($request->descripcionImagen[$i]) ? $request->descripcionImagen[$i] : null
-                        ]);
-                    }
-                    PreCotizacionServicios::where('id_pre_cotizacion',$idPreCotizacion)->delete();
-                    for ($i=0; $i < count($servicios) ; $i++) { 
-                        if(isset($servicios[$i])){
-                            $serviciosList = [
+                    if($request->has('imagenes')){
+                        $guardarImgs = new MisProductos();
+                        $listaImgs = $guardarImgs->guardarArhivoMasivo($request,"imagenes","imgCotizacionPre");
+                        CotizacionImagenes::where('id_pre_cotizacion',$idPreCotizacion)->delete();
+                        for ($i=0; $i < count($request->file("imagenes")) ; $i++) { 
+                            CotizacionImagenes::create([
                                 'id_pre_cotizacion' => $idPreCotizacion,
-                                'id_servicios' => $servicios[$i],
-                            ];
-                            PreCotizacionServicios::create($serviciosList);
+                                'url_imagen' => $listaImgs[$i]['url_imagen'],
+                                'nombre_original_imagen' => $listaImgs[$i]['nombre_real'],
+                                'descripcion' => isset($request->descripcionImagen[$i]) ? $request->descripcionImagen[$i] : null
+                            ]);
+                        }
+                    }
+                    if($request->has('servicios')){
+                        PreCotizacionServicios::where('id_pre_cotizacion',$idPreCotizacion)->delete();
+                        for ($i=0; $i < count($servicios) ; $i++) { 
+                            if(isset($servicios[$i])){
+                                $serviciosList = [
+                                    'id_pre_cotizacion' => $idPreCotizacion,
+                                    'id_servicios' => $servicios[$i],
+                                ];
+                                PreCotizacionServicios::create($serviciosList);
+                            }
                         }
                     }
                     PreCotizaion::find($idPreCotizacion)->update(['html_primera_visita' => $html,'estado' => 2,'usuario_modificado' => $usuario]);

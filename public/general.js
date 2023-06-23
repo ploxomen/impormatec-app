@@ -88,8 +88,9 @@ class General{
         if(cbJq.val() == ""){
             return
         }
-        const cb = $(cbJq)[0];
+        const cb = cbJq[0];
         const optionCb = cb.options[cb.selectedIndex];
+        console.log(optionCb);
         const div = document.createElement("div");
         div.className = "contenido rounded-pill bg-light p-2";
         div.innerHTML = `
