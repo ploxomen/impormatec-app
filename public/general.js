@@ -90,7 +90,9 @@ class General{
         }
         const cb = cbJq[0];
         const optionCb = cb.options[cb.selectedIndex];
-        console.log(cbJq,optionCb);
+        if(!optionCb){
+            return 
+        }
         const div = document.createElement("div");
         div.className = "contenido rounded-pill bg-light p-2";
         div.innerHTML = `
