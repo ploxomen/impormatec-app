@@ -107,5 +107,6 @@ class General{
         optionCb.disabled = true;
         cbJq.val("").trigger("change");
     }
-    urlImagenesPreCotizacion = window.location.origin + "/intranet/storage/imgCotizacionPre/"; 
+    urlImagenesPreCotizacion = window.location.origin + "/intranet/storage/imgCotizacionPre/";
+    
 }

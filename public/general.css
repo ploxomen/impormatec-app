@@ -266,7 +266,7 @@ button small i{
     display: grid;
     place-items: center;
 }
-.img-vistas-pequeña{
+.img-vistas-pequena{
     width: 130px;
     height: 100px;
     object-fit: contain;

@@ -54,6 +54,21 @@ class PreCotizaion extends Model
         ->join("cotizacion_pre_tecnicos AS cpt","cp.id","=","cpt.id_pre_cotizacion")
         ->where(['cpt.id_tecnico'=>$idTecnico,'cp.estado' => $estado,'cp.id' => $idPreCotizacion, 'cpt.responsable' => 1])->count();
     }
+    public static function obtenerDatosPreCotizacion($idPreCotizacion) {
+        $preCotizacion = DB::table("cotizacion_pre AS cp")
+        ->select("cp.id","cp.id_cliente","u.direccion")
+        ->join("clientes AS c","c.id","=","cp.id_cliente")
+        ->join("usuarios AS u","u.id","=","c.id_usuario")
+        ->where(['cp.id'=>$idPreCotizacion,'cp.estado' => 2])->first();
+        if(!empty($preCotizacion)){
+            $preCotizacion->contactos = ClientesContactos::select("id","nombreContacto","numeroContacto")->where('idCliente',$preCotizacion->id_cliente)->get();
+            $preCotizacion->servicios = PreCotizacionServicios::preCotizacionServicios($preCotizacion->id);
+            foreach ($preCotizacion->servicios as $servicio) {
+                $servicio->productos = ServicioProducto::obtenerProductos($servicio->id);
+            }
+        }
+        return $preCotizacion;
+    }
     public static function obtenerPreCotizacionPorTecnicoFecha($idTecnico,$fecha)
     {
         $visitas = DB::table("cotizacion_pre AS cp")
