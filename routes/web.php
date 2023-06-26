@@ -15,6 +15,7 @@ use App\Http\Controllers\Rol;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Clientes;
+use App\Http\Controllers\Cotizacion;
 use App\Http\Controllers\PreCotizacion;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
@@ -165,6 +166,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         });
     });
     Route::prefix('cotizaciones')->group(function () {
+        Route::get('agregar', [Cotizacion::class, 'indexNuevaCotización'])->name('admin.cotizacion.agregar.index');
         Route::prefix('precotizacion')->group(function () {
             Route::get('nuevo', [PreCotizacion::class, 'indexNuevaPreCotizacion'])->name('cotizacion.precotizacion.nueva');
             Route::get('lista', [PreCotizacion::class, 'indexMisPreCotizaciones'])->name('cotizacion.precotizacion.lista');
@@ -177,7 +179,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('listar-pre/{precotizacion}', [PreCotizacion::class, 'obtenerPreCotizacionEditar']);
             Route::post('editar', [PreCotizacion::class, 'editarPreCotizacion']);
             Route::post('obtener/clientes', [PreCotizacion::class, 'obtenerClientesEditar']);
-
         });
         Route::prefix('tecnico')->group(function () {
             Route::get('pre-cotizacion', [Tecnico::class, 'indexPrimeraVisitaPreCotizacion'])->name('cotizacion.tecnico.visita.pre');
