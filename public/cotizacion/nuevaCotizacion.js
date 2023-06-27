@@ -114,7 +114,6 @@ function loadPage(){
             const tr = e.target.parentElement.parentElement;
             const servicio = tr.dataset.servicio;
             serviciosProductos = serviciosProductos.filter(s => s.idServicio != servicio);
-            console.log(serviciosProductos);
             tr.remove();
             tablaServicioProductos.querySelector(`[data-domservicio="${servicio}"]`).remove();
             if (!serviciosProductos.length) {
@@ -193,7 +192,6 @@ function loadPage(){
             cp.descuento = ddescuento;
             cp.pTotal = dtotal;
             const tr = tablaServicios.querySelector(`[data-servicio="${cp.idServicio}"]`);
-            console.log(tr);
             tr.querySelector(".costo-precio").textContent = gen.monedaSoles(cp.pUni);
             tr.querySelector(".costo-descuento").textContent = "-" + gen.monedaSoles(cp.descuento);
             tr.querySelector(".costo-subtotal").textContent = gen.monedaSoles(cp.pTotal);

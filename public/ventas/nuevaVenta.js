@@ -250,7 +250,6 @@ function loadPage() {
         if(cbMetodoPago.value == "A CREDITO" && totalRecivido >= totales){
             return alertify.alert("Mensaje","La venta se está registrando como <strong>A CREDITO</strong>, por lo tanto el monto RECIBIDO debe ser menor que el total a pagar");
         }
-        console.log(totalRecivido , totales);
         // return
         if(cbMetodoPago.value != "A CREDITO" && totalRecivido < totales){
             return alertify.alert("Mensaje","El monto recibido no debe ser menor que el total a pagar, por favor establesca un valor correcto para el monto recibido",()=>txtMontoDado.focus());

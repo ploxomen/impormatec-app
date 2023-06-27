@@ -212,7 +212,6 @@ function loadPage() {
                 preCotizacionResponse.listaServicios.forEach(ser => {
                     cbServicios.val(ser.id_servicios).trigger("change");
                 });
-                console.log(response);
                 $('#modalPrimeraVisita').modal("show");
             } catch (error) {
                 general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);
