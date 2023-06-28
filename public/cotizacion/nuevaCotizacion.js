@@ -36,6 +36,7 @@ function loadPage(){
             Sin productos para mostrar  
         </h5>
         `
+        cbServiciosOpt(false,null);
         document.querySelector("#txtSubTotal").textContent = "S/ 0.00";
         document.querySelector("#txtDescuento").textContent = "-" + "S/ 0.00";
         document.querySelector("#txtIGV").textContent = "S/ 0.00";
@@ -64,12 +65,30 @@ function loadPage(){
             alertify.error("error al obtener la informacion del cliente");
         }
     });
-    formCotizacion.addEventListener("submit",function(e){
+    const btnAgregarCoti = document.querySelector("#btnAgregarCotizacion");
+    formCotizacion.addEventListener("submit",async function(e){
         e.preventDefault();
         if(!serviciosProductos.length){
             return alertify.error("la cotización debe contener al menos un servicio");
         }
-        alertify.alert("Mensaje","Cotización generada con éxito",()=>window.location.reload());
+        let datos = new FormData(this);
+        if(!datos.has('id_cliente')){
+            datos.append('id_cliente',$(cbClientes).val());
+        }
+        datos.append("servicios",JSON.stringify(serviciosProductos));
+        gen.cargandoPeticion(btnAgregarCoti, gen.claseSpinner, true);
+        try {
+            const response = await gen.funcfetch("agregar",datos,"POST");
+            if(response.session){
+                return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
+            }
+            return alertify.alert("Mensaje",response.success,() => window.location.reload());
+        } catch (error) {
+            console.error(error);
+            alertify.error("error al generar una cotización");
+        }finally{
+            gen.cargandoPeticion(btnAgregarCoti, 'fas fa-plus', false);
+        }
     })
     function agregarServicioProductos(idServicio,nombreServicio,listaProducto) {
         const servicio = document.createElement("div");
@@ -114,6 +133,7 @@ function loadPage(){
             const tr = e.target.parentElement.parentElement;
             const servicio = tr.dataset.servicio;
             serviciosProductos = serviciosProductos.filter(s => s.idServicio != servicio);
+            cbServiciosOpt(false,[+servicio]);
             tr.remove();
             tablaServicioProductos.querySelector(`[data-domservicio="${servicio}"]`).remove();
             if (!serviciosProductos.length) {
@@ -126,10 +146,12 @@ function loadPage(){
                 </h5>
                 `
             }
+            alertify.success("servicio eliminado correctamente")
             calcularServiciosTotales();
         }
     });
     function modificarCantidad(e){
+        console.log(e);
         const tr = e.target.parentElement.parentElement;
         const indexServicio = serviciosProductos.findIndex(s => s.idServicio == tr.dataset.servicio);
         if(indexServicio < 0){
@@ -140,6 +162,10 @@ function loadPage(){
             valor = 0;
         }
         const tipo = e.target.dataset.tipo;
+        if(tipo == "cantidad-servicio"){
+            serviciosProductos[indexServicio].cantidad = valor;
+            return false
+        }
         if(tipo == "cantidad" || tipo == "descuento"){
             const txtSubTotal = tr.querySelector(".costo-subtota");
             const indexProducto = serviciosProductos[indexServicio].productosLista.findIndex(p => p.idProducto == tr.dataset.producto);
@@ -204,18 +230,85 @@ function loadPage(){
         document.querySelector("#txtIGV").textContent = gen.monedaSoles(total * 0.18);
         document.querySelector("#txtTotal").textContent = gen.monedaSoles(total);
     }
+    let cbServicios = document.querySelector("#cbServicios");
+    function cbServiciosOpt(disabled,arrayServicios) {
+        for (const cb of cbServicios.querySelectorAll("option")) {
+            if(isNaN(+cb.value)){
+                continue;
+            }
+            if(!arrayServicios){
+                cb.disabled = false;
+                continue;
+            }
+            if(arrayServicios.indexOf(+cb.value) >= 0){
+                cb.disabled = disabled;
+            }
+        }
+    }
+    $(cbServicios).on("select2:select", async function (e) {
+        const idServico = $(this).val();
+        try {
+            const response = await gen.funcfetch("obtener/servicio/" + idServico, null, "GET");
+            if(response.session){
+                return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
+            }
+            const servicioJSON = response.servicio;
+            let total = 0;
+            let productosLista = []; 
+            servicioJSON.productos.forEach(p => {
+                total += p.precioVenta * p.cantidadUsada;
+                productosLista.push({
+                    idProducto : p.idProducto,
+                    cantidad : p.cantidadUsada,
+                    pVenta : p.precioVenta,
+                    importe : p.precioVenta * p.cantidadUsada,
+                    descuento : 0,
+                    pTotal : p.precioVenta * p.cantidadUsada
+                })
+            });
+            if(!serviciosProductos.length){
+                tablaServicios.innerHTML = "";
+                tablaServicioProductos.innerHTML = "";
+            }
+            serviciosProductos.push({
+                idServicio : servicioJSON.id,
+                cantidad : 1,
+                pUni : total,
+                descuento: 0,
+                pTotal : total,
+                productosLista
+            });
+            tablaServicios.append(agregarServicio(tablaServicios.children.length + 1,servicioJSON.id,servicioJSON.servicio,1,total,0,total));
+            tablaServicioProductos.append(agregarServicioProductos(servicioJSON.id,servicioJSON.servicio,servicioJSON.productos));
+            for (const cambio of formCotizacion.querySelectorAll(".cambio-detalle")) {
+                cambio.removeEventListener("change", modificarCantidad);
+                cambio.addEventListener("change", modificarCantidad);
+            }
+            cbServiciosOpt(true,[servicioJSON.id]);
+            $(cbServicios).val("").trigger("change");
+            calcularServiciosTotales();
+            alertify.success("servicio agregado correctamente");
+        } catch (error) {
+            console.error(error);
+            alertify.error("error al obtener el servicio");
+        }
+    });
     $(cbPreCotizacion).on("select2:select", async function (e) {
         const preCotizacionId = $(this).val();
-        if(preCotizacionId == "0"){
+        $(cbClientes).prop("disabled",false);
+        if(preCotizacionId == "ninguno"){
             limpiarCotizacion();
             return false;
         }
         try {
+            $(cbClientes).prop("disabled",true);
+            cbServiciosOpt(false,null);
             serviciosProductos = [];
             const response = await gen.funcfetch("obtener/precotizacion/" + preCotizacionId, null, "GET");
             if(response.session){
-                return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
             }
+            let serviciosCb = [];
             for (const key in response.preCotizacion) {
                 if (Object.hasOwnProperty.call(response.preCotizacion, key)) {
                     const valor = response.preCotizacion[key];
@@ -232,6 +325,7 @@ function loadPage(){
                         tablaServicios.innerHTML = valor.length ? "" : `<tr><td colspan="100%" class="text-center">No se seleccionaron servicios<td></tr>`;
                         tablaServicioProductos.innerHTML = valor.length ? "" : `<h5 class="col-12 text-primary text-center">Sin productos para mostrar</h5>`
                         valor.forEach((s,k) => {
+                            serviciosCb.push(s.id);
                             let total = 0;
                             let productosLista = []; 
                             s.productos.forEach(p => {
@@ -256,7 +350,7 @@ function loadPage(){
                             tablaServicios.append(agregarServicio(k+1,s.id,s.servicio,1,total,0,total));
                             tablaServicioProductos.append(agregarServicioProductos(s.id,s.servicio,s.productos));
                         });
-                        for (const cambio of tablaServicioProductos.querySelectorAll(".cambio-detalle")) {
+                        for (const cambio of formCotizacion.querySelectorAll(".cambio-detalle")) {
                             cambio.addEventListener("change", modificarCantidad);
                         }
                         calcularServiciosTotales();
@@ -268,211 +362,13 @@ function loadPage(){
                     dom.value = valor;
                 }
             }
+            cbServiciosOpt(true,serviciosCb);
+            $(cbServicios).val("").trigger("change");
             $('.select2-simple').trigger("change");
-            // if (indexProducto < 0) {
-            //     if (response.session) {
-            //         return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
-            //     }
-            //     if (response.alerta) {
-            //         return alertify.alert("Alerta", response.alerta);
-            //     }
-            //     if (response.producto && indexProducto < 0) {
-            //         let precioVe = isNaN(parseFloat(response.producto.precioVenta)) ? 0.00 : parseFloat(response.producto.precioVenta);
-            //         if (!swtichProductoMenor.checked) {
-            //             precioVe = isNaN(parseFloat(response.producto.precioVentaPorMayor)) ? 0.00 : parseFloat(response.producto.precioVentaPorMayor);
-            //             if (precioVe == 0) {
-            //                 $('#productoBuscar').val("").trigger("change");
-            //                 return alertify.alert("Mensaje", "El producto <strong>" + response.producto.nombreProducto + "</strong> no cuenta con un precio de venta al por mayor o el valor es igual a S/ 0.00");
-            //             }
-            //         }
-            //         if (!listaProductos.length) {
-            //             tablaDetalleVenta.innerHTML = "";
-            //         }
-            //         let detalleTr = agregarDetalleVenta(tablaDetalleVenta.children.length + 1, response.producto.id, response.producto.urlProductos, response.producto.nombreProducto, precioVe);
-            //         tablaDetalleVenta.append(detalleTr);
-            //         listaProductos.push({
-            //             idProducto: response.producto.id,
-            //             precio: precioVe,
-            //             descuento: 0,
-            //             cantidad: 1,
-            //             igv: response.producto.igv,
-            //             subtotal: precioVe
-            //         });
-            //         for (const cambio of detalleTr.querySelectorAll(".cambio-detalle")) {
-            //             cambio.addEventListener("change", modificarCantidad);
-            //         }
-            //     }
-            //     alertify.success("producto agregado");
-            // } else {
-            //     const trDetalle = tablaDetalleVenta.querySelector(`[data-producto="${productoId}"][data-costo="${costo}"]`);
-            //     if(!trDetalle){
-            //         return alertify.error("no se encontró el producto");
-            //     }
-            //     listaProductos[indexProducto].cantidad++;
-            //     listaProductos[indexProducto].subtotal = (listaProductos[indexProducto].cantidad * listaProductos[indexProducto].precio) - listaProductos[indexProducto].descuento;
-            //     trDetalle.querySelector(".cambio-detalle").value = listaProductos[indexProducto].cantidad;
-            //     trDetalle.querySelector(".data-precio-importe").textContent = gen.resetearMoneda(listaProductos[indexProducto].subtotal);
-            // }
-            // sumarTotalDetalle();
-            // $(cbBuscarProducto).val("").trigger("change");
         } catch (error) {
             alertify.error("error al obtener la pre - cotizacion");
             console.error(error);
         }
     });
-    return false;
-    const formatoListaProductos = function (producto) {
-        if (!producto.id) {
-            return producto.text;
-        }
-        let urlProducto = window.location.origin + "/intranet/storage/productos/" + producto.element.dataset.url;
-        let precioVenta = isNaN(parseFloat(producto.element.dataset.venta)) ? "No establecido" : gen.monedaSoles(producto.element.dataset.venta);
-        let precioVentaMayor = isNaN(parseFloat(producto.element.dataset.ventaMayor)) ? "No establecido" : gen.monedaSoles(producto.element.dataset.ventaMayor);
-        let $producto = $(
-            `<div class="d-flex" style="gap:5px;">
-                <div>
-                    <img src="${urlProducto}" width="60px" height="60px" class="select2-img">
-                </div>
-                <div>
-                    <p class="mb-0" style="font-size: 0.8rem;">
-                        <span>${producto.text}</span><br>
-                        <span><b>Precio Venta:</b> ${precioVenta}</span><br>
-                        <span><b>Precio Venta Mayor:</b> ${precioVentaMayor}</span>
-                    </p>
-                </div>
-                
-            </div>`
-        );
-        return $producto;
-    }
-    function matchCustom(params, data) {
-        if ($.trim(params.term) === '') {
-            return data;
-        }
-        if (typeof data.text === 'undefined') {
-            return null;
-        }
-        if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1 || (data.element.dataset.codigo && data.element.dataset.codigo.indexOf(params.term) > -1)) {
-            return $.extend({}, data, true);
-        }
-        return null;
-    }
-    let listaProductos = [];
-    let swtichProductoMenor = document.querySelector("#idVentaPorMenor");
-    let tablaDetalleVenta = document.querySelector("#tablaDetalleVenta tbody");
-    let envioVenta = document.querySelector("#idVentaEnvio");
-    envioVenta.addEventListener("change",function(e){
-        let envio = isNaN(parseFloat(this.value)) ? 0.00 : parseFloat(this.value);
-        if (envio < 0){
-            envio = 0;
-        }
-        this.value = envio.toFixed(2);
-        document.querySelector("#tDetalleEnvio").textContent = gen.monedaSoles(envio);
-        sumarTotalDetalle();
-    });
-    
-    function agregarDetalleVenta(indice, idProducto, urlImagenProducto, nombreProducto, precio){
-        let tr = document.createElement("tr");
-        tr.dataset.producto = idProducto;
-        tr.dataset.costo = precio;
-        tr.innerHTML = `
-        <td>${indice}</td>
-        <td><img src="${urlImagenProducto}" class="tdimagen-producto" /></td>
-        <td>${nombreProducto}</td>
-        <td>${gen.resetearMoneda(precio)}</td>
-        <td><input type="number" min="1" data-tipo="cantidad" class="form-control form-control-sm cambio-detalle" value="1"/></td>
-        <td><input type="number" min="0" data-tipo="descuento" step="0.01" class="form-control form-control-sm cambio-detalle" value="0.00"/></td>
-        <td><span class="data-precio-importe">${gen.resetearMoneda(precio)}</span></td>
-        <td><button type="button" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash-alt"></i> <span>Elimar</span></button></td>
-        `
-        return tr;
-    }
-    function sumarTotalDetalle() {
-        let igv = 0, total = 0, descuento = 0, envio = isNaN(parseFloat(envioVenta.value)) ? 0.00 : parseFloat(envioVenta.value);
-        listaProductos.forEach(dv => {
-            descuento += dv.descuento;
-            total += dv.subtotal;
-            igv += !dv.igv ? 0 : (dv.subtotal * 0.18);
-        });
-        totales = (total + envio) - descuento;
-        document.querySelector("#tDetalleSubTotal").textContent = gen.resetearMoneda((total - igv).toFixed(2));
-        document.querySelector("#tDetalleIgv").textContent = gen.resetearMoneda(igv.toFixed(2));
-        document.querySelector("#tDetalleDescuento").textContent = "- " + gen.resetearMoneda(descuento.toFixed(2));
-        document.querySelector("#tDetalleTotal").textContent = gen.resetearMoneda(totales.toFixed(2));
-    }
-    
-    tablaDetalleVenta.addEventListener("click", function (e) {
-        if (e.target.classList.contains("btn-outline-danger")) {
-            const tr = e.target.parentElement.parentElement;
-            const producto = tr.dataset.producto;
-            const costo = tr.dataset.costo
-            listaProductos = listaProductos.filter(p => {
-                if (p.idProducto === parseInt(producto)) {
-                    if (p.precio != costo) {
-                        return p;
-                    }
-                    return
-                }
-                return p;
-            });
-            tr.remove();
-            if (!listaProductos.length) {
-                tablaDetalleVenta.innerHTML = `<tr>
-                    <td colspan="100%" class="text-center">No se seleccionó ningún producto</td>
-                </tr>`;
-            }
-            sumarTotalDetalle();
-        }
-    });
-    document.querySelector("#generarCotizacion").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        if (!listaProductos.length) {
-            return alertify.alert("Mensaje", "Para registrar una cotización debe haber al menos un producto");
-        }
-        let datos = new FormData(this);
-        datos.append("lisProductos", JSON.stringify(listaProductos));
-        try {
-            let response = await gen.funcfetch("registrar", datos);
-            if (response.session) {
-                return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
-            }
-            if (response.alerta) {
-                return alertify.alert("Alerta", response.alerta);
-            }
-            if (response.fueraStock) {
-                let alertasFueraStock = "";
-                alertasFueraStock.forEach(fe => {
-                    alertasFueraStock += `
-                    <div class="alert alert-warning" role="alert">
-                        <div class="row">
-                            <div class="form-control col-12">
-                                <b>Producto: </b>
-                                <span>${fe.producto}</span>
-                            </div>
-                            <div class="form-control col-12 col-md-6">
-                                <b>Cantidad máxima: </b>
-                                <span>${fe.cantidadMaxima}</span>
-                            </div>
-                            <div class="form-control col-12 col-md-6">
-                                <b>Cantidad cotizada: </b>
-                                <span>${fe.cantidad}</span>
-                            </div>
-                        </div>
-                    </div>
-                    `
-                });
-                return alertify.alert("Alerta", "Los siguientes productos superan la cantidad máxima, por favor incremente la cantidad máxima de los productos o disminuya la cantidad en la cotización " + alertasFueraStock);
-            }
-            if (response.success) {
-                return alertify.confirm("Mensaje", "Cotización registrada correctamente. <br><strong>¿Deseas ver el comprobante?</strong>", () => {
-                    window.open(gen.urlCotizacionComprobante + response.success, "_blank");
-                    window.location.reload();
-                }, () => { window.location.reload() });
-            }
-        } catch (error) {
-            console.error(error);
-            alertify.error("error al generar una nueva cotización");
-        }
-    })
 }
 window.addEventListener("DOMContentLoaded",loadPage);

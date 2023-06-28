@@ -168,8 +168,11 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
     Route::prefix('cotizaciones')->group(function () {
         Route::get('agregar', [Cotizacion::class, 'indexNuevaCotización'])->name('admin.cotizacion.agregar.index');
         Route::get('obtener/precotizacion/{idprecotizacion}', [Cotizacion::class, 'obtenerPreCotizacion']);
-        Route::post('obtener/cliente', [Cotizacion::class, 'obtenerCliente']);
-
+        Route::get('obtener/servicio/{servicio}', [Cotizacion::class, 'obtenerServicio']);
+        Route::post('obtener/cliente', [Cotizacion::class, 'obtenerCliente']);        
+        Route::post('agregar', [Cotizacion::class, 'agregarCotizacion']);
+        Route::get('todos',[Cotizacion::class,'indexMisCotizaciones'])->name("admin.caotizacion.todos");
+        Route::post('lista-cotizacion', [Cotizacion::class, 'datatableCotizaciones']);
         Route::prefix('precotizacion')->group(function () {
             Route::get('nuevo', [PreCotizacion::class, 'indexNuevaPreCotizacion'])->name('cotizacion.precotizacion.nueva');
             Route::get('lista', [PreCotizacion::class, 'indexMisPreCotizaciones'])->name('cotizacion.precotizacion.lista');

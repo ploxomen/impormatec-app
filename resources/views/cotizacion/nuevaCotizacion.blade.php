@@ -17,9 +17,9 @@
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cotización</legend>
                         <div class="col-12 col-md-6 col-lg-4 form-group">
                             <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Pre - Cotizacion</label>
-                            <select name="id_pre_cotizacion" id="cbPreCotizacion" class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una pre - cotización">
+                            <select name="id_pre_cotizacion" id="cbPreCotizacion" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una pre - cotización">
                                 <option value=""></option>
-                                <option value="0">Ninguno</option>
+                                <option value="ninguno" selected>Ninguno</option>
                                 @foreach ($preCotizaciones as $preCotizacion)
                                     <option value="{{$preCotizacion->id}}">{{str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT)}}</option>
                                 @endforeach
@@ -27,11 +27,11 @@
                         </div>
                         <div class="form-group col-12 col-md-6 col-lg-4">
                             <label for="idModalfechaEmitida">Fecha emisión</label>
-                            <input type="date" name="fechaEmision" value="{{date('Y-m-d')}}" class="form-control form-control-sm" required>
+                            <input type="date" name="fechaCotizacion" value="{{date('Y-m-d')}}" class="form-control form-control-sm" required>
                         </div>
                         <div class="form-group col-12 col-md-6 col-lg-4">
                             <label for="idModalmoneda">Tipo moneda</label>
-                            <select name="moneda" id="idModalmoneda" required class="select2-simple form-control-sm">
+                            <select name="tipoMoneda" id="idModalmoneda" required class="select2-simple form-control-sm">
                                 <option value=""></option>
                                 <option value="Soles" selected>Soles (S/)</option>
                                 <option value="Dolar">Dolar ($)</option>
@@ -48,7 +48,7 @@
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cliente</legend>
                         <div class="col-12 col-lg-6 form-group">
                             <label for="idModalid_cliente" class="col-form-label col-form-label-sm">Cliente</label>
-                            <select name="id_cliente" id="idModalid_cliente" class="form-control select2-simple" data-tags="true" required data-placeholder="Seleccione un cliente">
+                            <select name="id_cliente" id="idModalid_cliente" class="form-control select2-simple" required data-placeholder="Seleccione un cliente">
                                 <option value=""></option>
                                 @foreach ($clientes as $cliente)
                                     <option value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
@@ -57,12 +57,12 @@
                         </div>
                         <div class="col-12 col-lg-6 form-group">
                             <label for="cbContactosCliente" class="col-form-label col-form-label-sm">Representante</label>
-                            <select name="id_cliente" id="cbContactosCliente" class="form-control select2-simple" data-tags="true" required data-placeholder="Seleccione un representante">
+                            <select name="representanteCliente" id="cbContactosCliente" class="form-control select2-simple" data-tags="true" required data-placeholder="Seleccione un representante">
                             </select>
                         </div>
                         <div class="col-12 form-group">
                             <label for="idModaldireccion" class="col-form-label col-form-label-sm">Dirección</label>
-                            <input type="text" name="direccion" id="idModaldireccion" required class="form-control limpiar-frm form-control-sm">
+                            <input type="text" name="direccionCliente" id="idModaldireccion" required class="form-control limpiar-frm form-control-sm">
                         </div>          
                 </fieldset>
             </div>
@@ -137,7 +137,7 @@
                 </fieldset>
             </div>
             <div class="col-12 form-group text-center">
-                <button type="submit" class="btn btn-primary" id="btnAgregarPreCoti">
+                <button type="submit" class="btn btn-primary" id="btnAgregarCotizacion">
                     <i class="fas fa-plus"></i>
                     <span>Agregar</span>
                 </button>

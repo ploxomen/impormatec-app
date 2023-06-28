@@ -17,4 +17,12 @@ class Servicio extends Model
         ->selectRaw("LPAD(id,5,'0') AS nroServicio")
         ->get();
     }
+    public function scopeObtenerServicioProductos($query,$idServicio){
+        $servicio = $query->select("id","servicio","descripcion")
+        ->where(['id' => $idServicio,'estado' => 1])->first();
+        if(!empty($servicio)){
+            $servicio->productos = ServicioProducto::obtenerProductos($servicio->id);
+        }
+        return $servicio;
+    } 
 }
