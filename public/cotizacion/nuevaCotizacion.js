@@ -101,7 +101,7 @@ function loadPage(){
             <td><img class="img-vistas-pequena" src="${gen.urlProductos + p.urlImagen}" alt="Imagen del producto"></td>
             <td>${p.nombreProducto}</td>
             <td><input type="number" step="0.01" value="${p.cantidadUsada}" class="form-control form-control-sm cambio-detalle" data-tipo="cantidad"></td>
-            <td>${gen.monedaSoles(p.precioVenta)}</td>
+            <td><input type="number" step="0.01" value="${p.precioVenta}" class="form-control form-control-sm cambio-detalle" data-tipo="precioVenta"></td>
             <td><input type="number" step="0.01" value="0.00" class="form-control form-control-sm cambio-detalle" data-tipo="descuento"></td>
             <td><span class="costo-subtota">${gen.monedaSoles(p.precioVenta * p.cantidadUsada)}</span></td>
             </tr>`
@@ -151,7 +151,6 @@ function loadPage(){
         }
     });
     function modificarCantidad(e){
-        console.log(e);
         const tr = e.target.parentElement.parentElement;
         const indexServicio = serviciosProductos.findIndex(s => s.idServicio == tr.dataset.servicio);
         if(indexServicio < 0){
