@@ -41,6 +41,12 @@
                             <label for="cbCliente" class="col-form-label col-form-label-sm">Referencia</label>
                             <input type="text" class="form-control form-control-sm" required id="idModalreferencia" name="referencia">
                         </div>
+                        <select hidden id="cbProductos">
+                            <option value=""></option>
+                            @foreach ($productos as $producto)
+                                <option value="{{$producto->id}}">{{$producto->nombreProducto}}</option>
+                            @endforeach
+                        </select>
                 </fieldset>
             </div>
             <div class="form-group col-12 col-lg-6">
@@ -134,6 +140,29 @@
                             Sin productos para mostrar  
                         </h5>
                     </div>
+                </fieldset>
+            </div>
+            <div class="form-group col-12">
+                <fieldset class="bg-white col-12 px-3 border">
+                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Adicionales</legend>
+                    <div class="d-flex form-group" style="gap:15px;">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="incluirPreCotizacion">
+                            <label class="custom-control-label" for="incluirPreCotizacion">Incluir Pre-cotización</label>
+                        </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="reporteDetallado">
+                            <label class="custom-control-label" for="reporteDetallado">Cotización detallada</label>
+                        </div>
+                        <div>
+                            <input type="file" multiple accept=".pdf" id="fileOtrosDocumentos" hidden>
+                            <button type="button" class="btn btn-sm btn-outline-danger" id="btnOtrosDocumentos">
+                                <i class="far fa-file-pdf"></i>
+                                <span>Adjuntar documentos</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex" id="contenedorArchivoPdf" style="gap:10px; font-size: 0.8rem;"></div>
                 </fieldset>
             </div>
             <div class="col-12 form-group text-center">

@@ -7,6 +7,7 @@ use App\Models\Cotizacion as ModelsCotizacion;
 use App\Models\CotizacionServicio;
 use App\Models\CotizacionServicioProducto;
 use App\Models\PreCotizaion;
+use App\Models\Productos;
 use App\Models\Servicio;
 use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
@@ -33,7 +34,8 @@ class Cotizacion extends Controller
         $tiposDocumentos = TipoDocumento::where('estado',1)->get();
         $preCotizaciones = PreCotizaion::where('estado',2)->get();
         $servicios = Servicio::where('estado',1)->get();
-        return view("cotizacion.nuevaCotizacion",compact("modulos","clientes","tiposDocumentos","preCotizaciones","servicios"));
+        $productos =  Productos::where('estado',1)->get();
+        return view("cotizacion.nuevaCotizacion",compact("modulos","productos","clientes","tiposDocumentos","preCotizaciones","servicios"));
     }
     public function obtenerPreCotizacion(Request $request,$idprecotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloCotizacionAgregar);
@@ -50,6 +52,13 @@ class Cotizacion extends Controller
         }
         $servicio = Servicio::obtenerServicioProductos($servicio);
         return response()->json(['servicio' => $servicio]);
+    }
+    public function obtenerProducto(Productos $producto){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloCotizacionAgregar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        return response()->json(['producto' => $producto]);
     }
     public function obtenerCliente(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloCotizacionAgregar);
