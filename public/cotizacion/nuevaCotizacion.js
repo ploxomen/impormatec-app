@@ -6,6 +6,7 @@ function loadPage(){
     const tablaServicios = document.querySelector("#contenidoServicios");
     const tablaServicioProductos = document.querySelector("#listaServiciosProductos");
     const formCotizacion = document.querySelector("#frmCotizacion");
+    const checkIncluirCotizacion = document.querySelector("#incluirPreCotizacion");
     let serviciosProductos = [];
     function agregarServicio(nroItem,idServicio,nombreServicio,cantidad,precioUni,descuento,total) {
         const tr = document.createElement("tr");
@@ -37,6 +38,8 @@ function loadPage(){
         </h5>
         `
         cbServiciosOpt(false,null);
+        checkIncluirCotizacion.disabled = true;
+        checkIncluirCotizacion.checked = false;
         document.querySelector("#txtSubTotal").textContent = "S/ 0.00";
         document.querySelector("#txtDescuento").textContent = "-" + "S/ 0.00";
         document.querySelector("#txtIGV").textContent = "S/ 0.00";
@@ -53,7 +56,6 @@ function loadPage(){
                 return alertify.error("el servicio debe contener al menos un producto");
             }
             serviciosProductos[indexServicio].productosLista = serviciosProductos[indexServicio].productosLista.filter(producto => producto.idProducto != tr.dataset.producto);
-            console.log(serviciosProductos[indexServicio].productosLista);
             $("#" + e.target.dataset.cbproducto)[0].querySelector('option[value="' + tr.dataset.producto + '"]').disabled = false;
             tr.remove();
             calcularServiciosTotales();
@@ -86,6 +88,12 @@ function loadPage(){
     const fileOtrosDocumentos = document.querySelector("#fileOtrosDocumentos");
     btnNuevaCotizacion.onclick = e => fileOtrosDocumentos.click();
     const contenedorArchivoPdf = document.querySelector("#contenedorArchivoPdf");
+    contenedorArchivoPdf.addEventListener("click",function(e){
+        if(e.target.classList.contains("btn-sm")){
+            e.target.parentElement.remove();
+            return alertify.success("archivo eliminado");
+        }
+    });
     fileOtrosDocumentos.addEventListener("change",function(e){
         const files = e.target.files;
         if(!files.length){
@@ -100,7 +108,7 @@ function loadPage(){
         dataTransfer.items.add(valorDocumento);
         const contenedor = document.createElement("div");
         contenedor.className = "contenido rounded-pill bg-light p-2";
-        contenedor.innerHTML = `<span>${valorDocumento.name}</span><button type="button" class="btn btn-sm btn-danger p-1"><i class="fas fa-trash-alt"></i></button>`;
+        contenedor.innerHTML = `<span>${valorDocumento.name}</span><button type="button" class="mr-1 btn btn-sm"><i class="fas fa-trash-alt"></i></button>`;
         const archivo = document.createElement("input");
         archivo.type = "file";
         archivo.name = "archivoPdf[]";
@@ -126,6 +134,9 @@ function loadPage(){
             if(response.session){
                 return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
             }
+            if(response.error){
+                return alertify.alert("Error",response.error);
+            }
             return alertify.alert("Mensaje",response.success,() => window.location.reload());
         } catch (error) {
             console.error(error);
@@ -145,7 +156,7 @@ function loadPage(){
             <td><input type="number" step="0.01" value="${cantidadUsada}" class="form-control form-control-sm cambio-detalle" data-tipo="cantidad"></td>
             <td><input type="number" step="0.01" value="${precioVenta}" class="form-control form-control-sm cambio-detalle" data-tipo="precioVenta"></td>
             <td><input type="number" step="0.01" value="0.00" class="form-control form-control-sm cambio-detalle" data-tipo="descuento"></td>
-            <td><span class="costo-subtota">${precioTotal}</span></td>
+            <td><span class="costo-subtota">${gen.resetearMoneda(precioTotal)}</span></td>
             <td class="text-center"><button type="button" class="btn btn-sm btn-danger p-2" data-cbproducto="servicioProductoLista${
             idServicio}"><i class="fas fa-trash-alt"></i></button></td>        
         `
@@ -238,6 +249,7 @@ function loadPage(){
         const tipo = e.target.dataset.tipo;
         if(tipo == "cantidad-servicio"){
             serviciosProductos[indexServicio].cantidad = valor;
+            calcularServiciosTotales();
             return false
         }
         if(tipo == "cantidad" || tipo == "descuento" || tipo == "precioVenta"){
@@ -284,18 +296,17 @@ function loadPage(){
         let subtotal = 0;
         let descuento = 0;
         let total = 0;
+        console.log(serviciosProductos);
         serviciosProductos.forEach(cp => {
             let dsubtotal = 0;
             let ddescuento = 0;
-            let dtotal = 0;
             cp.productosLista.forEach(p => {
-                dsubtotal+= p.importe;
-                ddescuento += p.descuento;
-                dtotal += p.importe - p.descuento;
+                dsubtotal+= parseFloat(p.importe);
+                ddescuento += parseFloat(p.descuento);
             });
-            cp.pUni = dsubtotal;
             cp.descuento = ddescuento;
-            cp.pTotal = dtotal;
+            cp.pTotal = dsubtotal - ddescuento;
+            cp.pUni = dsubtotal / cp.cantidad;
             const tr = tablaServicios.querySelector(`[data-servicio="${cp.idServicio}"]`);
             tr.querySelector(".costo-precio").textContent = gen.monedaSoles(cp.pUni);
             tr.querySelector(".costo-descuento").textContent = "-" + gen.monedaSoles(cp.descuento);
@@ -387,6 +398,7 @@ function loadPage(){
             limpiarCotizacion();
             return false;
         }
+        checkIncluirCotizacion.disabled = false;
         try {
             $(cbClientes).prop("disabled",true);
             cbServiciosOpt(false,null);
@@ -488,6 +500,7 @@ function loadPage(){
                 descuento : 0,
                 pTotal : response.precioVenta
             });
+            console.log(serviciosProductos[indexServicio]);
             response.index = tablaServicio.children.length + 1;
             response.precioTotal = response.precioVenta;
             response.idServicio = idServicio;
@@ -501,9 +514,8 @@ function loadPage(){
                 cambio.addEventListener("change", modificarCantidad);
             }
             $(this)[0].querySelector('option[value="' + valor + '"]').disabled = true;
-            calcularServiciosTotales();
             $(this).val("").trigger("change");
-
+            calcularServiciosTotales();
         } catch (error) {
             console.error(error);
             alertify.error("error al obtener el producto");

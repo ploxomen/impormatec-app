@@ -147,11 +147,11 @@
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Adicionales</legend>
                     <div class="d-flex form-group" style="gap:15px;">
                         <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="incluirPreCotizacion">
+                            <input type="checkbox" name="reportePreCotizacion" value="1" class="custom-control-input" disabled id="incluirPreCotizacion">
                             <label class="custom-control-label" for="incluirPreCotizacion">Incluir Pre-cotización</label>
                         </div>
                         <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="reporteDetallado">
+                            <input type="checkbox" class="custom-control-input" value="1" name="reporteDetallado" id="reporteDetallado">
                             <label class="custom-control-label" for="reporteDetallado">Cotización detallada</label>
                         </div>
                         <div>

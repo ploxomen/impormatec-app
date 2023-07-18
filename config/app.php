@@ -194,6 +194,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class
 
     ],
 
@@ -209,6 +210,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
+        'PDFMerger' => Webklex\PDFMerger\Facades\PDFMergerFacade::class
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 

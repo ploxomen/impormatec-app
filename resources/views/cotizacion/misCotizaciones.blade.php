@@ -3,6 +3,7 @@
     @include('helper.headDatatable')
 
     <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.2">
+    <script src="/cotizacion/compartido.js"></script>
     <script src="/cotizacion/misCotizaciones.js"></script>
     <title>Mis Cotizaciones</title>
 @endsection
@@ -35,5 +36,5 @@
         </table>
        </div>
     </section>
-    {{-- @include('cotizacion.modales.editarCotizacion') --}}
+    @include('cotizacion.modales.cotizacionAlmacen')
 @endsection

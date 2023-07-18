@@ -24,5 +24,8 @@ class Servicio extends Model
             $servicio->productos = ServicioProducto::obtenerProductos($servicio->id);
         }
         return $servicio;
-    } 
+    }
+    public function cotizacionServicio() {
+        return $this->hasOne(CotizacionServicio::class,'id_servicio');
+    }
 }

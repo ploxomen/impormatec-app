@@ -30,3 +30,7 @@
     min-width: 250px;
     height: 100px !important;
 }
+#tablaCotizacion a *{
+    pointer-events: none;
+    user-select: none;
+}

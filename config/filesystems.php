@@ -57,6 +57,16 @@ return [
             'root' => storage_path('app/imgCotizacionPre'),
             'url' => env('APP_URL').'/storage/imgCotizacionPre',
         ],
+        'cotizacionReporte' => [
+            'driver' => 'local',
+            'root' => storage_path('app/cotizacion/reportes'),
+            'url' => env('APP_URL').'/storage/cotizacion/reportes',
+        ],
+        'cotizacionDocumentos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/cotizacion/documentos'),
+            'url' => env('APP_URL').'/storage/cotizacion/documentos',
+        ],
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

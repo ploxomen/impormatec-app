@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Clientes;
 use App\Http\Controllers\Cotizacion;
+use App\Http\Controllers\OrdenServicio;
 use App\Http\Controllers\PreCotizacion;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
@@ -166,6 +167,8 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         });
     });
     Route::prefix('cotizaciones')->group(function () {
+        Route::get('ver/pdf/{cotizacion}', [Cotizacion::class, 'verPdfCotizacion']);
+        Route::post('aprobar', [Cotizacion::class, 'aprobarCotizacion']);
         Route::get('agregar', [Cotizacion::class, 'indexNuevaCotización'])->name('admin.cotizacion.agregar.index');
         Route::get('obtener/precotizacion/{idprecotizacion}', [Cotizacion::class, 'obtenerPreCotizacion']);
         Route::get('obtener/servicio/{servicio}', [Cotizacion::class, 'obtenerServicio']);
@@ -199,11 +202,11 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         // Route::post('listar', [Cotizacion::class, 'verCotizacionesAdmin']);
         // Route::delete('eliminar/{cotizacion}', [Cotizacion::class, 'eliminarCotizacion']);
     });
-//     Route::prefix('caja')->group(function () {
-//         Route::get('nueva', [Caja::class, 'indexAbrirCaja'])->name("admin.caja.abrir");
-//         Route::post('abrir', [Caja::class, 'abrirCaja']);
-//         Route::post('cerrar', [Caja::class, 'cerrarCaja']);
-//     });
+    Route::prefix('ordenes-servicio')->group(function () {
+        Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
+        Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
+    
+    });
     Route::prefix('usuarios')->group(function(){
         Route::post('accion',[Usuario::class,'usuarioAccion']);
         Route::post('password',[Usuario::class,'cambioContrasena']);
