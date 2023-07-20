@@ -116,7 +116,10 @@ function loadPage(){
     const listaAlmacen = document.querySelector("#listaAlmacenes");
     const txtSinAlamacen = document.querySelector("#txtSinAlmacen");
     const modalTitulo = document.querySelector("#tituloProducto");
+    const switchProducto = document.querySelector("#switchProductoIntangible");
+
     $('#agregarProducto').on("hidden.bs.modal",function(e){
+        switchProducto.checked = false;
         idProducto = null;
         modalTitulo.textContent = "Crear Producto";
         switchEstado.disabled = true;
@@ -131,9 +134,23 @@ function loadPage(){
         for (const oAlmacen of cbAlmacen.querySelectorAll("option")) {
             oAlmacen.disabled = false;
         }
+        for (const div of document.querySelectorAll("#agregarProducto .producto-tangible")) {
+            div.hidden = false;
+        }
         btnModalSave.querySelector("span").textContent = "Guardar";
     });
-    
+    switchProducto.addEventListener("change",productosCambio)
+    function productosCambio(e) {
+        const valor = e.target.checked;
+        listaAlmacen.innerHTML = "";
+        txtSinAlamacen.hidden = false;
+        for (const div of document.querySelectorAll("#agregarProducto .producto-tangible")) {
+            div.hidden = valor;
+        }
+        for (const oAlmacen of cbAlmacen.querySelectorAll("option")) {
+            oAlmacen.disabled = false;
+        }
+    }
     $(cbAlmacen).on("select2:select",function(e){
         let selectedOption = cbAlmacen.options[cbAlmacen.selectedIndex];
         listaAlmacen.append(agregarAlmacen($(this).val(),selectedOption.text,""));
@@ -143,7 +160,7 @@ function loadPage(){
         alertify.success("almacen agregado");
         selectedOption.disabled = true;
     })
-    function agregarAlmacen(idAlmacen,nombreAlmacen,stock,tipo = "new") {
+    function agregarAlmacen(idAlmacen,nombreAlmacen,precioVenta,stock,tipo = "new") {
         const lista = document.createElement("li");
         lista.dataset.tipo = tipo;
         lista.dataset.almacen = idAlmacen;
@@ -154,7 +171,10 @@ function loadPage(){
             <div class="col-12 col-md-7 form-group">
                 <span>${nombreAlmacen}</span>
             </div>
-            <div class="col-12 col-md-4 form-group">
+            <div class="col-12 col-md-2 form-group">
+                <input title="Precio de venta del producto por almacen" type="number" name="precioVenta[]" min="0" required class="form-control form-control-sm" value="${precioVenta}" placeholder="Precio venta">
+            </div>
+            <div class="col-12 col-md-2 form-group">
                 <input title="Stock del producto por almacen" type="number" name="stockAlmacen[]" min="1" required class="form-control form-control-sm" value="${stock}" placeholder="Stock">
             </div>
             <div class="col-12 text-rigth col-md-1 form-group">
@@ -231,9 +251,16 @@ function loadPage(){
                     if (Object.hasOwnProperty.call(response.producto, key)) {
                         const valor = response.producto[key];
                         const dom = document.querySelector("#idModal" + key);
+                        if(key == "esIntangible" && valor === 1){
+                            switchProducto.checked = true;
+                            for (const div of document.querySelectorAll("#agregarProducto .producto-tangible")) {
+                                div.hidden = true;
+                            }
+                            continue;
+                        }
                         if (key == "listaAlmacen"){
                             valor.forEach(al => {
-                                listaAlmacen.append(agregarAlmacen(al.id_almacen,al.nombre,al.stock,"old"));
+                                listaAlmacen.append(agregarAlmacen(al.id_almacen,al.nombre,al.precioVenta,al.stock,"old"));
                                 habilitarOpcionAlmacen(al.id_almacen,true);
                             });
                             if(listaAlmacen.children.length){
@@ -284,7 +311,6 @@ function loadPage(){
                     alertify.error("error al eliminar el usuario");
                 }
             },()=>{});
-            
         }
     })
 }

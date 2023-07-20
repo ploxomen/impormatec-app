@@ -14,6 +14,12 @@
                     <input type="text" name="nombreProducto" class="form-control" id="idModalnombreProducto" required>
                 </div>
                 <div class="form-group col-12">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" name="esIntangible" value="1" id="switchProductoIntangible">
+                        <label class="custom-control-label" for="switchProductoIntangible">Productos intangibles</label>
+                    </div>
+                </div>
+                <div class="form-group col-12">
                     <label for="idModaldescripcion">Descripción</label>
                     <textarea name="descripcion" id="idModaldescripcion" class="form-control" rows="2"></textarea>
                 </div>
@@ -75,13 +81,13 @@
                         <img src="/img/imgprevproduc.png" id="imgPrevio" alt="Imagen del producto" width="80px">
                     </div>
                 </div>
-                <div class="col-12">
+                <div class="col-12 producto-tangible">
                     <h5 class="text-primary">
                         <i class="fas fa-caret-right"></i>
                         Datos de almacen
                     </h5>
                 </div>
-                <div class="form-group col-12">
+                <div class="form-group col-12 producto-tangible">
                     <label for="cbAlmacen">Almacenes disponibles</label>
                     <select id="cbAlmacen" data-placeholder="Seleccione un almacen" class="select2-simple">
                         <option value=""></option>
@@ -90,7 +96,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group col-12">
+                <div class="form-group col-12 producto-tangible">
                     <p id="txtSinAlmacen" class="text-center">
                         No se seleccionaron almacenes
                     </p>

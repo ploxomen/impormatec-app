@@ -168,6 +168,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
     });
     Route::prefix('cotizaciones')->group(function () {
         Route::get('ver/pdf/{cotizacion}', [Cotizacion::class, 'verPdfCotizacion']);
+        Route::get('obtener/{cotizacion}', [Cotizacion::class, 'obtenerCotizacion']);
         Route::post('aprobar', [Cotizacion::class, 'aprobarCotizacion']);
         Route::get('agregar', [Cotizacion::class, 'indexNuevaCotización'])->name('admin.cotizacion.agregar.index');
         Route::get('obtener/precotizacion/{idprecotizacion}', [Cotizacion::class, 'obtenerPreCotizacion']);

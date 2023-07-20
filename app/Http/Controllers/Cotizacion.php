@@ -93,6 +93,15 @@ class Cotizacion extends Controller
         $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
         return $nombreDocumento;
     }
+    public function obtenerCotizacion(ModelsCotizacion $cotizacion) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $cotizacion->servicios = ModelsCotizacion::obtenerServiciosProductos($cotizacion->id,false);
+        return response()->json(['cotizacion' => $cotizacion]);
+    
+    }
     public function verPdfCotizacion($cotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
         if(isset($verif['session'])){
@@ -274,7 +283,8 @@ class Cotizacion extends Controller
         $tiposDocumentos = TipoDocumento::where('estado',1)->get();
         $preCotizaciones = PreCotizaion::where('estado',2)->get();
         $servicios = Servicio::where('estado',1)->get();
-        return view("cotizacion.misCotizaciones",compact("modulos","clientes","tiposDocumentos","preCotizaciones","servicios"));
+        $productos =  Productos::where('estado',1)->get();
+        return view("cotizacion.misCotizaciones",compact("modulos","clientes","tiposDocumentos","preCotizaciones","servicios","productos"));
     }
     public function datatableCotizaciones(){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);

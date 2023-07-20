@@ -19,12 +19,15 @@ class Cotizacion extends Model
         ->join("usuarios","cotizacion.cotizadorUsuario","=","usuarios.id")
         ->get();
     }
-    public function scopeObtenerServiciosProductos($query, $idCotizacion){
-        $servicios = CotizacionServicio::select("cotizacion_servicio.id","servicios.servicio")
+    public function scopeObtenerServiciosProductos($query, $idCotizacion,$incluirAlmacen = true){
+        $servicios = CotizacionServicio::select("cotizacion_servicio.id","servicios.servicio","cotizacion_servicio.id_servicio","cotizacion_servicio.costo","cotizacion_servicio.cantidad","cotizacion_servicio.descuento","cotizacion_servicio.total")
         ->join("servicios","cotizacion_servicio.id_servicio","=","servicios.id")
         ->where(['cotizacion_servicio.id_cotizacion' => $idCotizacion])->get();
         foreach ($servicios as $servicio) {
             $servicio->productos = CotizacionServicioProducto::obtenerProductosAprobar($servicio->id);
+            if(!$incluirAlmacen){
+                continue;
+            }
             foreach ($servicio->productos as $producto) {
                 $producto->listaAlmacenes = ProductoAlmacen::obtenerAlmacenProducto($producto->idProducto);
             }

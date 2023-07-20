@@ -1,5 +1,6 @@
 @extends('helper.index')
 @section('head')
+    <script src="/cotizacion/compartido.js"></script>
     <script src="/cotizacion/nuevaCotizacion.js"></script>
     <title>Nueva cotización</title>
 @endsection
@@ -15,38 +16,38 @@
             <div class="form-group col-12 col-lg-6">
                 <fieldset class="bg-white col-12 px-3 border form-row">
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cotización</legend>
-                        <div class="col-12 col-md-6 col-lg-4 form-group">
-                            <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Pre - Cotizacion</label>
-                            <select name="id_pre_cotizacion" id="cbPreCotizacion" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una pre - cotización">
-                                <option value=""></option>
-                                <option value="ninguno" selected>Ninguno</option>
-                                @foreach ($preCotizaciones as $preCotizacion)
-                                    <option value="{{$preCotizacion->id}}">{{str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT)}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group col-12 col-md-6 col-lg-4">
-                            <label for="idModalfechaEmitida">Fecha emisión</label>
-                            <input type="date" name="fechaCotizacion" value="{{date('Y-m-d')}}" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="form-group col-12 col-md-6 col-lg-4">
-                            <label for="idModalmoneda">Tipo moneda</label>
-                            <select name="tipoMoneda" id="idModalmoneda" required class="select2-simple form-control-sm">
-                                <option value=""></option>
-                                <option value="Soles" selected>Soles (S/)</option>
-                                <option value="Dolar">Dolar ($)</option>
-                            </select>
-                        </div>
-                        <div class="col-12 form-group">
-                            <label for="cbCliente" class="col-form-label col-form-label-sm">Referencia</label>
-                            <input type="text" class="form-control form-control-sm" required id="idModalreferencia" name="referencia">
-                        </div>
-                        <select hidden id="cbProductos">
+                    <div class="col-12 col-md-6 col-lg-4 form-group">
+                        <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Pre - Cotizacion</label>
+                        <select name="id_pre_cotizacion" id="cbPreCotizacion" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una pre - cotización">
                             <option value=""></option>
-                            @foreach ($productos as $producto)
-                                <option value="{{$producto->id}}">{{$producto->nombreProducto}}</option>
+                            <option value="ninguno" selected>Ninguno</option>
+                            @foreach ($preCotizaciones as $preCotizacion)
+                                <option value="{{$preCotizacion->id}}">{{str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT)}}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="form-group col-12 col-md-6 col-lg-4">
+                        <label for="idModalfechaEmitida">Fecha emisión</label>
+                        <input type="date" name="fechaCotizacion" value="{{date('Y-m-d')}}" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="form-group col-12 col-md-6 col-lg-4">
+                        <label for="idModalmoneda">Tipo moneda</label>
+                        <select name="tipoMoneda" id="idModalmoneda" required class="select2-simple form-control-sm">
+                            <option value=""></option>
+                            <option value="Soles" selected>Soles (S/)</option>
+                            <option value="Dolar">Dolar ($)</option>
+                        </select>
+                    </div>
+                    <div class="col-12 form-group">
+                        <label for="cbCliente" class="col-form-label col-form-label-sm">Referencia</label>
+                        <input type="text" class="form-control form-control-sm" required id="idModalreferencia" name="referencia">
+                    </div>
+                    <select hidden id="cbProductos">
+                        <option value=""></option>
+                        @foreach ($productos as $producto)
+                            <option value="{{$producto->id}}">{{$producto->nombreProducto}}</option>
+                        @endforeach
+                    </select>
                 </fieldset>
             </div>
             <div class="form-group col-12 col-lg-6">
@@ -112,19 +113,19 @@
                                     <tfoot>
                                         <tr>
                                             <th colspan="5">SUBTOTAL</th>
-                                            <th colspan="2" id="txtSubTotal">S/ 0.00</th>
+                                            <th colspan="2" id="idModalimporteTotal">S/ 0.00</th>
                                         </tr>
                                         <tr>
                                             <th colspan="5">DESCUENTO</th>
-                                            <th colspan="2" id="txtDescuento">- S/ 0.00</th>
+                                            <th colspan="2" id="idModaldescuentoTotal">- S/ 0.00</th>
                                         </tr>
                                         <tr>    
                                             <th colspan="5">I.G.V</th>
-                                            <th colspan="2" id="txtIGV">S/ 0.00</th>
+                                            <th colspan="2" id="idModaligvTotal">S/ 0.00</th>
                                         </tr>
                                         <tr>
                                             <th colspan="5">TOTAL</th>
-                                            <th colspan="2" id="txtTotal">S/ 0.00</th>
+                                            <th colspan="2" id="idModaltotal">S/ 0.00</th>
                                         </tr>
                                     </tfoot>
                                 </table>

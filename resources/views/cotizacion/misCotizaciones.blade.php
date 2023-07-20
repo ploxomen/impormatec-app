@@ -16,7 +16,7 @@
             </div>
         </div>
        <div class="bg-white p-3 border">
-        <table class="table table-sm table-bordered" id="tablaCotizacion">
+        <table class="table table-sm table-bordered" id="tablaCotizaciones">
             <thead class="text-center">
                 <tr>
                     <th>N° Cotización</th>
@@ -36,5 +36,7 @@
         </table>
        </div>
     </section>
+    @include('cotizacion.modales.editarCotizacion')
     @include('cotizacion.modales.cotizacionAlmacen')
+
 @endsection

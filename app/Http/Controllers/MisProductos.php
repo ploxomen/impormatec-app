@@ -48,7 +48,7 @@ class MisProductos extends Controller
         $urlImage = null;
         DB::beginTransaction();
         try {
-            $datos = $request->only("nombreProducto","descripcion","precioCompra","precioVenta","stockMin");
+            $datos = $request->only("nombreProducto","descripcion","precioCompra","precioVenta","stockMin","esIntangible");
             if($request->has('urlImagen')){
                 $datos['urlImagen'] = $this->guardarArhivo($request,'urlImagen',"productos");
                 $urlImage = $datos['urlImagen'];
@@ -105,7 +105,8 @@ class MisProductos extends Controller
         $urlImage = null;
         DB::beginTransaction();
         try {
-            $datos = $request->only("nombreProducto","descripcion","precioCompra","precioVenta","stockMin");
+            $datos = $request->only("nombreProducto","descripcion","precioCompra","precioVenta","stockMin","esIntangible");
+            $datos['esIntangible'] = $request->has("esIntangible");
             if($request->has('urlImagen')){
                 if(!empty($producto->urlImagen) && Storage::disk('productos')->exists($producto->urlImagen)){
                     Storage::disk('productos')->delete($producto->urlImagen);
@@ -114,15 +115,18 @@ class MisProductos extends Controller
                 $urlImage = $datos['urlImagen'];
             }
             $datos['estado'] = $request->has('estado');
+            if($datos['esIntangible']){
+                ProductoAlmacen::where('id_producto',$producto->id)->delete();
+            }
             $producto->update($datos);
-            if($request->has("idAlmacen")){
+            if($request->has("idAlmacen") && !$datos['esIntangible']){
                 for ($i=0; $i < count($request->idAlmacen); $i++) {
                     if(!isset($request->idAlmacen[$i])){
                         continue;
                     }
                     ProductoAlmacen::updateOrCreate(
                         ['id_producto' => $producto->id,'id_almacen' => $request->idAlmacen[$i]],
-                        ['stock' => isset($request->stockAlmacen[$i]) ? $request->stockAlmacen[$i] : 1,'estado' => 1]
+                        ['precioVenta' => isset($request->precioVenta[$i]) ? $request->precioVenta[$i] : 0 ,'stock' => isset($request->stockAlmacen[$i]) ? $request->stockAlmacen[$i] : 1,'estado' => 1]
                     );
                 }
             }
