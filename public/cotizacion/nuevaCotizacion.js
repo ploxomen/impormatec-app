@@ -38,11 +38,11 @@ function loadPage(){
             }
             if(response.cliente && Object.keys(response.cliente).length){
                 nuevoCliente = false;
-                let template = "<option></option>";
+                cbContactos.innerHTML = "";
+                cbContactos.append({id : null });
                 response.cliente.contactos.forEach(c => {
-                    template += `<option value="${c.id}">${c.nombreContacto} - ${c.numeroContacto}</option>`;
+                    cbContactos.append(cotizacionGeneral.templateOpcionContacto(c));
                 });
-                cbContactos.innerHTML = template;
                 txtDireccion.value = response.cliente.direccion;
             }
         } catch (error) {
@@ -66,23 +66,9 @@ function loadPage(){
             return false
         }
         for (let i = 0; i < files.length; i++) {
-            renderDocumentosPdf(files[i]);
+            cotizacionGeneral.renderPdfCargados({valorDocumento : files[i],contenedorArchivoPdf, nombreDocumento : files[i].name,idDocumento : null});
         }
     });
-    function renderDocumentosPdf(valorDocumento) {
-        let dataTransfer = new DataTransfer();
-        dataTransfer.items.add(valorDocumento);
-        const contenedor = document.createElement("div");
-        contenedor.className = "contenido rounded-pill bg-light p-2";
-        contenedor.innerHTML = `<span>${valorDocumento.name}</span><button type="button" class="mr-1 btn btn-sm"><i class="fas fa-trash-alt"></i></button>`;
-        const archivo = document.createElement("input");
-        archivo.type = "file";
-        archivo.name = "archivoPdf[]";
-        archivo.hidden = true;
-        contenedor.append(archivo);
-        contenedorArchivoPdf.append(contenedor);
-        archivo.files = dataTransfer.files;
-    }
     const btnAgregarCoti = document.querySelector("#btnAgregarCotizacion");
     formCotizacion.addEventListener("submit",async function(e){
         e.preventDefault();
@@ -160,11 +146,10 @@ function loadPage(){
                     const valor = response.preCotizacion[key];
                     const dom = document.querySelector("#idModal" + key);
                     if(key == "contactos"){
-                        let template = "<option></option>";
+                        cbContactos.append({id : null });
                         valor.forEach(c => {
-                            template += `<option value="${c.id}">${c.nombreContacto} - ${c.numeroContacto}</option>`;
+                            cbContactos.append(cotizacionGeneral.templateOpcionContacto(c));
                         });
-                        cbContactos.innerHTML = template;
                         continue;
                     }
                     if(key == "servicios"){

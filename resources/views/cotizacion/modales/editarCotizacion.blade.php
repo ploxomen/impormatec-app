@@ -30,8 +30,8 @@
                 <input type="date" name="fechaCotizacion" id="idModalfechaCotizacion" class="form-control form-control-sm" required>
             </div>
             <div class="form-group col-12 col-md-6 col-lg-4">
-                <label for="idModalmoneda">Tipo moneda</label>
-                <select name="tipoMoneda" id="idModalmoneda" required class="select2-simple form-control-sm">
+                <label for="idModaltipoMoneda">Tipo moneda</label>
+                <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
                     <option value=""></option>
                     <option value="Soles" selected>Soles (S/)</option>
                     <option value="Dolar">Dolar ($)</option>
@@ -143,12 +143,12 @@
             </div>
             <div class="col-12 d-flex form-group" style="gap:15px;">
                 <div class="custom-control custom-switch">
-                    <input type="checkbox" name="reportePreCotizacion" value="1" class="custom-control-input" disabled id="incluirPreCotizacion">
-                    <label class="custom-control-label" for="incluirPreCotizacion">Incluir Pre-cotización</label>
+                    <input type="checkbox" name="reportePreCotizacion" value="1" class="custom-control-input" id="idModalreportePreCotizacion" disabled>
+                    <label class="custom-control-label" for="idModalreportePreCotizacion">Incluir Pre-cotización</label>
                 </div>
                 <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" value="1" name="reporteDetallado" id="reporteDetallado">
-                    <label class="custom-control-label" for="reporteDetallado">Cotización detallada</label>
+                    <input type="checkbox" class="custom-control-input" value="1" name="reporteDetallado" id="idModalreporteDetallado">
+                    <label class="custom-control-label" for="idModalreporteDetallado">Cotización detallada</label>
                 </div>
                 <div>
                     <input type="file" multiple accept=".pdf" id="fileOtrosDocumentos" hidden>
@@ -159,10 +159,14 @@
                 </div>
             </div>
             <div class="d-flex" id="contenedorArchivoPdf" style="gap:10px; font-size: 0.8rem;"></div>
+            <input type="submit" id="btnActualizar" hidden>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="actualizarCotizacion">Actualizar</button>
+          <button type="button" class="btn btn-primary" id="actualizarCotizacion">
+            <i class="far fa-save"></i>
+            <span>Actualizar</span>
+        </button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
         </div>
       </div>

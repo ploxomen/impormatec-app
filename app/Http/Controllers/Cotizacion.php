@@ -99,8 +99,162 @@ class Cotizacion extends Controller
             return response()->json(['session' => true]);
         }
         $cotizacion->servicios = ModelsCotizacion::obtenerServiciosProductos($cotizacion->id,false);
+        $cotizacion->contactosClientes = ClientesContactos::where('idCliente',$cotizacion->id_cliente)->get();
+        $cotizacion->documentosPdf = CotizacionPdf::select("id","nombre_archivo")->where('id_cotizacion',$cotizacion->id)->get();
+
         return response()->json(['cotizacion' => $cotizacion]);
-    
+    }
+    public function actualizarCotizacion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $cotizacionModel = ModelsCotizacion::find($request->idCotizacion);
+        $diasValidos = 15;
+        $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
+        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
+        $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
+        $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
+        $cotizacion['fechaFinCotizacion'] = date("Y-m-d",strtotime($request->fechaCotizacion."+ " . $diasValidos . " days"));
+        $cotizacion['id_pre_cotizacion'] = $preCotizacion;
+        $detalleCotizacion = json_decode($request->servicios);
+        $importes = [
+            'cantidad' => 1,
+            'importeTotal' => 0,
+            'descuentoTotal' => 0,
+            'igvTotal' => 0,
+            'total' => 0
+        ];
+        $documentosOtros = [];
+        $documentoCotizacion = null; 
+        DB::beginTransaction();
+        try {
+            $cotizacionModel->update($cotizacion);
+            foreach ($detalleCotizacion as $coti) {
+                $mCotiServ = CotizacionServicio::updateOrCreate([
+                    'id_cotizacion' => $cotizacionModel->id,
+                    'id_servicio' => $coti->idServicio,
+                    ],[
+                    'costo' => $coti->pUni,
+                    'cantidad' => $coti->cantidad,
+                    'importe' => $coti->pUni,
+                    'descuento' => $coti->descuento,
+                    'total' => $coti->pTotal,
+                    'igv' => $coti->pTotal * 0.18
+                ]);
+                foreach ($coti->productosLista as $producto) {
+                    CotizacionServicioProducto::updateOrCreate([
+                        'id_cotizacion_servicio' => $mCotiServ->id,
+                        'id_producto' => $producto->idProducto,
+                    ],[
+                        'costo' => $producto->pVenta,
+                        'cantidad' => $producto->cantidad,
+                        'importe' => $producto->importe,
+                        'descuento' => $producto->descuento,
+                        'total' => $producto->pTotal
+                    ]);
+                }
+                $importes['importeTotal'] += $coti->pUni;
+                $importes['descuentoTotal'] += $coti->descuento;
+                $importes['igvTotal'] += $coti->pTotal * 0.18;
+                $importes['total'] += $coti->pTotal;
+            }
+            $cotizacionModel->update($importes);
+            $cotizacionModel->fresh();
+            $rutaArchivo = "/cotizacion/reportes/" . $cotizacionModel->documento;
+            if(Storage::exists($rutaArchivo)){
+                Storage::delete($rutaArchivo);
+            }
+            $documentoCotizacion = $this->renderPdf($cotizacionModel->id);
+            $documentosDb = CotizacionPdf::where('id_cotizacion',$cotizacionModel->id);
+            $oMerger = null;
+            $urlDocumentoCotizacion = null;
+            $tiempo = time();
+            if($documentosDb->count() > 0){
+                $urlDocumentoCotizacion = storage_path("app/cotizacion/reportes/".$documentoCotizacion);
+                $oMerger = PDFMerger::init();
+                $oMerger->addPDF($urlDocumentoCotizacion);
+                foreach ($documentosDb->get() as $pdf) {
+                    if(Storage::exists("/cotizacion/documentos/" . $pdf->nombre_archivo_servidor)){
+                        $oMerger->addPDF(storage_path("app/cotizacion/documentos/" .
+                         $pdf->nombre_archivo_servidor));
+                    }
+                }
+            }
+            if($request->has("archivoPdf")){
+                if(is_null($oMerger)){
+                    $urlDocumentoCotizacion = storage_path("app/cotizacion/reportes/".$documentoCotizacion);
+                    $oMerger = PDFMerger::init();
+                    $oMerger->addPDF($urlDocumentoCotizacion);
+                }
+                for ($i=0; $i < count($request->archivoPdf) ; $i++) {
+                    $tiempo++;
+                    $nombreOriginal = $request->file('archivoPdf')[$i]->getClientOriginalName();
+                    $nombreArchivo = pathinfo($nombreOriginal,PATHINFO_FILENAME);
+                    $extension = $request->file('archivoPdf')[$i]->getClientOriginalExtension();
+                    $archivoNombreAlmacenamiento = $nombreArchivo.'_'.$tiempo.'.'.$extension;
+                    $request->file('archivoPdf')[$i]->storeAs('/cotizacion/documentos/', $archivoNombreAlmacenamiento);
+                    $documentosOtros[] = [
+                        'id_cotizacion' => $cotizacionModel->id,
+                        'nombre_archivo' => $nombreOriginal,
+                        'nombre_archivo_servidor' => $archivoNombreAlmacenamiento,
+                        'estado' => 1
+                    ];
+                    $oMerger->addPDF($_FILES['archivoPdf']['tmp_name'][$i]);
+                }
+            }
+            if(!is_null($oMerger)){
+                $tiempo++;
+                $oMerger->merge();
+                $documentoCotizacion = 'cotizacion_'.$tiempo.'_'.$cotizacionModel->id .".pdf";
+                $oMerger->save(storage_path() . '/app/cotizacion/reportes/'.$documentoCotizacion);
+            }
+            if(!is_null($urlDocumentoCotizacion)){
+                unlink($urlDocumentoCotizacion);
+            }
+            $cotizacionModel->update(['documento' => $documentoCotizacion]);
+            foreach ($documentosOtros as $documento) {
+                CotizacionPdf::create($documento);
+            }
+            DB::commit();
+            return response()->json(['success' => 'Cotización actualizada correctamente']);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json(['error' => $th->getMessage(),'linia' => $th->getLine()]);
+        }
+    }
+    public function accionesCotizacion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        switch ($request->acciones) {
+            case 'eliminar-producto':
+                $servicios = CotizacionServicio::where(['id_cotizacion' => $request->idCotizacion,'id_servicio' => $request->idServicio])->first();
+                if(empty($servicios)){
+                    return response()->json(['alerta' => 'No se encotro el servicio para el producto que se requiere eliminar']);
+                }
+                $productos = CotizacionServicioProducto::where('id_cotizacion_servicio',$servicios->id);
+                $productos->where('id_producto',$request->idProducto)->delete();
+                return response()->json(['success' => 'El prodcto se a eliminado de manera correcta']);
+            break;
+            case 'eliminar-servicio':
+                $servicios = CotizacionServicio::where('id_cotizacion',$request->idCotizacion);
+                $consultaServicio = $servicios->where('id_servicio',$request->idServicio)->first();
+                CotizacionServicioProducto::where('id_cotizacion_servicio',$consultaServicio->id)->delete();
+                $consultaServicio->delete();
+                return response()->json(['success' => 'El servicio se a eliminado de manera correcta']);
+            break;
+            case 'eliminar-pdf':
+                $documento = CotizacionPdf::where(['id_cotizacion' => $request->idCotizacion,'id' => $request->idPdf])->first();
+                $rutaArchivo = "/cotizacion/documentos/".$documento->nombre_archivo_servidor;
+                if(Storage::exists($rutaArchivo)){
+                    Storage::delete($rutaArchivo);
+                }
+                $documento->delete();
+                return response()->json(['success' => 'El documento se a eliminado de manera correcta']);
+            break;
+        }
     }
     public function verPdfCotizacion($cotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
@@ -236,7 +390,7 @@ class Cotizacion extends Controller
                     $request->file('archivoPdf')[$i]->storeAs('/cotizacion/documentos/', $archivoNombreAlmacenamiento);
                     $documentosOtros[] = [
                         'id_cotizacion' => $mCotizacion->id,
-                        'nombre_archivo' => $nombreArchivo,
+                        'nombre_archivo' => $nombreOriginal,
                         'nombre_archivo_servidor' => $archivoNombreAlmacenamiento,
                         'estado' => 1
                     ];
@@ -281,7 +435,7 @@ class Cotizacion extends Controller
         $clientes = Clientes::obenerClientesActivos();
         $modulos = $this->usuarioController->obtenerModulos();
         $tiposDocumentos = TipoDocumento::where('estado',1)->get();
-        $preCotizaciones = PreCotizaion::where('estado',2)->get();
+        $preCotizaciones = PreCotizaion::where('estado','>=',1)->get();
         $servicios = Servicio::where('estado',1)->get();
         $productos =  Productos::where('estado',1)->get();
         return view("cotizacion.misCotizaciones",compact("modulos","clientes","tiposDocumentos","preCotizaciones","servicios","productos"));
