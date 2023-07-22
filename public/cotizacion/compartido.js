@@ -1,15 +1,15 @@
 class Cotizacion extends General{
-    comboListaAlmacenes(listaAlmacenes){
+    comboListaAlmacenes(listaAlmacenes,idAlmacen){
         const cb = document.createElement("select");
         cb.className = "form-control form-control-sm";
         let template = "<option></option>";
         listaAlmacenes.forEach(almacen => {
-            template += `<option value="${almacen.idAlmacen}">${almacen.nombreAlmacen}</option>`
+            template += `<option value="${almacen.idAlmacen}" ${almacen.idAlmacen == idAlmacen ? 'selected' : ''}>${almacen.nombreAlmacen}</option>`
         });
         cb.innerHTML = template;
         return cb;
     }
-    almacenProductos({index,idProducto,urlImagen,nombreProducto,listaAlmacenes,cantidadUsada}){
+    almacenProductos({index,idProducto,urlImagen,nombreProducto,listaAlmacenes,cantidadUsada,idAlmacen}){
         const tr = document.createElement("tr");
         tr.dataset.producto = idProducto;
         tr.innerHTML =`
@@ -17,7 +17,7 @@ class Cotizacion extends General{
             <td><img class="img-vistas-pequena" src="${urlImagen}" alt="Imagen del producto"></td>
             <td>${nombreProducto}</td>
             <td>${cantidadUsada}</td>
-            <td>${this.comboListaAlmacenes(listaAlmacenes).outerHTML}</td>        
+            <td>${this.comboListaAlmacenes(listaAlmacenes,idAlmacen).outerHTML}</td>        
         `
         return tr;
     }
@@ -35,7 +35,7 @@ class Cotizacion extends General{
             <th>IMAGEN</th>
             <th>DESCRIPCION</th>
             <th>CANT.</th>
-            <th>ALMACEN</th>
+            <th style="width:70px;">ALMACEN</th>
         </tr>
         </thead>`;
         const tbodyProductos = document.createElement("tbody");

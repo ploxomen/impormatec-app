@@ -2,7 +2,7 @@
 @section('head')
     @include('helper.headDatatable')
 
-    <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.2">
+    <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.3">
     <script src="/cotizacion/compartido.js"></script>
     <script src="/cotizacion/misCotizaciones.js"></script>
     <title>Mis Cotizaciones</title>

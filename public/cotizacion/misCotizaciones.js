@@ -80,6 +80,10 @@ function loadPage() {
                             <i class="far fa-file-pdf text-danger mr-1"></i>
                             <span class="text-secondary">Cotización</span>
                         </a>
+                        <a class="dropdown-item cotizacion-almacen" href="javascript:void(0)" data-cotizacion="${data}">
+                            <i class="fas fa-store text-info"></i>
+                            <span class="text-secondary">Almacenes</span>
+                        </a>
                         <a class="dropdown-item aprobar-cotizacion" href="javascript:void(0)" data-cotizacion="${data}">
                             <i class="fas fa-check text-success mr-1"></i>
                             <span class="text-secondary">Aprobar</span>
@@ -94,7 +98,6 @@ function loadPage() {
         },
         ]
     });
-    let almacenCotizacion = [];
     let idCotizacion = null;
     const listaServiciosAlmacen = document.querySelector("#contenidoServiciosProductos");
     const keysTotales = ["descuentoTotal","importeTotal","total","igvTotal"];
@@ -103,14 +106,14 @@ function loadPage() {
     const formCotizacion = document.querySelector("#frmCotizacion");
     const cbRepresentastes = document.querySelector("#idModalrepresentanteCliente");
     let cbServicios = document.querySelector("#cbServicios");
-
     let serviciosProductos = [];
     const contenedorArchivoPdf = document.querySelector("#contenedorArchivoPdf");
     tablaCotizacion.addEventListener("click",async function(e){
-        if (e.target.classList.contains("aprobar-cotizacion")){
+        console.log(e.target);
+        if (e.target.classList.contains("aprobar-cotizacion") || e.target.classList.contains("cotizacion-almacen")){
             const datos = new FormData();
             datos.append("idCotizacion",e.target.dataset.cotizacion);
-            datos.append("acciones","consultar-aprobacion");
+            datos.append("acciones",e.target.classList.contains("aprobar-cotizacion") ? "consultar-aprobacion" : "consultar-almacenes" );
             try {
                 const response = await general.funcfetch("aprobar",datos,"POST");
                 if (response.session) {
@@ -125,11 +128,15 @@ function loadPage() {
                 });
                 idCotizacion = e.target.dataset.cotizacion;
                 $('#almacenProductosCotizacion').modal("show");
+                $('#contenidoServiciosProductos select').select2({
+                    theme: 'bootstrap',
+                    width: '100%',
+                    placeholder : "Seleccionar un almacen"
+                });
             } catch (error) {
                 console.error(error);
                 alertify.error("error al consultar la cotizaicon");
             }
-
         }
         if (e.target.classList.contains("editar-cotizacion")) {
             try {

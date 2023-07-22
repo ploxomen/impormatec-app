@@ -279,6 +279,9 @@ class Cotizacion extends Controller
         }
         $resultado = [];
         switch ($request->acciones) {
+            case 'consultar-almacenes':
+                $resultado['servicios'] = ModelsCotizacion::obtenerServiciosProductos($request->idCotizacion);
+            break;
             case 'consultar-aprobacion':
                 $consulta = ModelsCotizacion::where(['estado' => 1,'id' => $request->idCotizacion])->first();
                 if(empty($consulta)){
@@ -290,7 +293,12 @@ class Cotizacion extends Controller
             case 'aprobar-cotizacion':
                 DB::beginTransaction();
                 try {
-                    ModelsCotizacion::where(['estado' => 1,'id' => $request->idCotizacion])->update(['estado' => 2]);
+                    $cotizacion = ModelsCotizacion::where('id',$request->idCotizacion)->first();
+                    $aprobacion = false;
+                    if($cotizacion->estado === 1){
+                        $cotizacion->update(['estado' => 2]);
+                        $aprobacion = true;
+                    }
                     foreach (json_decode($request->servicios) as $servicio) {
                         $cotizacionModel = CotizacionServicio::where(['id' => $servicio->idServicio, 'id_cotizacion' => $request->idCotizacion])->first();
                         foreach ($servicio->productos as $producto) {
@@ -305,7 +313,9 @@ class Cotizacion extends Controller
                                 DB::rollBack();
                                 return response()->json(['alerta' => 'No hay suficiente stock en los almacenes, por favor aumente el stock o cambien de almacen']);
                             }
-                            $productoAlmacen->update(['stock' => $productoAlmacen->stock - $productoModel->cantidad]);
+                            if($aprobacion){
+                                $productoAlmacen->update(['stock' => $productoAlmacen->stock - $productoModel->cantidad]);
+                            }
                         }
                     }
                     DB::commit();
@@ -314,8 +324,6 @@ class Cotizacion extends Controller
                     DB::rollBack();
                     $resultado = ['error' => $th->getMessage() , 'linea' => $th->getLine() ];
                 }
-            break;
-            case 'ver-productos':
             break;
         }
         return response()->json($resultado);
