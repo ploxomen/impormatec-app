@@ -20,6 +20,10 @@ class Clientes extends Model
     // {
     //     return $this->hasMany(Ventas::class, 'clienteFk');
     // }
+    public function ordenServicio()
+    {
+        return $this->hasMany(OrdenServicio::class,'id_cliente');
+    }
     public function usuario()
     {
         return $this->belongsTo(User::class,'id_usuario');

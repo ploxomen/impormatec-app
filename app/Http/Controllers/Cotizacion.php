@@ -101,7 +101,6 @@ class Cotizacion extends Controller
         $cotizacion->servicios = ModelsCotizacion::obtenerServiciosProductos($cotizacion->id,false);
         $cotizacion->contactosClientes = ClientesContactos::where('idCliente',$cotizacion->id_cliente)->get();
         $cotizacion->documentosPdf = CotizacionPdf::select("id","nombre_archivo")->where('id_cotizacion',$cotizacion->id)->get();
-
         return response()->json(['cotizacion' => $cotizacion]);
     }
     public function actualizarCotizacion(Request $request) {
@@ -363,7 +362,8 @@ class Cotizacion extends Controller
                     'importe' => $coti->pUni,
                     'descuento' => $coti->descuento,
                     'total' => $coti->pTotal,
-                    'igv' => $coti->pTotal * 0.18
+                    'igv' => $coti->pTotal * 0.18,
+                    'estado' => 1
                 ]);
                 foreach ($coti->productosLista as $producto) {
                     CotizacionServicioProducto::create([

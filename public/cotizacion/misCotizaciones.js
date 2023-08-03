@@ -1,7 +1,7 @@
 function loadPage() {
     let general = new General();
     let cotizacionGeneral = new Cotizacion();
-    let estadoCotizacion = ["Por aprobar","Aprobado","Cotizado"]
+    let estadoCotizacion = ["Por aprobar","Aprobado","Pendiente OS","Con OS"]
     const tablaCotizacion = document.querySelector("#tablaCotizaciones");
     const tablatablaCotizacionDatatable = $(tablaCotizacion).DataTable({
         ajax: {
@@ -109,7 +109,6 @@ function loadPage() {
     let serviciosProductos = [];
     const contenedorArchivoPdf = document.querySelector("#contenedorArchivoPdf");
     tablaCotizacion.addEventListener("click",async function(e){
-        console.log(e.target);
         if (e.target.classList.contains("aprobar-cotizacion") || e.target.classList.contains("cotizacion-almacen")){
             const datos = new FormData();
             datos.append("idCotizacion",e.target.dataset.cotizacion);

@@ -1,41 +1,40 @@
-@extends('helper.index')
-@section('head')
-    <script src="/ordenServicio/compartidoOs.js"></script>
-    <script src="/ordenServicio/agregar.js"></script>
-    <title>Nueva orden de servicio</title>
-@endsection
-@section('body')
-    <section class="p-3">
-        <div class="mb-4">
-            <div class="m-auto" style="max-width: 400px;">
-                <img src="/img/modulo/orden.png" alt="Imagen de cotizacion" width="120px" class="img-fluid d-block m-auto">
-                <h4 class="text-center text-primary my-2">Nueva Orden de Servicio</h4>
-            </div>
+<div class="modal fade" id="editarOrdenServicio" data-backdrop="static" data-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloServicio">Editar Orden de Servicio</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
-        <form id="frmCotizacion">
-            <div class="form-group">
-                <fieldset class="bg-white px-3 border form-row">
-                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Orden Servicio</legend>
-                        <div class="col-12 col-md-6 col-lg-4 col-xl-3 form-group">
-                            <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Clientes</label>
-                            <select name="id_cliente" id="cbClientes" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione un cliente">
-                                <option value=""></option>
-                                <option value="ninguno" selected>Ninguno</option>
-                                @foreach ($clientes as $cliente)
-                                    <option value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-2">
-                            <label for="idModalfechaEmitida">Fecha emisión</label>
-                            <input type="date" name="fecha" value="{{date('Y-m-d')}}" id="idModalfechaEmitida" class="form-control form-control-sm" required>
-                        </div>
-                </fieldset>
-            </div>
-            <div class="form-group">
-                <fieldset class="bg-white px-3 border form-row">
-                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cotizaciones</legend>
+        <div class="modal-body">
+            <form id="frmOrdenServicio" class="form-row">
+                <div class="col-12">
+                    <h5 class="text-primary">
+                        <i class="fas fa-caret-right"></i>
+                        Orden de Servicio
+                    </h5>
+                </div>
+                <div class="col-12 col-md-6 col-lg-8 form-group">
+                    <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Clientes</label>
+                    <input type="text" class="form-control form-control-sm" disabled id="idModalcliente">                    
+                </div>
+                <div class="form-group col-12 col-md-6 col-lg-4">
+                    <label for="idModalfechaEmitida">Fecha emisión</label>
+                    <input type="date" name="fecha" id="idModalfechaEmitida" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-12">
+                    <h5 class="text-primary">
+                        <i class="fas fa-caret-right"></i>
+                        Cotización
+                    </h5>
                     <small class="text-info">Nota: Solo las cotizaciones que han sido aprobadas apareceran para agregarse como ordenes de servicio</small>
+                </div>
+                <div class="form-group col-12">
+                    <label for="idCotizacionServicio">Cotizaciones</label>
+                    <select class="select2-simple" id="idCotizacionServicio"></select>
+                </div>
+                <div class="form-group col-12">
                     <div class="table-responsive">
                         <table class="table table-sm table-striped table-bordered table-hover">
                             <thead>
@@ -79,15 +78,20 @@
                             </tfoot>
                         </table>
                     </div>
-                </fieldset>
-            </div>
-            <div class="form-group">
-                <fieldset class="bg-white px-3 border">
-                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Adicionales</legend>
+                </div>
+                <div class="col-12">
+                    <h5 class="text-primary">
+                        <i class="fas fa-caret-right"></i>
+                        Adicionales
+                    </h5>
+                </div>
+                <div class="col-12 form-group">
                     <span class="text-primary">Costos adicionales</span>
                     <button type="button" class="btn btn-sm btn-primary" id="btnAgregarServiciosAdicionales">
                         <i class="fas fa-plus"></i>
                     </button>
+                </div>
+                <div class="col-12 form-group">
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
                             <thead>
@@ -107,14 +111,20 @@
                             </tbody>
                         </table>
                     </div>
-                </fieldset>
-            </div>
-            <div class="col-12 form-group text-center">
-                <button type="submit" class="btn btn-primary" id="btnAgregarCotizacion">
-                    <i class="fas fa-plus"></i>
-                    <span>Agregar</span>
-                </button>
-            </div>
-        </form>
-    </section>
-@endsection
+                </div>
+                <input type="submit" hidden id="btnEnviar">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-primary" id="btnGuardarFrm">
+                <i class="fas fa-save"></i>
+                <span>Guardar</span>
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
+                <i class="fas fa-eraser"></i>
+                <span>Cancelar</span>
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>

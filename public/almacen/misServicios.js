@@ -35,18 +35,21 @@ function loadPage(){
         {
             data: 'id',
             render : function(data){
-                return `<div class="d-flex justify-content-center" style="gap:5px;"><button class="btn btn-sm btn-outline-info p-1" data-servicio="${data}">
-                    <small>
-                    <i class="fas fa-pencil-alt"></i>
-                    Editar
-                    </small>
-                </button>
-                <button class="btn btn-sm btn-outline-danger p-1" data-servicio="${data}">
-                    <small>    
-                    <i class="fas fa-trash-alt"></i>
-                        Eliminar
-                    </small>
-                </button></div>`
+                return `
+                <div class="d-flex justify-content-center" style="gap:5px;">
+                    <button class="btn btn-sm btn-outline-info p-1" data-servicio="${data}">
+                        <small>
+                        <i class="fas fa-pencil-alt"></i>
+                        Editar
+                        </small>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger p-1" data-servicio="${data}">
+                        <small>    
+                        <i class="fas fa-trash-alt"></i>
+                            Eliminar
+                        </small>
+                    </button>
+                </div>`
             }
         },
         ]

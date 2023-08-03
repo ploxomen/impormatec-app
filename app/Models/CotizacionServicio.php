@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CotizacionServicio extends Model
 {
     public $table = "cotizacion_servicio";
-    protected $fillable = ['id_cotizacion','id_servicio','costo','cantidad','importe','descuento','igv','total'];
+    protected $fillable = ['id_cotizacion','id_servicio','costo','cantidad','importe','descuento','igv','total','estado'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
 
@@ -18,4 +18,5 @@ class CotizacionServicio extends Model
     public function productos() {
         return $this->hasMany(CotizacionServicioProducto::class,'id_cotizacion_servicio');
     }
+    
 }
