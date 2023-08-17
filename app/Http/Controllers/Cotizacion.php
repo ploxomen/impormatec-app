@@ -387,7 +387,6 @@ class Cotizacion extends Controller
                 $urlDocumentoCotizacion = storage_path("app/cotizacion/reportes/".$documentoCotizacion);
                 $oMerger = PDFMerger::init();
                 $oMerger->addPDF($urlDocumentoCotizacion);
-                unlink($urlDocumentoCotizacion);
                 $tiempo = time();
                 for ($i=0; $i < count($request->archivoPdf) ; $i++) {
                     $tiempo++;
@@ -406,6 +405,7 @@ class Cotizacion extends Controller
                 }
                 $tiempo++;
                 $oMerger->merge();
+                unlink($urlDocumentoCotizacion);
                 $documentoCotizacion = 'cotizacion_'.$tiempo.'_'.$mCotizacion->id .".pdf";
                 $oMerger->save(storage_path() . '/app/cotizacion/reportes/'.$documentoCotizacion);
             }
@@ -420,7 +420,7 @@ class Cotizacion extends Controller
             return response()->json(['success' => 'Cotización agregada correctamente']);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['error' => $th->getMessage()]);
+            return response()->json(['error' => $th->getMessage(), 'line' => $th->getLine()]);
         }
     }
     public function obtenerNombresMeses() {
