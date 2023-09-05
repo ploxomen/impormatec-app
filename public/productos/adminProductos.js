@@ -38,14 +38,14 @@ function loadPage(){
         },
         {
             data: 'precioVenta',
-            render : function(data){
-                return gen.resetearMoneda(data)
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda)
             }
         },
         {
             data: 'precioCompra',
-            render : function(data){
-                return gen.resetearMoneda(data)
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda)
             }
         },
         {
@@ -114,10 +114,12 @@ function loadPage(){
     });
     const cbAlmacen = document.querySelector("#cbAlmacen");
     const listaAlmacen = document.querySelector("#listaAlmacenes");
-    const txtSinAlamacen = document.querySelector("#txtSinAlmacen");
     const modalTitulo = document.querySelector("#tituloProducto");
     const switchProducto = document.querySelector("#switchProductoIntangible");
-
+    const htmlSinAlmacen = `<tr>
+        <td colspan="100%" class="text-center">No se seleccionaron almacenes</td>
+    </tr>`;
+    let contadorAlmacenes = 0;
     $('#agregarProducto').on("hidden.bs.modal",function(e){
         switchProducto.checked = false;
         idProducto = null;
@@ -129,8 +131,8 @@ function loadPage(){
         formProducto.reset();
         $('#agregarProducto .select2-simple').val("").trigger("change");
         prevImagen.src = window.origin + "/img/imgprevproduc.png";
-        listaAlmacen.innerHTML = "";
-        txtSinAlamacen.hidden = false;
+        contadorAlmacenes = 0;
+        listaAlmacen.innerHTML = htmlSinAlmacen;
         for (const oAlmacen of cbAlmacen.querySelectorAll("option")) {
             oAlmacen.disabled = false;
         }
@@ -142,8 +144,7 @@ function loadPage(){
     switchProducto.addEventListener("change",productosCambio)
     function productosCambio(e) {
         const valor = e.target.checked;
-        listaAlmacen.innerHTML = "";
-        txtSinAlamacen.hidden = false;
+        listaAlmacen.innerHTML = htmlSinAlmacen;  
         for (const div of document.querySelectorAll("#agregarProducto .producto-tangible")) {
             div.hidden = valor;
         }
@@ -153,36 +154,32 @@ function loadPage(){
     }
     $(cbAlmacen).on("select2:select",function(e){
         let selectedOption = cbAlmacen.options[cbAlmacen.selectedIndex];
-        listaAlmacen.append(agregarAlmacen($(this).val(),selectedOption.text,""));
-        if(listaAlmacen.children.length){
-            txtSinAlamacen.hidden = true;
+        if(!contadorAlmacenes){
+            listaAlmacen.innerHTML = "";
         }
+        listaAlmacen.append(agregarAlmacen($(this).val(),selectedOption.text,""));
         alertify.success("almacen agregado");
+        contadorAlmacenes++;
         selectedOption.disabled = true;
     })
-    function agregarAlmacen(idAlmacen,nombreAlmacen,precioVenta,stock,tipo = "new") {
-        const lista = document.createElement("li");
+    function agregarAlmacen(idAlmacen,nombreAlmacen,stock,tipo = "new") {
+        const lista = document.createElement("tr");
         lista.dataset.tipo = tipo;
         lista.dataset.almacen = idAlmacen;
         let $idAlmacen = idAlmacen ? `<input type="hidden" value="${idAlmacen}" name="idAlmacen[]">` : "";
         lista.innerHTML = 
-        `<div class="form-row">
+        `<td>
             ${$idAlmacen}
-            <div class="col-12 col-md-7 form-group">
-                <span>${nombreAlmacen}</span>
-            </div>
-            <div class="col-12 col-md-2 form-group">
-                <input title="Precio de venta del producto por almacen" type="number" name="precioVenta[]" min="0" required class="form-control form-control-sm" value="${precioVenta}" placeholder="Precio venta">
-            </div>
-            <div class="col-12 col-md-2 form-group">
-                <input title="Stock del producto por almacen" type="number" name="stockAlmacen[]" min="1" required class="form-control form-control-sm" value="${stock}" placeholder="Stock">
-            </div>
-            <div class="col-12 text-rigth col-md-1 form-group">
-                <button type="button" class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        </div>
+            <span>${nombreAlmacen}</span>
+        </td>
+        <td>
+            <input title="Stock del producto por almacen" type="number" name="stockAlmacen[]" min="1" required class="form-control form-control-sm" value="${stock}">
+        </td>
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-danger">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </td>
         `
         return lista;
     }
@@ -195,11 +192,12 @@ function loadPage(){
     }
     listaAlmacen.onclick = function(e){
         if(e.target.classList.contains("btn-danger")){
-            const li = e.target.parentElement.parentElement.parentElement;
+            const li = e.target.parentElement.parentElement;
             const almacen = li.dataset.almacen;
             if(li.dataset.tipo == "new"){
                 li.remove();
                 habilitarOpcionAlmacen(almacen,false);
+                contadorAlmacenes--;
                 alertify.success("se a eliminado el produco del almacen");
                 $(cbAlmacen).val("").trigger("change");
             }else if(li.dataset.tipo == "old"){
@@ -215,8 +213,9 @@ function loadPage(){
                         }
                         li.remove();
                         alertify.success(response.success);
-                        if(!listaAlmacen.children.length){
-                            txtSinAlamacen.hidden = false;
+                        contadorAlmacenes--;
+                        if(!contadorAlmacenes){
+                            listaAlmacen.innerHTML = htmlSinAlmacen;
                         }
                         habilitarOpcionAlmacen(almacen,false);
                         $(cbAlmacen).val("").trigger("change");
@@ -228,8 +227,8 @@ function loadPage(){
                     }
                 },()=>{})
             }
-            if(!listaAlmacen.children.length){
-                txtSinAlamacen.hidden = false;
+            if(!contadorAlmacenes){
+                listaAlmacen.innerHTML = htmlSinAlmacen;
             }
         }
     }
@@ -237,7 +236,6 @@ function loadPage(){
     btnModalSave.onclick = e => document.querySelector("#btnFrmEnviar").click();
     tablaProducto.addEventListener("click",async function(e){
         if (e.target.classList.contains("btn-outline-info")){
-            btnModalSave.querySelector("span").textContent = "Editar";
             try {
                 gen.cargandoPeticion(e.target, gen.claseSpinner, true);
                 const response = await gen.funcfetch("producto/listar/" + e.target.dataset.producto,null,"GET");
@@ -258,14 +256,19 @@ function loadPage(){
                             }
                             continue;
                         }
+                        if(key === "tipoMoneda"){
+                            const txtMoneda = valor === "USD" ? document.querySelector("#tipoMonedaDolares") : document.querySelector("#tipoMonedaSoles");
+                            txtMoneda.checked = true;
+                        }
                         if (key == "listaAlmacen"){
+                            contadorAlmacenes = valor.length;
+                            if(contadorAlmacenes){
+                                listaAlmacen.innerHTML = "";
+                            }
                             valor.forEach(al => {
-                                listaAlmacen.append(agregarAlmacen(al.id_almacen,al.nombre,al.precioVenta,al.stock,"old"));
+                                listaAlmacen.append(agregarAlmacen(al.id_almacen,al.nombre,al.stock,"old"));
                                 habilitarOpcionAlmacen(al.id_almacen,true);
                             });
-                            if(listaAlmacen.children.length){
-                                txtSinAlamacen.hidden = true;
-                            }
                             continue;
                         }
                         if (key == "estado"){

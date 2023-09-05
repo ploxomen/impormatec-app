@@ -23,6 +23,18 @@
                     <label for="idModaldescripcion">Descripción</label>
                     <textarea name="descripcion" id="idModaldescripcion" class="form-control" rows="2"></textarea>
                 </div>
+                <div class="form-group col-12 col-md-6">
+                    <div class="custom-control custom-radio">
+                        <input type="radio" id="tipoMonedaSoles" required name="tipoMoneda" value="PEN" class="custom-control-input">
+                        <label class="custom-control-label" for="tipoMonedaSoles">PEN (Soles)</label>
+                    </div>
+                </div>
+                <div class="form-group col-12 col-md-6">
+                    <div class="custom-control custom-radio">
+                        <input type="radio" id="tipoMonedaDolares" checked value="USD" required name="tipoMoneda" class="custom-control-input">
+                        <label class="custom-control-label" for="tipoMonedaDolares">USD (Dólares)</label>
+                    </div>
+                </div>
                 <div class="form-group col-6">
                     <label for="idModalprecioCompra">Precio Compra</label>
                     <div class="input-group">
@@ -97,11 +109,22 @@
                     </select>
                 </div>
                 <div class="form-group col-12 producto-tangible">
-                    <p id="txtSinAlmacen" class="text-center">
-                        No se seleccionaron almacenes
-                    </p>
-                    <ol id="listaAlmacenes" class="ml-3">
-                    </ol>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Almacen</th>
+                                    <th>Stock</th>
+                                    <th>Eliminar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaAlmacenes">
+                                <tr>
+                                    <td colspan="100%" class="text-center">No se seleccionaron almacenes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="form-group col-12">
                     <div class="custom-control custom-switch">

@@ -10,7 +10,7 @@ class Productos extends Model
     protected $table = 'productos';
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-    protected $fillable = ['nombreProducto','esIntangible','descripcion','stockMin','precioVenta','precioCompra','urlImagen','estado'];
+    protected $fillable = ['nombreProducto','tipoMoneda','esIntangible','descripcion','stockMin','precioVenta','precioCompra','urlImagen','estado'];
 
     // public function marca()
     // {

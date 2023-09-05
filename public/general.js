@@ -63,11 +63,12 @@ class General{
     urlVentaComprobante = window.origin + "/intranet/ventas/comprobante/";
     urlCotizacionComprobante = window.origin + "/intranet/cotizaciones/comprobante/";
     urlProductos = window.location.origin + "/intranet/storage/productos/"
-    resetearMoneda(numero){
+    resetearMoneda(numero,tipo){
         const newNum = isNaN(parseFloat(numero)) ? 0 : parseFloat(numero);
-        return newNum.toLocaleString('es-PE',{
+        console.log(numero,tipo);
+        return newNum.toLocaleString(tipo === 'USD' ? 'en-US' : 'es-PE',{
             style: 'currency',
-            currency: 'PEN',
+            currency: tipo,
         })
     }
     switchs(e){

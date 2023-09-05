@@ -48,7 +48,7 @@ class MisProductos extends Controller
         $urlImage = null;
         DB::beginTransaction();
         try {
-            $datos = $request->only("nombreProducto","descripcion","precioCompra","precioVenta","stockMin","esIntangible");
+            $datos = $request->only("nombreProducto","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
             if($request->has('urlImagen')){
                 $datos['urlImagen'] = $this->guardarArhivo($request,'urlImagen',"productos");
                 $urlImage = $datos['urlImagen'];
@@ -105,7 +105,7 @@ class MisProductos extends Controller
         $urlImage = null;
         DB::beginTransaction();
         try {
-            $datos = $request->only("nombreProducto","descripcion","precioCompra","precioVenta","stockMin","esIntangible");
+            $datos = $request->only("nombreProducto","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
             $datos['esIntangible'] = $request->has("esIntangible");
             if($request->has('urlImagen')){
                 if(!empty($producto->urlImagen) && Storage::disk('productos')->exists($producto->urlImagen)){
