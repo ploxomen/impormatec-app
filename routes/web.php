@@ -3,7 +3,7 @@
 // use App\Http\Controllers\Caja;
 // use App\Http\Controllers\Compras\Compras;
 // use App\Http\Controllers\Compras\Proveedores;
-// use App\Http\Controllers\Configuracion;
+use App\Http\Controllers\Configuracion;
 use App\Http\Controllers\Modulos;
 use App\Http\Controllers\Categoria;
 use App\Http\Controllers\Marca;
@@ -125,12 +125,12 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
 //         });
 
 //     });
-//     Route::prefix('configuracion')->group(function () {
-//         Route::prefix('negocio')->group(function () {
-//             Route::get('/', [Configuracion::class, 'indexConfiguracionNegocio'])->name("admin.configuracion.negocio");
-//             Route::post('actualizar', [Configuracion::class, 'actualizarInformacionNegocio']);
-//         });
-//     });
+    Route::prefix('configuracion')->group(function () {
+        Route::prefix('mi-negocio')->group(function () {
+            Route::get('/', [Configuracion::class, 'indexConfiguracionNegocio'])->name("admin.configuracion.negocio");
+            Route::post('actualizar', [Configuracion::class, 'actualizarInformacionNegocio']);
+        });
+    });
 
     Route::prefix('ventas')->group(function () {
 //         Route::prefix('administrador')->group(function () {
