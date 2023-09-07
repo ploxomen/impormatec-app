@@ -93,6 +93,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('crear', [MisProductos::class, 'store']);
             Route::post('editar/{producto}', [MisProductos::class, 'update']);
             Route::delete('eliminar/{producto}', [MisProductos::class, 'destroy']);
+            Route::post('eliminar/imagen/{producto}', [MisProductos::class, 'destroyImagen']);
         });
        
     });

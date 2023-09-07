@@ -24,8 +24,8 @@
                 <tr>
                     <th>N°</th>
                     <th>Producto</th>
-                    <th>descripcion</th>
-                    <th>Stock Min.</th>
+                    <th>Descripcion</th>
+                    <th>Almacenes</th>
                     <th>P. Venta</th>
                     <th>P. Compra</th>
                     <th>Estado</th>

@@ -65,7 +65,6 @@ class General{
     urlProductos = window.location.origin + "/intranet/storage/productos/"
     resetearMoneda(numero,tipo){
         const newNum = isNaN(parseFloat(numero)) ? 0 : parseFloat(numero);
-        console.log(numero,tipo);
         return newNum.toLocaleString(tipo === 'USD' ? 'en-US' : 'es-PE',{
             style: 'currency',
             currency: tipo,

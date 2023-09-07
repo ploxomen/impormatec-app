@@ -28,10 +28,10 @@ class Productos extends Model
     // {
     //     return $this->hasMany(Perecedero::class,'productoFk');
     // }
-    // public function compras()
-    // {
-    //     return $this->belongsToMany(Compras::class, 'compras_detalle', 'productoFk', 'compraFk')->withTimestamps();
-    // }
+    public function almacenes()
+    {
+        return $this->belongsToMany(Almacen::class, 'productos_almacen', 'id_producto', 'id_almacen');
+    }
     // public function cotizacion()
     // {
     //     return $this->belongsToMany(Cotizacion::class, 'cotizacion_detalle', 'productoFk', 'cotizacionFk')->withTimestamps();

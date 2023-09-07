@@ -31,9 +31,10 @@ function loadPage(){
             data: 'descripcion'
         },
         {
-            data: 'stockMin',
+            data: 'almacenes',
+            name : 'almacenes.name',
             render : function(data){
-                return isNaN(parseInt(data)) ? 0 : parseInt(data);
+                return !data ? '' : `<span class="badge badge-primary">${data.map(d => d.nombre).join("</span><br><span class='badge badge-primary'>")}</span> `;
             }
         },
         {
@@ -81,7 +82,8 @@ function loadPage(){
     });
     let idProducto = null;
     const prevImagen = document.querySelector("#imgPrevio");
-    document.querySelector("#customFileLang").onchange = function(e){
+    const fileImagen = document.querySelector("#customFileLang");
+    fileImagen.onchange = function(e){
         let reader = new FileReader();
         reader.onload = function(){
             prevImagen.src = reader.result;
@@ -314,6 +316,36 @@ function loadPage(){
                     alertify.error("error al eliminar el usuario");
                 }
             },()=>{});
+        }
+    });
+    const btnElimiarImagen = document.querySelector("#btnEliminarImagen");
+    btnElimiarImagen.addEventListener("click",function(e){
+        e.preventDefault();
+        console.log(fileImagen.files.length);
+        if(!idProducto && fileImagen.files.length){
+            fileImagen.value = "";
+            prevImagen.src = window.origin + "/img/imgprevproduc.png";
+        }else if(idProducto){
+            alertify.confirm("Mensaje","¿Deseas eliminar la imagen asociada a este producto?",async ()=>{
+                gen.cargandoPeticion(e.target, gen.claseSpinner, true);
+                try {
+                    let response = await gen.funcfetch("producto/eliminar/imagen/" + idProducto, null, "POST");
+                    if (response.session) {
+                        return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Mensaje",response.alerta);
+                    }
+                    fileImagen.value = "";
+                    prevImagen.src = window.origin + "/img/imgprevproduc.png";
+                    alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al eliminar la imagen asociada a este producto");
+                }finally{
+                    gen.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
+                }
+            },()=>{})
         }
     })
 }

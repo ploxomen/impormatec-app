@@ -135,7 +135,6 @@ function loadPage(){
     btnModalSave.onclick = e => document.querySelector("#btnFrmEnviar").click();
     tablaServicio.addEventListener("click",async function(e){
         if (e.target.classList.contains("btn-outline-info")){
-            btnModalSave.querySelector("span").textContent = "Editar";
             try {
                 gen.cargandoPeticion(e.target, gen.claseSpinner, true);
                 const response = await gen.funcfetch("servicio/listar/" + e.target.dataset.servicio,null,"GET");

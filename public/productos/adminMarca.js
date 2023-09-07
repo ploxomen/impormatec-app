@@ -69,7 +69,6 @@ function loadPage(){
                     txtMarca.value = marca.nombreMarca;
                     idMarca = marca.id;
                     checkEstado.checked = marca.estado;
-                    btnGuardarForm.querySelector("span").textContent = "Editar";
                 }
             } catch (error) {
                 general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);

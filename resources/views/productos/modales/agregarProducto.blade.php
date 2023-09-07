@@ -89,6 +89,9 @@
                 </div>
                 <div class="form-group col-12 col-md-4">
                     <label class="mb-0">Imagen Previa</label>
+                    <button class="btn btn-sm btn-light" type="button" id="btnEliminarImagen" title="Eliminar imagen">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                     <div>
                         <img src="/img/imgprevproduc.png" id="imgPrevio" alt="Imagen del producto" width="80px">
                     </div>
@@ -114,8 +117,8 @@
                             <thead>
                                 <tr>
                                     <th>Almacen</th>
-                                    <th>Stock</th>
-                                    <th>Eliminar</th>
+                                    <th style="width: 20px;">Stock</th>
+                                    <th style="width: 20px;">Eliminar</th>
                                 </tr>
                             </thead>
                             <tbody id="listaAlmacenes">

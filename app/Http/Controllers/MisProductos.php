@@ -36,7 +36,7 @@ class MisProductos extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
-        $productos = Productos::all();
+        $productos = Productos::with('almacenes:id,nombre')->get();
         return DataTables::of($productos)->toJson();
     }
     public function store(Request $request)
@@ -139,6 +139,20 @@ class MisProductos extends Controller
             DB::rollBack();
             return response()->json(['error' => $th->getMessage()]);
         }
+    }
+    public function destroyImagen(Productos $producto) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]); 
+        }
+        if(empty($producto->urlImagen)){
+            return response()->json(['alerta' => 'El producto no cuenta con una imagen para ser eliminada']);
+        }
+        if(!empty($producto->urlImagen) && Storage::disk('productos')->exists($producto->urlImagen)){
+            Storage::disk('productos')->delete($producto->urlImagen);
+        }
+        $producto->update(['urlImagen' => null]);
+        return response()->json(['success' => 'Imagen eliminada correctamente']);
     }
     public function destroy(Productos $producto)
     {
