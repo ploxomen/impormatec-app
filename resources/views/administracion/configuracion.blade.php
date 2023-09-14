@@ -9,7 +9,7 @@
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 400px;">
-                <img src="{{asset('asset/img/modulo/proceso.png')}}" alt="Imagen de configuración" width="120px" class="img-fluid d-block m-auto">
+                <img src="/img/modulo/proceso.png" alt="Imagen de configuración" width="120px" class="img-fluid d-block m-auto">
                 <h4 class="text-center text-primary my-2">Configurar Negocio</h4>
             </div>
         </div>
@@ -100,10 +100,6 @@
                         </textarea>
                     </div>
                 </fieldset>
-            </div>
-            <div class="form-group col-12 col-md-6">
-                
-                
             </div>
             <div class="col-12 form-group text-center">
                 <button type="submit" class="btn btn-success btn-sm" id="btnSubmitNegocio">

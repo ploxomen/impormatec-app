@@ -1,4 +1,5 @@
 function loadPage() {
+    let general = new General();
     tinymce.init({
         selector: '#sumernoteNumeroCuenta',
         language: 'es',
@@ -29,5 +30,15 @@ function loadPage() {
             input.click();
         },
     });
+    const frmConfiguracion = document.querySelector("#configuracionMiNegocio");
+    frmConfiguracion.addEventListener("submit",async function(e){
+        e.preventDefault();
+        let datos = new FormData(this);
+        datos.append("texto_datos_bancarios",tinymce.activeEditor.getContent());
+        try {
+        } catch (error) {
+            
+        }
+    })
 }
 window.addEventListener("DOMContentLoaded",loadPage);
