@@ -22,29 +22,67 @@
         }
         @page{
             font-family: 'Courier New', Courier, monospace;
-            font-size: 20px;
+            margin-top: 130px;
+            /* font-size: 20px; */
         }
         .nota{
             font-size: 16px;
         }
+        header{
+            position: absolute;
+            top: -130px;
+            left: 0;
+            font-size: 13px;
+            border-bottom: 2px solid #1F2B53;
+            padding-bottom: 5px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1F2B53;
+        }
+        .tabla-precio{
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .tabla-precio td,
+        .tabla-precio th{
+            padding: 8px 5px;
+        }
+        .tabla-precio th{
+            background: rgb(223, 223, 223);
+        }
     </style>
-    <table>
+    <header>
+        <table>
+            <tr>
+                <td>
+                    <p class="text-center">
+                        <small>{{$configuracion->where('descripcion','direccion')->first()->valor}}</small>
+                        <br>
+                        <small>{{$configuracion->where('descripcion','telefono')->first()->valor}}</small>
+                        <br>
+                        <small>{{Auth::user()->celular}}</small>
+                        <br>
+                        <small>{{Auth::user()->correo}}</small>
+                    </p>
+                </td>
+                <td style="width: 150px;">
+
+                </td>
+                <td>
+                    <img src="{{public_path("img/logo.png")}}" alt="logo de impormatec" width="300px">
+                </td>
+            </tr>
+        </table>
+    </header>
+
+    <table border="1">
         <tr>
-            <td style="width: 400px;"></td>
-            <td>
-                <img src="{{public_path("img/logo.png")}}" alt="logo de impormatec" width="300px">
-            </td>
-        </tr>
-    </table>
-    <table>
-        <tr>
-            <td style="width: 400px;">
+            <td style="width: 490px;">
                 <strong>{{$nombreDia}}</strong>
             </td>
-            <td style="width: 200px;" class="text-right"> 
+            <td style="width: 120px;"> 
                 <strong>Cotización</strong>
             </td>
-            <td style="width: 100px;" class="text-center">
+            <td class="text-center">
                 <strong>{{str_pad($cotizacion->id,5,'0',STR_PAD_LEFT)}}</strong>
             </td>
         </tr>
@@ -52,7 +90,7 @@
             <td>
                 <strong>{{$cliente->nombreCliente}}</strong>
             </td>
-            <td class="text-right">
+            <td>
                 <strong>Mes</strong>
             </td>
             <td class="text-center">
@@ -63,7 +101,7 @@
             <td>
                 <strong>LIMA - PERU</strong>
             </td>
-            <td class="text-right">
+            <td>
                 <strong>Año</strong>
             </td>
             <td class="text-center">
@@ -76,8 +114,7 @@
             <u>Presente</u>
         </strong>
         <span>.-</span>
-    </p>
-    <p>
+        <br>
         <strong>
             Atención: {{$representante->nombreContacto}}<br>
             CEL: {{$representante->numeroContacto}}
@@ -99,29 +136,64 @@
             <u>PRECIO</u>
         </strong>
     </p>
-    <table border="1" style="font-size: 16px; margin-bottom: 20px;">
+    @php
+        $conbinarCeldaDescuento = !empty($cotizacion->descuentoTotal) && $cotizacion->descuentoTotal > 0 ? 5 : 4;
+    @endphp
+    <table border="1" class="tabla-precio">
         <thead>
             <tr>
                 <th>ITEM</th>
-                <th style="width: 310px;">DESCRIPCIÓN</th>
+                <th style="width: {{!empty($cotizacion->descuentoTotal) && $cotizacion->descuentoTotal > 0 ? '265px' : '375px'}};">DESCRIPCIÓN</th>
                 <th>CANT.</th>
-                <th>P. UNIT</th>
-                <th>DESC.</th>
-                <th>P. TOTAL</th>
+                <th style="width: 100px;">P. UNIT</th>
+                @if (!empty($cotizacion->descuentoTotal) && $cotizacion->descuentoTotal > 0)
+                    <th style="width: 100px;">DESC.</th>
+                @endif
+                <th style="width: 100px;">P. TOTAL</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($servicios as $keyServicio => $servicio)
                 <tr>
-                    <td>{{$keyServicio + 1}}</td>
+                    <td class="text-center">{{$keyServicio + 1}}</td>
                     <td>{{$servicio->servicios->servicio}}</td>
-                    <td>{{$servicio->cantidad}}</td>
-                    <td>S/ {{$servicio->costo}}</td>
-                    <td>- S/ {{$servicio->descuento}}</td>
-                    <td>S/ {{$servicio->total}}</td>
+                    <td class="text-center">{{$servicio->cantidad}}</td>
+                    <td>{{$moneda . ' '. number_format($servicio->precio,2)}}</td>
+                    @if (!empty($cotizacion->descuentoTotal) && $cotizacion->descuentoTotal > 0)
+                        <td>- {{$moneda . ' '. number_format($servicio->descuento,2)}}</td>
+                    @endif
+                    <td>{{$moneda . ' '. number_format($servicio->total,2)}}</td>
                 </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
+                    <b>SUBTOTAL</b>
+                </td>
+                <td>{{$moneda . ' '. number_format($cotizacion->importeTotal,2)}}</td>
+            </tr>
+            <tr>
+                @if (!empty($cotizacion->descuentoTotal) && $cotizacion->descuentoTotal > 0)
+                    <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
+                        <b>DESCUENTO</b>
+                    </td>
+                    <td>{{$moneda . ' '. number_format($cotizacion->descuentoTotal,2)}}</td>
+                @endif
+            </tr>
+            <tr>
+                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
+                    <b>I.G.V</b>
+                </td>
+                <td>{{$moneda . ' '. number_format($cotizacion->igvTotal,2)}}</td>
+            </tr>
+            <tr>
+                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
+                    <b>TOTAL</b>
+                </td>
+                <td>{{$moneda . ' '. number_format($cotizacion->total,2)}}</td>
+            </tr>
+        </tfoot>
     </table>
     @if ($cotizacion->reporteDetallado === 1)
         <strong><u>DESCRIPCIÓN DEL SERVICIO</u></strong>
@@ -155,23 +227,9 @@
             @endforeach
         </ol>
     @endif
-    <p>
-        <strong>
-            <u>NOTA:</u>
-        </strong>
-    </p>
-    <ul class="nota">
-        <li><strong>Forma pago:</strong> 50% con la confirmación, resto contra entrega.</li>
-        <li><strong>Garantía:</strong> 6 meses.</li>
-        <li><strong>Validez Oferta:</strong> 15 día(s).</li>
-        <li><strong>Moneda:</strong> Sóles.</li>
-        <li><strong>Nota 1:</strong> Los costos incluyen IGV -Todos nuestros servicios se formalizan con boleta de venta o factura
-            de venta.</li>
-        <li><strong>Nota 2:</strong> Todo trabajo adicional que se pudiera encontrar se comunicará anticipadamente.</li>
-        <li><strong>Nota 3:</strong> Nuestro personal cuenta con EPP ́S (casco, uniforme completo, guantes, lentes, zapatos de
-            ✓ seguridad, etc). Así mismo, cuenta con SCTR (salud y pensión).</li>
-        <li><strong>Nota 4:</strong> Nuestro personal cumple con el protocolo COVID19</li>
-    </ul>
+    @if (!empty($cotizacion->textoNota))
+        {!! $cotizacion->textoNota !!}
+    @endif
     @if ($cotizacion->reportePreCotizacion === 1)
         <h4 class="text-center"><u>REPORTE PRE COTIZACION</u></h4>
         <div>

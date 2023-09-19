@@ -60,6 +60,36 @@ function loadPage(){
             return alertify.success("archivo eliminado");
         }
     });
+    tinymce.init({
+        selector: '#notaCotizacion',
+        language: 'es',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        image_title: true,
+        branding: false,
+        height: "400px",
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        file_picker_callback: (cb, value, meta) => {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                const id = 'blobid' + (new Date()).getTime();
+                const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+                const base64 = reader.result.split(',')[1];
+                const blobInfo = blobCache.create(id, file, base64);
+                blobCache.add(blobInfo);
+                cb(blobInfo.blobUri(), { title: file.name });
+            });
+            reader.readAsDataURL(file);
+            });
+            input.click();
+        },
+    });
     fileOtrosDocumentos.addEventListener("change",function(e){
         const files = e.target.files;
         if(!files.length){
@@ -73,13 +103,14 @@ function loadPage(){
     formCotizacion.addEventListener("submit",async function(e){
         e.preventDefault();
         if(!serviciosProductos.length){
-            return alertify.error("la cotización debe contener al menos un servicio");
+            return alertify.error("la cotización debe contener al menos un servicio o producto");
         }
         let datos = new FormData(this);
         if(!datos.has('id_cliente')){
             datos.append('id_cliente',$(cbClientes).val());
         }
         datos.append("servicios",JSON.stringify(serviciosProductos));
+        datos.append("textoNota",tinymce.activeEditor.getContent());
         gen.cargandoPeticion(btnAgregarCoti, gen.claseSpinner, true);
         try {
             const response = await gen.funcfetch("agregar",datos,"POST");
@@ -89,6 +120,7 @@ function loadPage(){
             if(response.error){
                 return alertify.alert("Error",response.error);
             }
+            gen.abrirPesatana(response.urlPdf);
             return alertify.alert("Mensaje",response.success,() => window.location.reload());
         } catch (error) {
             console.error(error);
@@ -101,13 +133,16 @@ function loadPage(){
         if (e.target.classList.contains("btn-danger")){
             const tr = e.target.parentElement.parentElement;
             const servicio = tr.dataset.servicio;
-            serviciosProductos = serviciosProductos.filter(s => s.idServicio != servicio);
+            serviciosProductos = serviciosProductos.filter(s => (s.idServicio !== servicio && !s.idProducto) || (s.idProducto !== servicio && !s.idServicio));
             cotizacionGeneral.cbServiciosOpt(cbServicios,false,[+servicio]);
             tr.remove();
-            tablaServicioProductos.querySelector(`[data-domservicio="${servicio}"]`).remove();
+            const tablaProductoServicio = tablaServicioProductos.querySelector(`[data-domservicio="${servicio}"]`);
+            if(tablaProductoServicio){
+                tablaProductoServicio.remove();
+            }
             if (!serviciosProductos.length) {
                 tablaServicios.innerHTML = `<tr>
-                    <td colspan="100%" class="text-center">No se seleccionaron servicios</td>
+                    <td colspan="100%" class="text-center">No se seleccionaron servicios o productos</td>
                 </tr>`;
                 tablaServicioProductos.innerHTML = `
                 <h5 class="col-12 text-primary text-center">
@@ -115,13 +150,17 @@ function loadPage(){
                 </h5>
                 `
             }
-            alertify.success("servicio eliminado correctamente")
+            alertify.success("item eliminado correctamente");
+            console.log(serviciosProductos);
             cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
         }
     });
+    const cbTipoMoneda = document.querySelector("#idModalmoneda");
+    $(cbTipoMoneda).on("select2:select", function (e) {
+        cotizacionGeneral.modificarMonedaTotal($(this).val(),serviciosProductos,tablaServicios)
+    });
     $(cbServicios).on("select2:select", function (e) {
-        console.log(serviciosProductos);
-        cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos)
+        cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos,e.params.data.element.dataset.tipo||"servicio")
     });
     $(cbPreCotizacion).on("select2:select", async function (e) {
         const preCotizacionId = $(this).val();

@@ -36,25 +36,25 @@ function loadPage() {
         {
             data : 'importeTotal',
             render : function(data){
-                return general.resetearMoneda(data);
+                return general.resetearMoneda(data,'PEN');
             }
         },
         {
             data : 'descuentoTotal',
             render : function(data){
-                return general.resetearMoneda(data);
+                return general.resetearMoneda(data,'PEN');
             }
         },
         {
             data : 'igvTotal',
             render : function(data){
-                return general.resetearMoneda(data);
+                return general.resetearMoneda(data,'PEN');
             }
         },
         {
             data : 'total',
             render : function(data){
-                return general.resetearMoneda(data);
+                return general.resetearMoneda(data,'PEN');
             }
         },
         {
@@ -196,7 +196,7 @@ function loadPage() {
                             continue;
                         }
                         if(keysTotales.indexOf(key) >= 0){
-                            dom.textContent = key == "descuentoTotal" ? "-" + general.resetearMoneda(valor): "" + general.resetearMoneda(valor);
+                            dom.textContent = key == "descuentoTotal" ? "-" + general.resetearMoneda(valor,'PEN'): "" + general.resetearMoneda(valor,'PEN');
                             continue;
                         }
                         if(!dom){

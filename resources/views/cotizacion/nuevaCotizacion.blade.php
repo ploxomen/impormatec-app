@@ -1,5 +1,7 @@
 @extends('helper.index')
 @section('head')
+    <script src="/library/tinyeditor/tinyeditor.js"></script>
+    <script src="/library/tinyeditor/es.js"></script>
     <script src="/cotizacion/compartido.js"></script>
     <script src="/cotizacion/nuevaCotizacion.js"></script>
     <title>Nueva cotización</title>
@@ -13,10 +15,10 @@
             </div>
         </div>
         <form id="frmCotizacion" class="form-row">
-            <div class="form-group col-12 col-lg-6">
+            <div class="form-group col-12">
                 <fieldset class="bg-white col-12 px-3 border form-row">
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cotización</legend>
-                    <div class="col-12 col-md-6 col-lg-4 form-group">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-2 form-group">
                         <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Pre - Cotizacion</label>
                         <select name="id_pre_cotizacion" id="cbPreCotizacion" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una pre - cotización">
                             <option value=""></option>
@@ -26,17 +28,25 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group col-12 col-md-6 col-lg-4">
+                    <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3">
                         <label for="idModalfechaEmitida">Fecha emisión</label>
-                        <input type="date" name="fechaCotizacion" value="{{date('Y-m-d')}}" class="form-control form-control-sm" required>
+                        <input type="date" name="fechaCotizacion" id="idModalfechaEmitida" value="{{date('Y-m-d')}}" class="form-control form-control-sm" required>
                     </div>
-                    <div class="form-group col-12 col-md-6 col-lg-4">
+                    <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3">
+                        <label for="idModalfechaVencimiento">Fecha vencimiento</label>
+                        <input type="date" name="fechaVencimiento" value="{{date('Y-m-d',strtotime(date('Y-m-d') . '+15 days'))}}" class="form-control form-control-sm" id="idModalfechaVencimiento" min="{{date('Y-m-d')}}" required>
+                    </div>
+                    <div class="form-group col-12 col-md-6 col-xl-2">
                         <label for="idModalmoneda">Tipo moneda</label>
                         <select name="tipoMoneda" id="idModalmoneda" required class="select2-simple form-control-sm">
                             <option value=""></option>
-                            <option value="Soles" selected>Soles (S/)</option>
-                            <option value="Dolar">Dolar ($)</option>
+                            <option value="PEN">Soles (S/)</option>
+                            <option value="USD" selected>Dolar ($)</option>
                         </select>
+                    </div>
+                    <div class="form-group col-12 col-md-6 col-xl-2">
+                        <label for="idModalConversionMoneda" class="col-form-label col-form-label-sm">Conversión (S/.) </label>
+                        <input type="number" step="0.001" class="form-control form-control-sm" required id="idModalConversionMoneda" value="3.70" name="conversionMoneda">
                     </div>
                     <div class="col-12 form-group">
                         <label for="cbCliente" class="col-form-label col-form-label-sm">Referencia</label>
@@ -50,7 +60,7 @@
                     </select>
                 </fieldset>
             </div>
-            <div class="form-group col-12 col-lg-6">
+            <div class="form-group col-12">
                 <fieldset class="bg-white col-12 px-3 border form-row">
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cliente</legend>
                         <div class="col-12 col-lg-6 form-group">
@@ -75,20 +85,27 @@
             </div>
             <div class="form-group col-12">
                 <fieldset class="bg-white col-12 px-3 border form-row">
-                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Servicios</legend>
+                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Servicios y productos</legend>
                         <div class="form-group col-12">
-                            <label for="cbServicios">Mis Servicios</label>
-                            <select id="cbServicios" class="form-control select2-simple" data-placeholder="Seleccione un servicio">
+                            <label for="cbServicios">Mis Servicios y productos</label>
+                            <select id="cbServicios" class="form-control select2-simple" data-placeholder="Seleccione un servicio o producto">
                                 <option value=""></option>
-                                @foreach ($servicios as $servicio)
-                                    <option value="{{$servicio->id}}">{{$servicio->servicio}}</option>
-                                @endforeach
+                                <optgroup label="Servicios">
+                                    @foreach ($servicios as $servicio)
+                                        <option value="{{$servicio->id}}" data-tipo="servicio">{{$servicio->servicio}}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Productos">
+                                    @foreach ($productos as $producto)
+                                        <option value="{{$producto->id}}" data-tipo="producto">{{$producto->nombreProducto}}</option>
+                                    @endforeach
+                                </optgroup>
                             </select>
                         </div>
                         <div class="col-12">
                             <h5 class="text-primary">
                                 <i class="fas fa-caret-right"></i>
-                                Servicios seleccionados
+                                Servicios y/o productos seleccionados
                             </h5>
                         </div>
                         <div class="col-12 form-group">
@@ -99,33 +116,33 @@
                                             <th>ITEM</th>
                                             <th style="min-width: 300px;">DESCRIPCIÓN</th>
                                             <th style="width: 100px;">CANT.</th>
-                                            <th>P. UNIT</th>
-                                            <th>DESC.</th>
+                                            <th style="width: 120px;">P. UNIT</th>
+                                            <th style="width: 120px;">DESC.</th>
                                             <th>P.TOTAL</th>
-                                            <th>ELIMINAR</th>
+                                            <th style="width: 50px;">ELIMINAR</th>
                                         </tr>
                                     </thead>
                                     <tbody id="contenidoServicios">
                                         <tr>
-                                            <td colspan="100%" class="text-center">No se seleccionaron servicios</td>
+                                            <td colspan="100%" class="text-center">No se seleccionaron servicios o productos</td>
                                         </tr>
                                     </tbody>
                                     <tfoot>
                                         <tr>
                                             <th colspan="5">SUBTOTAL</th>
-                                            <th colspan="2" id="idModalimporteTotal">S/ 0.00</th>
+                                            <th colspan="2" id="idModalimporteTotal">$ 0.00</th>
                                         </tr>
                                         <tr>
                                             <th colspan="5">DESCUENTO</th>
-                                            <th colspan="2" id="idModaldescuentoTotal">- S/ 0.00</th>
+                                            <th colspan="2" id="idModaldescuentoTotal">- $ 0.00</th>
                                         </tr>
                                         <tr>    
                                             <th colspan="5">I.G.V</th>
-                                            <th colspan="2" id="idModaligvTotal">S/ 0.00</th>
+                                            <th colspan="2" id="idModaligvTotal">$ 0.00</th>
                                         </tr>
                                         <tr>
                                             <th colspan="5">TOTAL</th>
-                                            <th colspan="2" id="idModaltotal">S/ 0.00</th>
+                                            <th colspan="2" id="idModaltotal">$ 0.00</th>
                                         </tr>
                                     </tfoot>
                                 </table>
@@ -135,12 +152,33 @@
             </div>
             <div class="form-group col-12">
                 <fieldset class="bg-white col-12 px-3 border">
-                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Servicios y productos</legend>
+                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Productos de servicios</legend>
                     <div class="form-row" id="listaServiciosProductos">
                         <h5 class="col-12 text-primary text-center">
                             Sin productos para mostrar  
                         </h5>
                     </div>
+                </fieldset>
+            </div>
+            <div class="form-group col-12">
+                <fieldset class="bg-white col-12 px-3 border">
+                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Nota</legend>
+                    <textarea id="notaCotizacion">
+                        <strong>
+                            <u>NOTA:</u>
+                        </strong>
+                        <ul>
+                            <li><strong>Forma pago:</strong> 50% con la confirmación, resto contra entrega.</li>
+                            <li><strong>Garantía:</strong> 6 meses.</li>
+                            <li><strong>Validez Oferta:</strong> 15 día(s).</li>
+                            <li><strong>Moneda:</strong> Sóles.</li>
+                            <li><strong>Nota 1:</strong> Los costos incluyen IGV -Todos nuestros servicios se formalizan con boleta de venta o factura
+                                de venta.</li>
+                            <li><strong>Nota 2:</strong> Todo trabajo adicional que se pudiera encontrar se comunicará anticipadamente.</li>
+                            <li><strong>Nota 3:</strong> Nuestro personal cuenta con EPP ́S (casco, uniforme completo, guantes, lentes, zapatos de seguridad, etc). Así mismo, cuenta con SCTR (salud y pensión).</li>
+                            <li><strong>Nota 4:</strong> Nuestro personal cumple con el protocolo COVID19</li>
+                        </ul>
+                    </textarea>
                 </fieldset>
             </div>
             <div class="form-group col-12">

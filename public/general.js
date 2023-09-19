@@ -70,6 +70,14 @@ class General{
             currency: tipo,
         })
     }
+    abrirPesatana(url){
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        document.body.append(a);
+        a.click();
+        document.body.removeChild(a);
+    }
     switchs(e){
         const label = e.target.parentElement.querySelector("label");
         label.textContent = e.target.checked ? e.target.dataset.selected : e.target.dataset.noselected;

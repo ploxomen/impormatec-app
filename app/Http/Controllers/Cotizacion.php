@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Clientes;
 use App\Models\ClientesContactos;
+use App\Models\Configuracion;
 use App\Models\Cotizacion as ModelsCotizacion;
 use App\Models\CotizacionImagenes;
 use App\Models\CotizacionPdf;
+use App\Models\CotizacionProductos;
 use App\Models\CotizacionServicio;
 use App\Models\CotizacionServicioProducto;
 use App\Models\PreCotizaion;
@@ -77,21 +79,25 @@ class Cotizacion extends Controller
     }
     public function renderPdf($idCotizacion) {
         $cotizacion = ModelsCotizacion::find($idCotizacion);
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono'])->get();
+        // dd($configuracion);
         $cliente = Clientes::find($cotizacion->id_cliente);
         $representante = ClientesContactos::find($cotizacion->representanteCliente);
         $nombreDia = $this->obtenerFechaLarga(strtotime($cotizacion->fechaCotizacion));
         $nombreMes = $this->obtenerNombreMes(strtotime($cotizacion->fechaCotizacion));
         $servicios = CotizacionServicio::where('id_cotizacion',$cotizacion->id)->get();
+        $moneda = $cotizacion->tipoMoneda === "USD" ? '$' : 'S/';
         $reportePreCotizacion = [];
         if($cotizacion->reportePreCotizacion === 1){
             $preCotizacion = PreCotizaion::where('id',$cotizacion->id_pre_cotizacion)->first();
             $reportePreCotizacion['html'] = $preCotizacion->html_primera_visita;
             $reportePreCotizacion['imagenes'] = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
         }
-        $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("cotizacion","cliente","nombreDia","nombreMes","representante","servicios","reportePreCotizacion"));
-        $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
-        $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
-        return $nombreDocumento;
+        $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("moneda","configuracion","cotizacion","cliente","nombreDia","nombreMes","representante","servicios","reportePreCotizacion"));
+        // $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
+        // $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
+        // return $nombreDocumento;
+        return $pdf->stream();
     }
     public function obtenerCotizacion(ModelsCotizacion $cotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
@@ -257,7 +263,8 @@ class Cotizacion extends Controller
     }
     public function verPdfCotizacion($cotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
-        if(isset($verif['session'])){
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloCotizacionAgregar);
+        if(isset($verif['session']) && isset($verif2['session'])){
             return redirect()->route("home"); 
         }
         $cotizacion = ModelsCotizacion::findOrFail($cotizacion);
@@ -332,12 +339,11 @@ class Cotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $diasValidos = 15;
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
-        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
+        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
         $cotizacion['reportePreCotizacion'] = $request->has("incluirPreCotizacion");
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
-        $cotizacion['fechaFinCotizacion'] = date("Y-m-d",strtotime($request->fechaCotizacion."+ " . $diasValidos . " days"));
+        $cotizacion['fechaFinCotizacion'] = $request->fechaVencimiento;
         $cotizacion['cotizadorUsuario'] = Auth::id();
         $cotizacion['id_pre_cotizacion'] = $preCotizacion;
         $detalleCotizacion = json_decode($request->servicios);
@@ -353,18 +359,30 @@ class Cotizacion extends Controller
         DB::beginTransaction();
         try {
             $mCotizacion = ModelsCotizacion::create($cotizacion);
-            foreach ($detalleCotizacion as $coti) {
-                $mCotiServ = CotizacionServicio::create([
+            // dd($detalleCotizacion);
+            foreach ($detalleCotizacion as $key => $coti) {
+                $importes['importeTotal'] += $coti->pImporte;
+                $importes['descuentoTotal'] += $coti->descuento;
+                $importes['igvTotal'] += $coti->pTotal * 0.18;
+                $importes['total'] += $coti->pTotal;
+                $coleccionDatos = [
                     'id_cotizacion' => $mCotizacion->id,
-                    'id_servicio' => $coti->idServicio,
-                    'costo' => $coti->pUni,
+                    'precio' => $coti->pUni,
+                    'orden' => $key + 1,
                     'cantidad' => $coti->cantidad,
-                    'importe' => $coti->pUni,
+                    'importe' => $coti->pImporte,
                     'descuento' => $coti->descuento,
                     'total' => $coti->pTotal,
                     'igv' => $coti->pTotal * 0.18,
                     'estado' => 1
-                ]);
+                ];
+                if(empty($coti->idServicio) && !empty($coti->idProducto)){
+                    $coleccionDatos['id_producto'] = $coti->idProducto;
+                    CotizacionProductos::create($coleccionDatos);
+                    continue;
+                }
+                $coleccionDatos['id_servicio'] = $coti->idServicio;
+                $mCotiServ = CotizacionServicio::create($coleccionDatos);
                 foreach ($coti->productosLista as $producto) {
                     CotizacionServicioProducto::create([
                         'id_cotizacion_servicio' => $mCotiServ->id,
@@ -376,10 +394,6 @@ class Cotizacion extends Controller
                         'total' => $producto->pTotal
                     ]);
                 }
-                $importes['importeTotal'] += $coti->pUni;
-                $importes['descuentoTotal'] += $coti->descuento;
-                $importes['igvTotal'] += $coti->pTotal * 0.18;
-                $importes['total'] += $coti->pTotal;
             }
             $mCotizacion->update($importes);
             $documentoCotizacion = $this->renderPdf($mCotizacion->id);
@@ -417,7 +431,7 @@ class Cotizacion extends Controller
                 PreCotizaion::find($request->id_pre_cotizacion)->update(['estado' => 3]);
             }
             DB::commit();
-            return response()->json(['success' => 'Cotización agregada correctamente']);
+            return response()->json(['success' => 'Cotización agregada correctamente','urlPdf' => route('ver.cotizacion.pdf',[$mCotizacion->id])]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json(['error' => $th->getMessage(), 'line' => $th->getLine()]);
