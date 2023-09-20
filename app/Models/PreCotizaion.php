@@ -22,7 +22,7 @@ class PreCotizaion extends Model
     }
     public static function obtenerPreCotizacionEditar($idPreCotizacion){
         $preCotizacion = DB::table("cotizacion_pre AS cp")
-        ->select("cp.detalle","cp.id","cp.id_cliente","u.correo","u.tipoDocumento","u.nroDocumento","u.telefono","u.celular","u.direccion")
+        ->select("cp.detalle","cp.id","cp.id_cliente","u.correo","u.tipoDocumento","u.nroDocumento","u.telefono","u.celular","u.direccion","cp.estado")
         ->selectRaw("DATE_FORMAT(cp.fecha_hr_visita,'%Y-%m-%d %H:%i') AS fechaHrProgramada")
         ->join("clientes AS c","c.id","=","cp.id_cliente")
         ->join("usuarios AS u","u.id","=","c.id_usuario")

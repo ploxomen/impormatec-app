@@ -79,13 +79,15 @@ class Cotizacion extends Controller
     }
     public function renderPdf($idCotizacion) {
         $cotizacion = ModelsCotizacion::find($idCotizacion);
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono'])->get();
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
         // dd($configuracion);
         $cliente = Clientes::find($cotizacion->id_cliente);
         $representante = ClientesContactos::find($cotizacion->representanteCliente);
         $nombreDia = $this->obtenerFechaLarga(strtotime($cotizacion->fechaCotizacion));
         $nombreMes = $this->obtenerNombreMes(strtotime($cotizacion->fechaCotizacion));
-        $servicios = CotizacionServicio::where('id_cotizacion',$cotizacion->id)->get();
+        $servicios = CotizacionServicio::select("*")->selectRaw("'servicio' AS tipo")->where('id_cotizacion',$cotizacion->id);
+        $productosServicios = CotizacionProductos::select("*")->selectRaw("'producto' AS tipo")->where('id_cotizacion',$cotizacion->id)->union($servicios)->orderBy("orden")->get();
+        // dd($productosServicios);
         $moneda = $cotizacion->tipoMoneda === "USD" ? '$' : 'S/';
         $reportePreCotizacion = [];
         if($cotizacion->reportePreCotizacion === 1){
@@ -93,11 +95,11 @@ class Cotizacion extends Controller
             $reportePreCotizacion['html'] = $preCotizacion->html_primera_visita;
             $reportePreCotizacion['imagenes'] = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
         }
-        $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("moneda","configuracion","cotizacion","cliente","nombreDia","nombreMes","representante","servicios","reportePreCotizacion"));
-        // $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
-        // $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
-        // return $nombreDocumento;
-        return $pdf->stream();
+        $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("moneda","configuracion","cotizacion","cliente","nombreDia","nombreMes","representante","productosServicios","reportePreCotizacion"));
+        $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
+        $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
+        return $nombreDocumento;
+        // return $pdf->stream();
     }
     public function obtenerCotizacion(ModelsCotizacion $cotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
@@ -152,7 +154,7 @@ class Cotizacion extends Controller
                         'id_cotizacion_servicio' => $mCotiServ->id,
                         'id_producto' => $producto->idProducto,
                     ],[
-                        'costo' => $producto->pVenta,
+                        'costo' => $producto->pVentaConvertido,
                         'cantidad' => $producto->cantidad,
                         'importe' => $producto->importe,
                         'descuento' => $producto->descuento,
@@ -387,7 +389,7 @@ class Cotizacion extends Controller
                     CotizacionServicioProducto::create([
                         'id_cotizacion_servicio' => $mCotiServ->id,
                         'id_producto' => $producto->idProducto,
-                        'costo' => $producto->pVenta,
+                        'costo' => $producto->pVentaConvertido,
                         'cantidad' => $producto->cantidad,
                         'importe' => $producto->importe,
                         'descuento' => $producto->descuento,

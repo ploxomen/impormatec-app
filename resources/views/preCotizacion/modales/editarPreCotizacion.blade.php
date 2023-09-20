@@ -88,6 +88,14 @@
                   <label for="idModaldetalle" class="col-form-label col-form-label-sm">Detalles</label>
                   <textarea name="detalle" class="form-control" id="idModaldetalle" rows="2"></textarea>
               </div>
+              <div class="col-12 col-md-6 col-lg-3 form-group">
+                <label for="idModalestado" class="col-form-label col-form-label-sm">Estado</label>
+                <select name="estado" class="form-control" required id="idModalestado">
+                    <option value="1">Programado</option>
+                    <option value="2">Informado</option>
+                    <option value="3">Cotizado</option>
+                </select>
+            </div>
               <input type="submit" hidden id="btnFrmEnviar">
             </form>
         </div>

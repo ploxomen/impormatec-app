@@ -273,7 +273,6 @@ function loadPage() {
                     if (response.session) {
                         return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
                     }
-                    tablaProductoDatatable.draw();
                     return alertify.success(response.success);
                 } catch (error) {
                     general.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
@@ -493,6 +492,7 @@ function loadPage() {
                 return alertify.alert("Alerta",response.alerta);
             }
             if(response.success){
+                tablaPreCotizacionDatatable.draw();
                 if(response.idCliente){
                     cbCliente.append(`<option value=${response.idCliente}>${response.nombreCliente}</option>`);
                 }

@@ -116,11 +116,11 @@ class Cotizacion extends General{
         cbClonadoProductos.setAttribute("data-tabla-productos",`tablaBodyServiciosProductos${idServicio}`);
         cbClonadoProductos.setAttribute("data-servicio",`${idServicio}`);
         servicio.innerHTML = `
-        <div class="d-flex justify-content-between">
+        <div class="d-flex flex-wrap justify-content-between">
             <h5 class="text-primary">
                 <i class="fas fa-concierge-bell"></i> ${nombreServicio}  
             </h5>
-            <div class="form-group">
+            <div class="form-group" style="width:300px;">
                 <label>Productos</label>
                 ${cbClonadoProductos.outerHTML}
             </div>

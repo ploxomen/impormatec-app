@@ -232,7 +232,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
     Route::get('storage/{tipo}/{filename}', function ($tipo,$filename){
         $path = storage_path('app/'.$tipo . '/' . $filename);
         if (!File::exists($path)) {
-            abort(404);
+            $path = storage_path('app/productos/sin-imagen.png');
         }
         $file = File::get($path);
         $type = File::mimeType($path);

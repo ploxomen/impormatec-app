@@ -206,7 +206,7 @@ class PreCotizacion extends Controller
                 }
                 Clientes::find($clienteId)->usuario()->update($cliente);
             }
-            $preCotizacion = $request->only("fecha_hr_visita","detalle");
+            $preCotizacion = $request->only("fecha_hr_visita","detalle","estado");
             $preCotizacion['id_cliente'] = $clienteId;
             $preCotizacion['usuario_modificado'] = $idUsuario;
             // $preCotizacion['estado'] = 1;
