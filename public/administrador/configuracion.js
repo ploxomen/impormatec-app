@@ -30,14 +30,28 @@ function loadPage() {
             input.click();
         },
     });
+    const btnActualizarDatos = document.querySelector("#btnSubmitNegocio");
     const frmConfiguracion = document.querySelector("#configuracionMiNegocio");
     frmConfiguracion.addEventListener("submit",async function(e){
         e.preventDefault();
         let datos = new FormData(this);
         datos.append("texto_datos_bancarios",tinymce.activeEditor.getContent());
         try {
+            general.cargandoPeticion(btnActualizarDatos, general.claseSpinner, true);
+            const response = await general.funcfetch("mi-negocio/actualizar",datos,"POST");
+            if(response.session){
+                return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+            }
+            if(response.alerta){
+                return alertify.alert("Alerta",response.alerta);
+            }
+            if(response.success){
+                alertify.success(response.success);
+            }
         } catch (error) {
-            
+            alertify.error("error al actualizar los datos");
+        }finally{
+            general.cargandoPeticion(btnActualizarDatos, 'fas fa-pencil-alt', false);
         }
     })
 }
