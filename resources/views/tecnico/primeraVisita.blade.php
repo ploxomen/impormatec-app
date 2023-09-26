@@ -22,10 +22,17 @@
                 </button>
             </div>
         </section>
-        <h5 class="text-primary">
-            <i class="fas fa-caret-right"></i>
-            Todas las visitas por fecha
-        </h5>
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h5 class="text-primary">
+                <i class="fas fa-caret-right"></i>
+                <span>Todas las visitas por fechas<span>
+            </h5>
+            <a href="{{route('descargarArchivo',['FORMATO_UNICO_DE_VISITAS.pdf'])}}" download="FORMATO_UNICO_DE_VISITAS" class="btn btn-sm btn-primary">
+                <i class="fas fa-download"></i>
+                <span>Descargar formato de visitas</span>
+            </a>
+        </div>
+        
         <div class="mb-3 d-flex flex-wrap" style="gap:10px;" id="contenidoFiltro"></div>
         <h5 class="text-primary">
             <i class="fas fa-caret-right"></i>

@@ -8,6 +8,30 @@ function loadPage() {
             cargarVisitas();
         }
     }
+    const documentoFormatoVisita = document.querySelector("#documentoVisitas");
+    const btndocumentoFormatoVisita = document.querySelector("#btnFormatoVisitas");
+    btndocumentoFormatoVisita.onclick = e => documentoFormatoVisita.click();
+    documentoFormatoVisita.addEventListener("change",function(e){
+        const documentos = e.target.files;
+        if(document.querySelector("#documento-mostrar-formato-visita")){
+            document.querySelector("#documento-mostrar-formato-visita").remove();
+        }
+        if(!documentos.length){
+            return alertify.error("documento no seleccionado");
+        }
+        const formatoVisita = documentos[0];
+        if(formatoVisita.type !== "application/pdf"){
+            return alertify.error("el documento debe de ser un pdf");
+        }
+        const documentoSubido = document.createElement("div");
+        documentoSubido.className = "rounded-pill bg-light p-2";
+        documentoSubido.id = "documento-mostrar-formato-visita";
+        documentoSubido.innerHTML = `
+        <span>${formatoVisita.name}</span>`
+        this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
+        return alertify.success("formato de visita subido correctamente");
+
+    });
     const contenidoFiltro = document.querySelector("#contenidoFiltro");
     async function cargarVisitas() {
         boxNoVisitas.hidden = true;

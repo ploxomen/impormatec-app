@@ -168,7 +168,14 @@ function loadPage() {
             });
             return alertify.success("la imagen se agrego correctamente");
         }
-    })
+    });
+    const documentoFormatoVisita = document.querySelector("#documentoVisitas");
+    const btndocumentoFormatoVisita = document.querySelector("#btnFormatoVisitas");
+    btndocumentoFormatoVisita.onclick = e => documentoFormatoVisita.click();
+    documentoFormatoVisita.addEventListener("change",function(e){
+        console.log(e.target);
+    });
+
     function deleteImg(nameImg,li){
         const newDataTrnasfer = new DataTransfer();
         const filesParent = imgOriginal;

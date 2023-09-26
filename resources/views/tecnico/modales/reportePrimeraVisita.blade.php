@@ -49,6 +49,16 @@
                   <input type="submit" id="btnFrom" hidden>
               </div>
             </form>
+            <div class="d-flex align-items-center mb-3" style="gap: 10px;">
+              <h5 class="text-primary">
+                <i class="fas fa-caret-right"></i>
+                Subir formato de visitas
+              </h5>
+              <button class="btn btn-sm btn-danger" type="button" id="btnFormatoVisitas" title="Subir formato de visitas">
+                <i class="fas fa-file-pdf"></i>
+              </button>
+              <input type="file" hidden id="documentoVisitas" accept=".pdf">
+            </div>
         </div>
         <div class="modal-footer">
           <button type="button" id="btnGenerarReporte" class="btn btn-outline-primary">

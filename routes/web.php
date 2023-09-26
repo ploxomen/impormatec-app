@@ -26,6 +26,7 @@ use App\Http\Controllers\Tecnico;
 // use Illuminate\Support\Facades\File;
 // use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -239,7 +240,15 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         $response = Response::make($file, 200);
         $response->header("Content-Type", $type);
         return $response;
-    })->name("urlImagen"); 
+    })->name("urlImagen");
+    Route::get("descargar/{archivo}",function ($archivo){
+        $rutaArchivo = storage_path('app/public/' . $archivo);
+        if (Storage::disk('local')->exists('public/' . $archivo)) {
+            return response()->file($rutaArchivo);
+        } else {
+            abort(404);
+        }
+    })->name("descargarArchivo");
 });
 Route::get("/",function(){
     return redirect()->route('login');
