@@ -80,14 +80,12 @@ class Cotizacion extends Controller
     public function renderPdf($idCotizacion) {
         $cotizacion = ModelsCotizacion::find($idCotizacion);
         $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
-        // dd($configuracion);
         $cliente = Clientes::find($cotizacion->id_cliente);
         $representante = ClientesContactos::find($cotizacion->representanteCliente);
         $nombreDia = $this->obtenerFechaLarga(strtotime($cotizacion->fechaCotizacion));
         $nombreMes = $this->obtenerNombreMes(strtotime($cotizacion->fechaCotizacion));
-        $servicios = CotizacionServicio::select("*")->selectRaw("'servicio' AS tipo")->where('id_cotizacion',$cotizacion->id);
-        $productosServicios = CotizacionProductos::select("*")->selectRaw("'producto' AS tipo")->where('id_cotizacion',$cotizacion->id)->union($servicios)->orderBy("orden")->get();
-        // dd($productosServicios);
+        $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
+        $productosServicios = CotizacionProductos::productosServicios($servicios,$cotizacion->id);
         $moneda = $cotizacion->tipoMoneda === "USD" ? '$' : 'S/';
         $reportePreCotizacion = [];
         if($cotizacion->reportePreCotizacion === 1){
@@ -99,14 +97,20 @@ class Cotizacion extends Controller
         $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
         $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
         return $nombreDocumento;
-        // return $pdf->stream();
     }
     public function obtenerCotizacion(ModelsCotizacion $cotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $cotizacion->servicios = ModelsCotizacion::obtenerServiciosProductos($cotizacion->id,false);
+        $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
+        $detalleCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id);
+        foreach ($detalleCotizacion->where('tipo','servicio') as $servicio) {
+            $servicio->detalleProductos = CotizacionServicioProducto::select("productos.id AS idProducto","productos.urlImagen","productos.nombreProducto","cotizacion_servicio_productos.cantidad AS cantidadUsada","cotizacion_servicio_productos.costo AS pVentaConvertido","cotizacion_servicio_productos.total AS precioTotal","cotizacion_servicio_productos.importe", "cotizacion_servicio_productos.descuento","productos.precioVenta")->selectRaw("? AS tipoMoneda", [$cotizacion->tipoMoneda])
+            ->join("productos","cotizacion_servicio_productos.id_producto","=","productos.id")
+            ->where(['id_cotizacion_servicio' => $servicio->id])->get();
+        }
+        $cotizacion->serviciosProductos = $detalleCotizacion;
         $cotizacion->contactosClientes = ClientesContactos::where('idCliente',$cotizacion->id_cliente)->get();
         $cotizacion->documentosPdf = CotizacionPdf::select("id","nombre_archivo")->where('id_cotizacion',$cotizacion->id)->get();
         return response()->json(['cotizacion' => $cotizacion]);
@@ -117,12 +121,11 @@ class Cotizacion extends Controller
             return response()->json(['session' => true]);
         }
         $cotizacionModel = ModelsCotizacion::find($request->idCotizacion);
-        $diasValidos = 15;
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
-        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
+        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
         $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
-        $cotizacion['fechaFinCotizacion'] = date("Y-m-d",strtotime($request->fechaCotizacion."+ " . $diasValidos . " days"));
+        $cotizacion['fechaFinCotizacion'] = $request->fechaVencimiento;
         $cotizacion['id_pre_cotizacion'] = $preCotizacion;
         $detalleCotizacion = json_decode($request->servicios);
         $importes = [
@@ -137,18 +140,31 @@ class Cotizacion extends Controller
         DB::beginTransaction();
         try {
             $cotizacionModel->update($cotizacion);
-            foreach ($detalleCotizacion as $coti) {
+            foreach ($detalleCotizacion as $key => $coti) {
+                $importes['importeTotal'] += $coti->pImporte;
+                $importes['descuentoTotal'] += $coti->descuento;
+                $importes['igvTotal'] += $coti->pTotal * 0.18;
+                $importes['total'] += $coti->pTotal;
+                $coleccionDatos = [
+                    'precio' => $coti->pUni,
+                    'orden' => $key + 1,
+                    'cantidad' => $coti->cantidad,
+                    'importe' => $coti->pImporte,
+                    'descuento' => $coti->descuento,
+                    'total' => $coti->pTotal,
+                    'igv' => $coti->pTotal * 0.18,
+                ];
+                if(empty($coti->idServicio) && !empty($coti->idProducto)){
+                    CotizacionProductos::updateOrCreate([
+                        'id_cotizacion' => $cotizacionModel->id,
+                        'id_producto' => $coti->idProducto
+                    ],$coleccionDatos);
+                    continue;
+                }
                 $mCotiServ = CotizacionServicio::updateOrCreate([
                     'id_cotizacion' => $cotizacionModel->id,
                     'id_servicio' => $coti->idServicio,
-                    ],[
-                    'costo' => $coti->pUni,
-                    'cantidad' => $coti->cantidad,
-                    'importe' => $coti->pUni,
-                    'descuento' => $coti->descuento,
-                    'total' => $coti->pTotal,
-                    'igv' => $coti->pTotal * 0.18
-                ]);
+                    ],$coleccionDatos);
                 foreach ($coti->productosLista as $producto) {
                     CotizacionServicioProducto::updateOrCreate([
                         'id_cotizacion_servicio' => $mCotiServ->id,
@@ -161,10 +177,6 @@ class Cotizacion extends Controller
                         'total' => $producto->pTotal
                     ]);
                 }
-                $importes['importeTotal'] += $coti->pUni;
-                $importes['descuentoTotal'] += $coti->descuento;
-                $importes['igvTotal'] += $coti->pTotal * 0.18;
-                $importes['total'] += $coti->pTotal;
             }
             $cotizacionModel->update($importes);
             $cotizacionModel->fresh();
@@ -245,9 +257,13 @@ class Cotizacion extends Controller
                 $productos->where('id_producto',$request->idProducto)->delete();
                 return response()->json(['success' => 'El prodcto se a eliminado de manera correcta']);
             break;
+            case 'eliminar-producto-servicio':
+                CotizacionProductos::where(['id_cotizacion' => $request->idCotizacion, 'id_producto' => $request->idDetalle])->delete();
+                return response()->json(['success' => 'El producto se a eliminado de manera correcta']);
+            break;
             case 'eliminar-servicio':
                 $servicios = CotizacionServicio::where('id_cotizacion',$request->idCotizacion);
-                $consultaServicio = $servicios->where('id_servicio',$request->idServicio)->first();
+                $consultaServicio = $servicios->where('id_servicio',$request->idDetalle)->first();
                 CotizacionServicioProducto::where('id_cotizacion_servicio',$consultaServicio->id)->delete();
                 $consultaServicio->delete();
                 return response()->json(['success' => 'El servicio se a eliminado de manera correcta']);
@@ -295,6 +311,7 @@ class Cotizacion extends Controller
                 if(empty($consulta)){
                     $resultado['alerta'] = "Esta cotización ya a sido aprobada";
                 }else{
+                    $resultado['productos'] = 
                     $resultado['servicios'] = ModelsCotizacion::obtenerServiciosProductos($request->idCotizacion);
                 }
             break;
@@ -343,7 +360,7 @@ class Cotizacion extends Controller
         }
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
         $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
-        $cotizacion['reportePreCotizacion'] = $request->has("incluirPreCotizacion");
+        $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
         $cotizacion['fechaFinCotizacion'] = $request->fechaVencimiento;
         $cotizacion['cotizadorUsuario'] = Auth::id();
@@ -361,7 +378,6 @@ class Cotizacion extends Controller
         DB::beginTransaction();
         try {
             $mCotizacion = ModelsCotizacion::create($cotizacion);
-            // dd($detalleCotizacion);
             foreach ($detalleCotizacion as $key => $coti) {
                 $importes['importeTotal'] += $coti->pImporte;
                 $importes['descuentoTotal'] += $coti->descuento;

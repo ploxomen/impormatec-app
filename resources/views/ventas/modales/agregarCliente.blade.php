@@ -40,6 +40,27 @@
                     <label for="idModaltelefono">Teléfono</label>
                     <input type="tel" name="telefono" class="form-control" id="idModaltelefono">
                 </div>
+                <div class="form-group col-6">
+                    <label for="idModalnombreCliente">Pais</label>
+                    <select name="id_pais" id="idModalpaises" required class="select2-simple" data-placeholder="Seleccione un país">
+                        <option value=""></option>
+                        @foreach ($paises as $pais)
+                            <option value="{{$pais->id}}" {{$pais->id == 165 ? 'selected' : ''}}>{{$pais->pais_espanish}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group col-6">
+                    <label for="idModalcelular">Departamento</label>
+                    <input type="tel" name="departamento" class="form-control" id="idModalcelular">
+                </div>
+                <div class="form-group col-6">
+                    <label for="idModaltelefono">Provincia</label>
+                    <input type="tel" name="provincia" class="form-control" id="idModaltelefono">
+                </div>
+                <div class="form-group col-6">
+                    <label for="idModaltelefono">Distrito</label>
+                    <input type="tel" name="distrito" class="form-control" id="idModaltelefono">
+                </div>
                 <div class="form-group col-12">
                     <label for="idModaldireccion">Dirección</label>
                     <input type="text" name="direccion" id="idModaldireccion" rows="3" class="form-control">

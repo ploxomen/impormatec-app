@@ -8,7 +8,8 @@
           </button>
         </div>
         <div class="modal-body">
-          <ol class="ml-3" id="contenidoServiciosProductos"></ol>
+          <div class="ml-3" id="contenidoProductos"></div>
+          <div class="ml-3" id="contenidoServiciosProductos"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" id="actualizarAlmacenProductos">Actualizar</button>

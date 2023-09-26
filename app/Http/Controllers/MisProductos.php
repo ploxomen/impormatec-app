@@ -48,7 +48,7 @@ class MisProductos extends Controller
         $urlImage = null;
         DB::beginTransaction();
         try {
-            $datos = $request->only("nombreProducto","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
+            $datos = $request->only("nombreProveedor","nombreProducto","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
             if($request->has('urlImagen')){
                 $datos['urlImagen'] = $this->guardarArhivo($request,'urlImagen',"productos");
                 $urlImage = $datos['urlImagen'];

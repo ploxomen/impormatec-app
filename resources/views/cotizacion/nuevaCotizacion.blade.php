@@ -37,16 +37,16 @@
                         <input type="date" name="fechaVencimiento" value="{{date('Y-m-d',strtotime(date('Y-m-d') . '+15 days'))}}" class="form-control form-control-sm" id="idModalfechaVencimiento" min="{{date('Y-m-d')}}" required>
                     </div>
                     <div class="form-group col-12 col-md-6 col-xl-2">
-                        <label for="idModalmoneda">Tipo moneda</label>
-                        <select name="tipoMoneda" id="idModalmoneda" required class="select2-simple form-control-sm">
+                        <label for="idModaltipoMoneda">Tipo moneda</label>
+                        <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
                             <option value=""></option>
                             <option value="PEN">Soles (S/)</option>
                             <option value="USD" selected>Dolar ($)</option>
                         </select>
                     </div>
                     <div class="form-group col-12 col-md-6 col-xl-2">
-                        <label for="idModalConversionMoneda" class="col-form-label col-form-label-sm">Conversión (S/.) </label>
-                        <input type="number" step="0.001" class="form-control form-control-sm" required id="idModalConversionMoneda" value="3.70" name="conversionMoneda">
+                        <label for="idModalconversionMoneda" class="col-form-label col-form-label-sm">Conversión (S/.) </label>
+                        <input type="number" step="0.001" class="form-control form-control-sm" required id="idModalconversionMoneda" value="3.70" name="conversionMoneda">
                     </div>
                     <div class="col-12 form-group">
                         <label for="cbCliente" class="col-form-label col-form-label-sm">Referencia</label>

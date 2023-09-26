@@ -1,7 +1,24 @@
 function loadPage() {
     let general = new General();
     let cotizacionGeneral = new Cotizacion();
-    let estadoCotizacion = ["Por aprobar","Aprobado","Pendiente OS","Con OS"]
+    let estadoCotizacion = [
+        {
+            class:"badge badge-warning",
+            value: "Por aprobar"
+        },
+        {
+            class:"badge badge-success",
+            value: "Aprobado"
+        },
+        {
+            class:"badge badge-info",
+            value: "Pendiente OS"
+        },
+        {
+            class:"badge badge-primary",
+            value: "Con OS"
+        }
+    ]
     const tablaCotizacion = document.querySelector("#tablaCotizaciones");
     const tablatablaCotizacionDatatable = $(tablaCotizacion).DataTable({
         ajax: {
@@ -35,32 +52,32 @@ function loadPage() {
         },
         {
             data : 'importeTotal',
-            render : function(data){
-                return general.resetearMoneda(data,'PEN');
+            render : function(data,type,row){
+                return general.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'descuentoTotal',
-            render : function(data){
-                return general.resetearMoneda(data,'PEN');
+            render : function(data,type,row){
+                return "-"+ general.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'igvTotal',
-            render : function(data){
-                return general.resetearMoneda(data,'PEN');
+            render : function(data,type,row){
+                return general.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'total',
-            render : function(data){
-                return general.resetearMoneda(data,'PEN');
+            render : function(data,type,row){
+                return general.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'estado',
-            render : function(data){
-                return estadoCotizacion[+data-1];
+            render : function(data,type,row){
+                return `<span class="${estadoCotizacion[+data-1].class}">${estadoCotizacion[+data-1].value}</span>`;
             }
         },
         {
@@ -97,6 +114,36 @@ function loadPage() {
             }
         },
         ]
+    });
+    tinymce.init({
+        selector: '#idModalNotaCotizacion',
+        language: 'es',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        image_title: true,
+        branding: false,
+        height: "500px",
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        file_picker_callback: (cb, value, meta) => {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                const id = 'blobid' + (new Date()).getTime();
+                const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+                const base64 = reader.result.split(',')[1];
+                const blobInfo = blobCache.create(id, file, base64);
+                blobCache.add(blobInfo);
+                cb(blobInfo.blobUri(), { title: file.name });
+            });
+            reader.readAsDataURL(file);
+            });
+            input.click();
+        },
     });
     let idCotizacion = null;
     const listaServiciosAlmacen = document.querySelector("#contenidoServiciosProductos");
@@ -149,12 +196,22 @@ function loadPage() {
                     return alertify.alert("Mensaje",response.alerta);
                 }
                 idCotizacion = e.target.dataset.cotizacion;
+                cotizacionGeneral.$cbTipoMoneda.value = response.cotizacion.tipoMoneda;
+                cotizacionGeneral.$txtConversion.value = response.cotizacion.conversionMoneda;
+                $('#editarCotizacion .select2-simple').trigger("change");
                 for (const key in response.cotizacion) {
                     if (Object.hasOwnProperty.call(response.cotizacion, key)) {
                         const valor = response.cotizacion[key];
                         const dom = document.querySelector("#idModal" + key);
+                        if(key == "tipoMoneda" || key == "conversionMoneda"){
+                            continue;
+                        }
                         if(key == "id_pre_cotizacion" && !valor){
                             dom.value = "ninguno";
+                            continue;
+                        }
+                        if(key == "textoNota"){
+                            tinymce.activeEditor.setContent(!valor ? "" : valor);
                             continue;
                         }
                         if(key == "reporteDetallado" || key == "reportePreCotizacion"){
@@ -174,12 +231,15 @@ function loadPage() {
                             });
                             continue;
                         }
-                        if(key == "servicios"){
-                            valor.forEach((servicio,k) => {
-                                tablaServicios.append(cotizacionGeneral.agregarServicio(k+1,servicio.id_servicio,servicio.servicio,servicio.cantidad,servicio.costo,servicio.descuento,servicio.total,"antiguo"));
-                                tablaServicioProductos.append(cotizacionGeneral.agregarServicioProductos(servicio.id_servicio,servicio.servicio,servicio.productos,"antiguo"));
-                                serviciosProductos.push(cotizacionGeneral.asignarListaServiciosProductos(servicio));
-                                cotizacionGeneral.cbServiciosOpt(cbServicios,true,[+servicio.id_servicio]);
+                        if(key == "serviciosProductos"){
+                            valor.forEach((servicioProducto,k) => {
+                                const {id_producto,nombreDescripcion,cantidad,precio,descuento,total,tipo} = servicioProducto;
+                                tablaServicios.append(cotizacionGeneral.agregarServicio(k+1,id_producto,nombreDescripcion,cantidad,precio,descuento,total,tipo,"antiguo"));
+                                if(tipo === "servicio"){
+                                    tablaServicioProductos.append(cotizacionGeneral.listarDetalleProductosDeServicios(id_producto,nombreDescripcion,servicioProducto.detalleProductos,"antiguo"));
+                                }
+                                serviciosProductos.push(cotizacionGeneral.asignarListaServiciosProductosEditar(servicioProducto));
+                                cotizacionGeneral.cbServiciosOpt(cbServicios,true,[{id:id_producto,tipo}]);
                             });
                             $('#listaServiciosProductos .cb-servicios-productos').select2({
                                 theme: 'bootstrap',
@@ -196,7 +256,7 @@ function loadPage() {
                             continue;
                         }
                         if(keysTotales.indexOf(key) >= 0){
-                            dom.textContent = key == "descuentoTotal" ? "-" + general.resetearMoneda(valor,'PEN'): "" + general.resetearMoneda(valor,'PEN');
+                            dom.textContent = key == "descuentoTotal" ? "-" + general.resetearMoneda(valor,response.cotizacion.tipoMoneda): "" + general.resetearMoneda(valor,response.cotizacion.tipoMoneda);
                             continue;
                         }
                         if(!dom){
@@ -223,7 +283,10 @@ function loadPage() {
         formCotizacion.reset();
         $('#editarCotizacion .select2-simple').val("").trigger("change");
         contenedorArchivoPdf.innerHTML = "";
-    })
+    });
+    $(cotizacionGeneral.$cbTipoMoneda).on("select2:select", function (e) {
+        cotizacionGeneral.modificarMonedaTotal($(this).val(),serviciosProductos,tablaServicios)
+    });
     document.querySelector("#actualizarAlmacenProductos").onclick = async function(e){
         const datos = new FormData();
         datos.append("acciones","aprobar-cotizacion");
@@ -247,7 +310,7 @@ function loadPage() {
         }
     }
     $(cbServicios).on("select2:select", function (e) {
-        cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos)
+        cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos,e.params.data.element.dataset.tipo||"servicio");
     });
     tablaServicioProductos.addEventListener("click",function (e) {  
         if (e.target.classList.contains("btn-danger")){
@@ -306,17 +369,22 @@ function loadPage() {
             if(serviciosProductos.length === 1){
                 return alertify.error("la cotización debe de contener al menos un servicio");
             }
-            alertify.confirm("Mensaje","¿Deseas eliminar este servicio?",async () => {
-                const tr = e.target.parentElement.parentElement;
-                const servicio = tr.dataset.servicio;
+            const tr = e.target.parentElement.parentElement;
+            const datosEnvio = {
+                tipo : !tr.dataset.servicio ? 'producto' : 'servicio',
+                accion : !tr.dataset.servicio ? 'eliminar-producto-servicio' : 'eliminar-servicio',
+                idDetalle : tr.dataset.servicio || tr.dataset.producto
+            }
+            alertify.confirm("Mensaje",`¿Deseas eliminar este ${datosEnvio.tipo}?`,async () => {
+                const {idDetalle,tipo} = datosEnvio;
                 if(e.target.dataset.tipo == "nuevo"){
-                    serviciosProductos = cotizacionGeneral.eliminarServicio({serviciosProductos,cbServicios,servicio,tr,tablaServicioProductos,tablaServicios});
-                    return alertify.success("El servicio se a eliminado de manera correcta");
+                    serviciosProductos = cotizacionGeneral.eliminarServicio({serviciosProductos,cbServicios,idDetalle,tipo,tr,tablaServicioProductos,tablaServicios});
+                    return alertify.success(`El ${datosEnvio.tipo} se a eliminado de manera correcta`);
                 }
                 let datos = new FormData();
-                datos.append("acciones","eliminar-servicio");
+                datos.append("acciones",datosEnvio.accion);
                 datos.append("idCotizacion",idCotizacion);
-                datos.append("idServicio",servicio);
+                datos.append("idDetalle",datosEnvio.idDetalle);
                 try {
                     const response = await general.funcfetch("acciones",datos,"POST");
                     if (response.session) {
@@ -325,7 +393,7 @@ function loadPage() {
                     if(response.alerta){
                         return alertify.alert("Mensaje",response.alerta);
                     }
-                    serviciosProductos = cotizacionGeneral.eliminarServicio({serviciosProductos,cbServicios,servicio,tr,tablaServicioProductos,tablaServicios});
+                    serviciosProductos = cotizacionGeneral.eliminarServicio({serviciosProductos,cbServicios,idDetalle,tipo,tr,tablaServicioProductos,tablaServicios});
                     alertify.success(response.success);
                     cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
                 } catch (error) {
@@ -375,6 +443,7 @@ function loadPage() {
         let datos = new FormData(this);
         datos.append("idCotizacion",idCotizacion);
         datos.append("servicios",JSON.stringify(serviciosProductos));
+        datos.append("textoNota",tinymce.activeEditor.getContent());
         general.cargandoPeticion(btnActualizar, general.claseSpinner, true);
         try {
             const response = await general.funcfetch("modificar",datos,"POST");
@@ -384,6 +453,7 @@ function loadPage() {
             if(response.error){
                 return alertify.alert("Error",response.error);
             }
+            tablatablaCotizacionDatatable.draw();
             $('#editarCotizacion').modal("hide");
             return alertify.alert("Mensaje",response.success);
         } catch (error) {

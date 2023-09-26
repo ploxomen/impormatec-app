@@ -132,35 +132,46 @@ function loadPage(){
     tablaServicios.addEventListener("click",function (e) {  
         if (e.target.classList.contains("btn-danger")){
             const tr = e.target.parentElement.parentElement;
-            const servicio = tr.dataset.servicio;
-            serviciosProductos = serviciosProductos.filter(s => (s.idServicio !== servicio && !s.idProducto) || (s.idProducto !== servicio && !s.idServicio));
-            cotizacionGeneral.cbServiciosOpt(cbServicios,false,[+servicio]);
+            const datosDetalle = {
+                tipo : !tr.dataset.servicio ? 'producto' : 'servicio',
+                idDetalle : tr.dataset.servicio || tr.dataset.producto
+            };
+            serviciosProductos = serviciosProductos.filter(function(detalle){
+                if(datosDetalle.tipo === "servicio" && detalle.idServicio === datosDetalle.idDetalle && !detalle.idProducto){
+                    return false;
+                }
+                if(datosDetalle.tipo === "producto" && detalle.idProducto === datosDetalle.idDetalle && !detalle.idServicio){
+                    return false;
+                }
+                return true;
+            });
+            cotizacionGeneral.cbServiciosOpt(cbServicios,false,[{id:datosDetalle.idDetalle,tipo:datosDetalle.tipo}]);
             tr.remove();
-            const tablaProductoServicio = tablaServicioProductos.querySelector(`[data-domservicio="${servicio}"]`);
-            if(tablaProductoServicio){
-                tablaProductoServicio.remove();
-            }
-            if (!serviciosProductos.length) {
-                tablaServicios.innerHTML = `<tr>
-                    <td colspan="100%" class="text-center">No se seleccionaron servicios o productos</td>
-                </tr>`;
-                tablaServicioProductos.innerHTML = `
-                <h5 class="col-12 text-primary text-center">
-                    Sin productos para mostrar  
-                </h5>
-                `
+            if(datosDetalle.tipo === "servicio"){
+                const tablaProductoServicio = tablaServicioProductos.querySelector(`[data-domservicio="${datosDetalle.idDetalle}"]`);
+                if(tablaProductoServicio){
+                    tablaProductoServicio.remove();
+                }
+                if (!serviciosProductos.length) {
+                    tablaServicios.innerHTML = `<tr>
+                        <td colspan="100%" class="text-center">No se seleccionaron servicios o productos</td>
+                    </tr>`;
+                    tablaServicioProductos.innerHTML = `
+                    <h5 class="col-12 text-primary text-center">
+                        Sin productos para mostrar  
+                    </h5>
+                    `
+                }
             }
             alertify.success("item eliminado correctamente");
-            console.log(serviciosProductos);
             cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
         }
     });
-    const cbTipoMoneda = document.querySelector("#idModalmoneda");
-    $(cbTipoMoneda).on("select2:select", function (e) {
+    $(cotizacionGeneral.$cbTipoMoneda).on("select2:select", function (e) {
         cotizacionGeneral.modificarMonedaTotal($(this).val(),serviciosProductos,tablaServicios)
     });
     $(cbServicios).on("select2:select", function (e) {
-        cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos,e.params.data.element.dataset.tipo||"servicio")
+        cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos,e.params.data.element.dataset.tipo||"servicio");
     });
     $(cbPreCotizacion).on("select2:select", async function (e) {
         const preCotizacionId = $(this).val();
@@ -197,7 +208,7 @@ function loadPage(){
                         valor.forEach((s,k) => {
                             s.id_servicio = s.id;
                             let total = 0;
-                            serviciosCb.push(s.id);
+                            serviciosCb.push({id:s.id,tipo:"servicio"});
                             s.productos.forEach(p => {
                                 total += p.precioVenta * p.cantidadUsada;
                             });

@@ -1,7 +1,8 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-
+    <script src="/library/tinyeditor/tinyeditor.js"></script>
+    <script src="/library/tinyeditor/es.js"></script>
     <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.3">
     <script src="/cotizacion/compartido.js"></script>
     <script src="/cotizacion/misCotizaciones.js"></script>

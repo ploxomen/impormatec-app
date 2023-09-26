@@ -19,6 +19,10 @@
                         <label class="custom-control-label" for="switchProductoIntangible">Productos intangibles</label>
                     </div>
                 </div>
+                <div class="form-group col-12 form-required">
+                    <label for="idModalnombreProveedor">Proveedor</label>
+                    <input type="text" name="nombreProveedor" maxlength="255" class="form-control" id="idModalnombreProveedor">
+                </div>
                 <div class="form-group col-12">
                     <label for="idModaldescripcion">Descripción</label>
                     <textarea name="descripcion" id="idModaldescripcion" class="form-control" rows="2"></textarea>

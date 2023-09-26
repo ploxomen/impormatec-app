@@ -168,7 +168,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         });
     });
     Route::prefix('cotizaciones')->group(function () {
-        Route::get('ver/pdf/{idCotizacion}', [Cotizacion::class, 'renderPdf'])->name("ver.cotizacion.pdf");
+        Route::get('ver/pdf/{idCotizacion}', [Cotizacion::class, 'verPdfCotizacion'])->name("ver.cotizacion.pdf");
         Route::get('obtener/{cotizacion}', [Cotizacion::class, 'obtenerCotizacion']);
         Route::post('aprobar', [Cotizacion::class, 'aprobarCotizacion']);
         Route::post('acciones', [Cotizacion::class, 'accionesCotizacion']);

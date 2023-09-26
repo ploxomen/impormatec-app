@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Usuario;
 use App\Models\Clientes as ModelsClientes;
 use App\Models\ClientesContactos;
+use App\Models\Pais;
 use App\Models\Rol;
 use App\Models\TipoDocumento;
 use App\Models\User;
@@ -30,7 +31,8 @@ class Clientes extends Controller
         }
         $modulos = $this->usuarioController->obtenerModulos();
         $tiposDocumentos = TipoDocumento::where('estado',1)->get();
-        return view("ventas.clientes",compact("modulos","tiposDocumentos"));
+        $paises = Pais::all()->where('estado',1);
+        return view("ventas.clientes",compact("modulos","tiposDocumentos","paises"));
     }
     public function listar(Request $request)
     {

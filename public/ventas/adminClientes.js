@@ -156,7 +156,7 @@ function loadPage(){
                 <input type="text" name="contactoNombres[]" required class="form-control form-control-sm" value="${nombre}" placeholder="Nombres">
             </div>
             <div class="col-12 col-md-4 form-group">
-                <input type="text" name="contactoNumero[]" required class="form-control form-control-sm" value="${numero}" placeholder="Contacto">
+                <input type="text" name="contactoNumero[]" required class="form-control form-control-sm" value="${numero}" placeholder="Celular">
             </div>
             <div class="col-12 text-rigth col-md-1 form-group">
                 <button type="button" class="btn btn-sm btn-danger">

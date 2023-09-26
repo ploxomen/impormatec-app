@@ -1,5 +1,5 @@
 <div class="modal fade" id="editarCotizacion" data-backdrop="static" data-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" >Editar cotización</h5>
@@ -30,12 +30,20 @@
                 <input type="date" name="fechaCotizacion" id="idModalfechaCotizacion" class="form-control form-control-sm" required>
             </div>
             <div class="form-group col-12 col-md-6 col-lg-4">
+                <label for="idModalfechaFinCotizacion">Fecha vencimiento</label>
+                <input type="date" name="fechaVencimiento" class="form-control form-control-sm" id="idModalfechaFinCotizacion" required>
+            </div>
+            <div class="form-group col-12 col-md-6">
                 <label for="idModaltipoMoneda">Tipo moneda</label>
                 <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
                     <option value=""></option>
-                    <option value="Soles" selected>Soles (S/)</option>
-                    <option value="Dolar">Dolar ($)</option>
+                    <option value="PEN">Soles (S/)</option>
+                    <option value="USD" selected>Dolar ($)</option>
                 </select>
+            </div>
+            <div class="form-group col-12 col-md-6">
+                <label for="idModalConversionMoneda" class="col-form-label col-form-label-sm">Conversión (S/.) </label>
+                <input type="number" step="0.001" class="form-control form-control-sm" required id="idModalconversionMoneda" name="conversionMoneda">
             </div>
             <div class="col-12 form-group">
                 <label for="cbCliente" class="col-form-label col-form-label-sm">Referencia</label>
@@ -74,16 +82,23 @@
             <div class="col-12">
                 <h5 class="text-primary">
                     <i class="fas fa-caret-right"></i>
-                    Datos del servicio
+                    Datos de los servicios y productos
                 </h5>
             </div>
             <div class="form-group col-12">
-                <label for="cbServicios">Lista de servicios</label>
+                <label for="cbServicios">Lista de servicios y productos</label>
                 <select id="cbServicios" class="form-control select2-simple" data-placeholder="Seleccione un servicio">
                     <option value=""></option>
-                    @foreach ($servicios as $servicio)
-                        <option value="{{$servicio->id}}">{{$servicio->servicio}}</option>
-                    @endforeach
+                    <optgroup label="Servicios">
+                        @foreach ($servicios as $servicio)
+                            <option value="{{$servicio->id}}" data-tipo="servicio">{{$servicio->servicio}}</option>
+                        @endforeach
+                    </optgroup>
+                    <optgroup label="Productos">
+                        @foreach ($productos as $producto)
+                            <option value="{{$producto->id}}" data-tipo="producto">{{$producto->nombreProducto}}</option>
+                        @endforeach
+                    </optgroup>
                 </select>
             </div>
             <div class="col-12 form-group">
@@ -94,15 +109,15 @@
                                 <th>ITEM</th>
                                 <th style="min-width: 300px;">DESCRIPCIÓN</th>
                                 <th style="width: 100px;">CANT.</th>
-                                <th>P. UNIT</th>
-                                <th>DESC.</th>
+                                <th style="width: 120px;">P. UNIT</th>
+                                <th style="width: 120px;">DESC.</th>
                                 <th>P.TOTAL</th>
-                                <th>ELIMINAR</th>
+                                <th style="width: 50px;">ELIMINAR</th>
                             </tr>
                         </thead>
                         <tbody id="contenidoServicios">
                             <tr>
-                                <td colspan="100%" class="text-center">No se seleccionaron servicios</td>
+                                <td colspan="100%" class="text-center">No se seleccionaron servicios o productos</td>
                             </tr>
                         </tbody>
                         <tfoot>
@@ -129,17 +144,22 @@
             <div class="col-12">
                 <h5 class="text-primary">
                     <i class="fas fa-caret-right"></i>
-                    Datos del producto
+                    Datos de los productos de servicios
                 </h5>
             </div>
-            <div class="col-12 form-group text-center" id="listaServiciosProductos">
-                <span>Sin productos para mostrar</span>
+            <div class="col-12 form-group" id="listaServiciosProductos">
+                <h5 class="text-primary text-center">
+                    Sin productos para mostrar  
+                </h5>
             </div>
             <div class="col-12">
                 <h5 class="text-primary">
                     <i class="fas fa-caret-right"></i>
                     Datos adicionales
                 </h5>
+            </div>
+            <div class="col-12 form-group">
+                <textarea id="idModalNotaCotizacion"></textarea>
             </div>
             <div class="col-12 d-flex form-group" style="gap:15px;">
                 <div class="custom-control custom-switch">
