@@ -1,11 +1,7 @@
 class General{
     token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     alertaSesion = ["Alerta","La sesión a caducado, favor inicie sesión nuevamente"];
-    /*
-    if(response.session){
-        return alertify.alert([...alertaSesion],() => {window.location.reload()});
-    }
-    */ 
+    urlDescargarDocumentos = window.origin + "/descargar";
     requestJson = {
         'X-CSRF-TOKEN': this.token,
         'X-Requested-With': 'XMLHttpRequest'

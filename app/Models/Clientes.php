@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Clientes extends Model
+class   Clientes extends Model
 {
     public $table = "clientes";
-    protected $fillable = ['nombreCliente','id_usuario','estado'];
+    protected $fillable = ['nombreCliente','id_pais','departamento','provincia','distrito','id_usuario','estado'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
 
@@ -42,7 +42,7 @@ class Clientes extends Model
     }
     public function scopeObenerCliente($query,$idCliente)
     {
-        $cliente = $query->select("clientes.id","usuarios.correo","usuarios.tipoDocumento","usuarios.nroDocumento","clientes.nombreCliente","usuarios.celular","usuarios.telefono","usuarios.direccion","clientes.estado")
+        $cliente = $query->select("clientes.id","usuarios.correo","usuarios.tipoDocumento","usuarios.nroDocumento","clientes.nombreCliente","usuarios.celular","usuarios.telefono","usuarios.direccion","clientes.estado","clientes.id_pais","clientes.provincia","clientes.departamento","clientes.distrito")
         ->join("usuarios","usuarios.id","=",'clientes.id_usuario')
         ->join("tipo_documento","usuarios.tipoDocumento","=","tipo_documento.id","left")
         ->where(['clientes.id' => $idCliente])->first();

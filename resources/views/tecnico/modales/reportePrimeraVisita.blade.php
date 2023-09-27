@@ -21,7 +21,7 @@
               </button>
               <input type="file" hidden id="imgCopia" multiple accept="image/*">
             </div>
-            <form id="contenidoServicios">
+            <form id="contenidoServicios" enctype="multipart/form-data">
               <div class="mb-4 row" id="renderImg" style="overflow-y: auto;">
                 <div class="form-grop col-12 text-center" id="txtSinImagenes">
                   <span>No se subieron imagenes</span>

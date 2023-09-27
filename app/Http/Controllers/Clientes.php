@@ -65,7 +65,10 @@ class Clientes extends Controller
         try {
             $usuario = User::create($datosUsuario);
             UsuarioRol::create(['rolFk' => $rolCliente->id,'usuarioFk' => $usuario->id]);
-            $cliente = ModelsClientes::create(['id_usuario' => $usuario->id,'nombreCliente' => $request->nombreCliente,'estado' => 1]);
+            $datosCliente = $request->only("nombreCliente","id_pais","distrito","provincia","departamento");
+            $datosCliente['id_usuario'] = $usuario->id;
+            $datosCliente['estado'] = 1;
+            $cliente = ModelsClientes::create($datosCliente);
             if(isset($request->contactoNombres)){
                 for ($i=0; $i < count($request->contactoNombres); $i++) {
                     $contactos = [
@@ -101,7 +104,7 @@ class Clientes extends Controller
         try {
             $datosUsuario = $request->only("tipoDocumento","nroDocumento","telefono","celular","direccion");
             $datosUsuario['nombres'] = $request->nombreCliente;
-            $datosCliente = $request->only("nombreCliente");
+            $datosCliente = $request->only("nombreCliente","id_pais","distrito","provincia","departamento");
             $datosCliente['estado'] = $request->has("estado") ? 1 : 0;
             User::where('id',$cliente->id_usuario)->update($datosUsuario);
             $cliente->update($datosCliente);

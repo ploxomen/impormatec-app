@@ -1,2 +1,5 @@
 !public/
 !.gitignore
+/cotizacion/*
+/formatoVisitas/*
+/imgCotizacionPre/*

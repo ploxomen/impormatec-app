@@ -137,14 +137,6 @@ function loadPage() {
     const btnImg = document.querySelector("#btnImagen");
     const imgOriginal = document.querySelector("#imgsOriginal");
     btnImg.onclick = e => imgCopia.click();
-    function coinsidenciaImg(files,name){
-        for (let i = 0; i < files.length; i++) {
-            if(files[i].name == name){
-                return 1;
-            }
-        }
-        return 0;
-    }
     imgCopia.addEventListener("change",async function(e){
         if(!this.files.length){
             return
@@ -173,9 +165,25 @@ function loadPage() {
     const btndocumentoFormatoVisita = document.querySelector("#btnFormatoVisitas");
     btndocumentoFormatoVisita.onclick = e => documentoFormatoVisita.click();
     documentoFormatoVisita.addEventListener("change",function(e){
-        console.log(e.target);
+        const documentos = e.target.files;
+        if(document.querySelector("#documento-mostrar-formato-visita")){
+            document.querySelector("#documento-mostrar-formato-visita").remove();
+        }
+        if(!documentos.length){
+            return alertify.error("documento no seleccionado");
+        }
+        const formatoVisita = documentos[0];
+        if(formatoVisita.type !== "application/pdf"){
+            return alertify.error("el documento debe de ser un pdf");
+        }
+        const documentoSubido = document.createElement("div");
+        documentoSubido.className = "rounded-pill bg-light p-2";
+        documentoSubido.id = "documento-mostrar-formato-visita";
+        documentoSubido.innerHTML = `
+        <span>${formatoVisita.name}</span>`
+        this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
+        return alertify.success("formato de visita seleccionado corretamente");
     });
-
     function deleteImg(nameImg,li){
         const newDataTrnasfer = new DataTransfer();
         const filesParent = imgOriginal;
@@ -219,6 +227,15 @@ function loadPage() {
                 preCotizacionResponse.listaServicios.forEach(ser => {
                     cbServicios.val(ser.id_servicios).trigger("change");
                 });
+                if(preCotizacionResponse.formato_visita_pdf){
+                    const documentoSubido = document.createElement("a");
+                    documentoSubido.className = "rounded-pill bg-light p-2";
+                    documentoSubido.id = "documento-mostrar-formato-visita";
+                    documentoSubido.href = window.origin + "/intranet/storage/formatoVisitas/" + preCotizacionResponse.formato_visita_pdf;
+                    documentoSubido.target = "_blank";
+                    documentoSubido.textContent = "FORMATO_UNICO_DE_VISITAS.pdf";
+                    documentoFormatoVisita.insertAdjacentHTML("afterend",documentoSubido.outerHTML);
+                }
                 $('#modalPrimeraVisita').modal("show");
             } catch (error) {
                 general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);
@@ -345,11 +362,15 @@ function loadPage() {
         e.preventDefault();
         const contenido = tinymce.activeEditor.getContent();
         if(!contenido){
-            alertify.error("por favor redacte el informe");
+            return alertify.error("por favor redacte el informe");
         }
+        // if(!documentoFormatoVisita.value){
+        //     return alertify.error("por favor carge su formato unico de visita");
+        // }
         const data = new FormData(this);
         data.append("html",contenido);
         data.append("preCotizacion",idReportePreCotizacion);
+        data.append("formatoVisitaPdf",documentoFormatoVisita.files[0]);
         general.cargandoPeticion(btnSaveModal, general.claseSpinner, true);
         try {
             const response = await general.funcfetch("actualizar",data, "POST");
@@ -376,6 +397,10 @@ function loadPage() {
         tinymce.activeEditor.setContent("");
         txtNoServicios.hidden = false;
         txtSinImagenes.hidden = false;
+        documentoFormatoVisita.value = "";
+        if(document.querySelector("#documento-mostrar-formato-visita")){
+            document.querySelector("#documento-mostrar-formato-visita").remove();
+        }
         for (const c of listaServicios.querySelectorAll(".contenido")) {
             c.remove();
         }

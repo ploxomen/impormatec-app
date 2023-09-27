@@ -88,14 +88,28 @@ class Cotizacion extends Controller
         $productosServicios = CotizacionProductos::productosServicios($servicios,$cotizacion->id);
         $moneda = $cotizacion->tipoMoneda === "USD" ? '$' : 'S/';
         $reportePreCotizacion = [];
+        $documentoVisitaUnicoPrecotizacion = "";
         if($cotizacion->reportePreCotizacion === 1){
             $preCotizacion = PreCotizaion::where('id',$cotizacion->id_pre_cotizacion)->first();
             $reportePreCotizacion['html'] = $preCotizacion->html_primera_visita;
             $reportePreCotizacion['imagenes'] = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
+            $documentoVisitaUnicoPrecotizacion = $preCotizacion->formato_visita_pdf;
         }
         $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("moneda","configuracion","cotizacion","cliente","nombreDia","nombreMes","representante","productosServicios","reportePreCotizacion"));
         $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
         $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
+        if(!empty($documentoVisitaUnicoPrecotizacion)){
+            $rutaArchivo = "/cotizacion/reportes/" . $nombreDocumento;
+            $oMerger = PDFMerger::init();
+            $oMerger->addPDF(storage_path("app/cotizacion/reportes/".$nombreDocumento));
+            $oMerger->addPDF(storage_path("app/formatoVisitas/".$documentoVisitaUnicoPrecotizacion));
+            $oMerger->merge();
+            $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
+            if(Storage::exists($rutaArchivo)){
+                Storage::delete($rutaArchivo);
+            }
+            $oMerger->save(storage_path() . '/app/cotizacion/reportes/'.$nombreDocumento);
+        }
         return $nombreDocumento;
     }
     public function obtenerCotizacion(ModelsCotizacion $cotizacion) {
@@ -239,7 +253,7 @@ class Cotizacion extends Controller
             return response()->json(['success' => 'Cotización actualizada correctamente']);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['error' => $th->getMessage(),'linia' => $th->getLine()]);
+            return response()->json(['error' => $th->getMessage(),'linea' => $th->getLine()]);
         }
     }
     public function accionesCotizacion(Request $request) {

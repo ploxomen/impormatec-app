@@ -77,6 +77,7 @@ class PreCotizacion extends Controller
             return response()->json(['session' => true]);
         }
         DB::beginTransaction();
+        $rutaReporteVisita = "";
         try {
             $fechaHrModificada = now(); 
             $datos = [
@@ -84,7 +85,20 @@ class PreCotizacion extends Controller
                 'usuario_modificado' => Auth::id(),
                 'fechaActualizada' => $fechaHrModificada
             ];
-            PreCotizaion::find($request->preCotizacion)->update($datos);
+            
+            $preCotizacionModel = PreCotizaion::find($request->preCotizacion);
+            $nombreReporteVisita = "reporte_visitas_" . $preCotizacionModel->id . "_". time() .".pdf";
+            $reporteVisita = $request->file('formatoVisitaPdf');
+            $rutaReporteVisita = "formatoVisitas/" . $nombreReporteVisita;
+            if ($reporteVisita) {
+                $rutaReporteVisitaAntigua = "formatoVisitas/" . $preCotizacionModel->formato_visita_pdf;
+                if(Storage::exists($rutaReporteVisitaAntigua)){
+                    Storage::delete($rutaReporteVisitaAntigua);
+                }
+                $reporteVisita->storeAs('formatoVisitas', $nombreReporteVisita);
+                $datos['formato_visita_pdf'] = $nombreReporteVisita;
+            }
+            $preCotizacionModel->update($datos);
             PreCotizacionServicios::where('id_pre_cotizacion',$request->preCotizacion)->delete();
             if($request->has('servicios')){
                 for ($i=0; $i < count($request->servicios) ; $i++) { 
@@ -105,6 +119,9 @@ class PreCotizacion extends Controller
             return response()->json(['success' => 'reporte de pre - cotización actualizado correctamente']);
         } catch (\Throwable $th) {
             DB::rollBack();
+            if(Storage::exists($rutaReporteVisita)){
+                Storage::delete($rutaReporteVisita);
+            }
             return ['error' => $th->getMessage(),'line' => $th->getLine()];
         }
     }
@@ -282,7 +299,7 @@ class PreCotizacion extends Controller
                         $cliente['estado'] = 2;
                         $usuario = User::create($cliente);
                         UsuarioRol::create(['rolFk' => $rolCliente->id,'usuarioFk' => $usuario->id]);
-                        $clienteModel = Clientes::create(['id_usuario' => $usuario->id,'nombreCliente' => $clienteId,'estado' => 1]);
+                        $clienteModel = Clientes::create(['id_usuario' => $usuario->id,'nombreCliente' => $clienteId,'id_pais' => 165,'estado' => 1]);
 
                         if($request->has("id_cliente_contacto")){
                             for ($i=0; $i < count($request->id_cliente_contacto); $i++) {

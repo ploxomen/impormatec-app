@@ -184,7 +184,6 @@ function loadPage(){
         try {
             $(cbClientes).prop("disabled",true);
             cotizacionGeneral.cbServiciosOpt(cbServicios,false,null);
-            
             serviciosProductos = [];
             const response = await gen.funcfetch("obtener/precotizacion/" + preCotizacionId, null, "GET");
             if(response.session){
@@ -217,7 +216,7 @@ function loadPage(){
                             s.descuento = 0;
                             s.total = total;
                             serviciosProductos.push(cotizacionGeneral.asignarListaServiciosProductos(s));
-                            tablaServicios.append(cotizacionGeneral.agregarServicio(k+1,s.id,s.servicio,1,total,0,total));
+                            tablaServicios.append(cotizacionGeneral.agregarServicio(k+1,s.id,s.servicio,1,total,0,total,"servicio","nuevo"));
                             tablaServicioProductos.append(cotizacionGeneral.agregarServicioProductos(s.id,s.servicio,s.productos));
                         });
                         $('#listaServiciosProductos .cb-servicios-productos').select2({

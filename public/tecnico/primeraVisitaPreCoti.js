@@ -29,8 +29,7 @@ function loadPage() {
         documentoSubido.innerHTML = `
         <span>${formatoVisita.name}</span>`
         this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
-        return alertify.success("formato de visita subido correctamente");
-
+        return alertify.success("formato de visita seleccionado corretamente");
     });
     const contenidoFiltro = document.querySelector("#contenidoFiltro");
     async function cargarVisitas() {
@@ -333,10 +332,14 @@ function loadPage() {
         if(!contenido){
             return alertify.error("por favor redacte el informe");
         }
+        if(!documentoFormatoVisita.value){
+            return alertify.error("por favor carge su formato de visita");
+        }
         const data = new FormData(this);
         data.append("acciones","generar-reporte");
         data.append("html",contenido);
         data.append("visita",idVisita);
+        data.append("formatoVisitaPdf",documentoFormatoVisita.files[0]);
         general.cargandoPeticion(btnSaveModal, general.claseSpinner, true);
         try {
             const response = await general.funcfetch("acciones",data, "POST");
@@ -362,6 +365,10 @@ function loadPage() {
     })
     $('#modalPrimeraVisita').on('hidden.bs.modal', function (event) {
         txtNoServicios.hidden = false;
+        documentoFormatoVisita.value = "";
+        if(document.querySelector("#documento-mostrar-formato-visita")){
+            document.querySelector("#documento-mostrar-formato-visita").remove();
+        }
         for (const c of listaServicios.querySelectorAll(".contenido")) {
             c.remove();
         }
