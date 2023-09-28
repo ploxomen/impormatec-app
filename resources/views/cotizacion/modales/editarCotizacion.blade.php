@@ -72,7 +72,7 @@
             </div>
             <div class="col-12 col-lg-6 form-group">
                 <label for="idModalrepresentanteCliente" class="col-form-label col-form-label-sm">Representante</label>
-                <select name="representanteCliente" id="idModalrepresentanteCliente" class="form-control select2-simple" data-tags="true" required data-placeholder="Seleccione un representante">
+                <select name="representanteCliente" id="idModalrepresentanteCliente" class="form-control select2-simple" required data-placeholder="Seleccione un representante">
                 </select>
             </div>
             <div class="col-12 form-group">

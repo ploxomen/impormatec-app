@@ -15,5 +15,9 @@ class ClientesContactos extends Model
     {
         return $this->belongsTo(Clientes::class,'idCliente');
     }
+    public function cotizaciones()
+    {
+        return $this->hasMany(Cotizacion::class,'representanteCliente');
+    }
 
 }

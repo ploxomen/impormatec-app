@@ -118,6 +118,9 @@ function loadPage(){
                         if (response.session) {
                             return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
                         }
+                        if (response.alerta) {
+                            return alertify.alert("Mensaje",response.alerta);
+                        }
                         li.remove();
                         alertify.success(response.success);
                         if(!listaContacto.children.length){

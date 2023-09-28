@@ -1,7 +1,7 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="/ventas/adminClientes.js"></script>
+    <script src="/ventas/adminClientes.js?v1.5"></script>
     <title>Clientes</title>
 @endsection
 @section('body')

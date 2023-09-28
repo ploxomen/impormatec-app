@@ -136,6 +136,9 @@ class Clientes extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
+        if($contacto->cotizaciones()->count()){
+            return response()->json(['alerta' => 'Este contacto no puede ser eliminado debido a que esta asociado a una o varias cotizaciones, si se requiere eliminar, por favor elimine o cambie el representante de las cotizaciones asociadas']);
+        }
         $contacto->delete();
         return response()->json(['success' => 'contacto eliminado correctamente']);
     }
