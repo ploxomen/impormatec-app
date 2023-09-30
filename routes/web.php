@@ -215,7 +215,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('obtener', [OrdenServicio::class, 'obtenerOrdenServicio']);
         Route::post('acciones', [OrdenServicio::class, 'accionesOrdenServicio']);
         Route::get('mostrar/{ordenServicio}', [OrdenServicio::class, 'obtenerDatosOrdenServicio']);
-
+        Route::get('reporte/{ordenServicio}', [OrdenServicio::class, 'reporteOrdenServicio']);
     });
     Route::prefix('usuarios')->group(function(){
         Route::post('accion',[Usuario::class,'usuarioAccion']);

@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clientes;
+use App\Models\Configuracion;
 use App\Models\Cotizacion;
+use App\Models\CotizacionProductos;
 use App\Models\CotizacionServicio;
 use App\Models\OrdenServicio as ModelsOrdenServicio;
 use App\Models\OrdenServicioAdicional;
-use App\Models\OrdenServicioCotizacion;
+use App\Models\OrdenServicioCotizacionProducto;
+use App\Models\OrdenServicioCotizacionServicio;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
@@ -30,13 +34,12 @@ class OrdenServicio extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         return view("ordenesServicio.agregar",compact("modulos","clientes"));
     }
-    public function obtenerCotizacionCliente($cliente) {
+    public function obtenerCotizacionCliente($cliente,Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $servicios = Cotizacion::obtenerCotizacionesAprobadas($cliente);
-        return response()->json(['servicios' => $servicios]);
+        return response()->json(['detalleCotizacion' => Cotizacion::obtenerCotizacionesAprobadas($cliente,$request->tipoMoneda)]);
     }
     public function indexMisOs()  {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
@@ -61,20 +64,32 @@ class OrdenServicio extends Controller
             case 'eliminar-cotizacion':
                 DB::beginTransaction();
                 try {
-                    if(OrdenServicioCotizacion::where(['id_orden_servicio' => $request->ordenServicioId])->count() == 1){
-                        return response()->json(['alerta' => 'La orden de servicio debe contener al menos un servicio de la cotización']);
+                    $cantidadTotalServicios = OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $request->ordenServicioId])->count();
+                    $cantidadTotalProductos = OrdenServicioCotizacionProducto::where(['id_orden_servicio' => $request->ordenServicioId])->count();
+                    if(($cantidadTotalServicios + $cantidadTotalProductos) === 1){
+                        return response()->json(['alerta' => 'La orden de servicio debe contener al menos un item en la cotización']);
                     }
-                    OrdenServicioCotizacion::where(['id_orden_servicio' => $request->ordenServicioId,'id_cotizacion_servicio' => $request->cotizacionServicioId])->delete();
-                    $cotizacionServicio = CotizacionServicio::find($request->cotizacionServicioId);
+                    if($request->tipoDetalle === "servicio"){
+                        OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $request->ordenServicioId,'id_cotizacion_servicio' => $request->cotizacionServicioId])->delete();
+                        $cotizacionServicio = CotizacionServicio::find($request->cotizacionServicioId);
+                        $cotizacionServicio->update(['estado' => 1]);
+                    }else{
+                        OrdenServicioCotizacionProducto::where(['id_orden_servicio' => $request->ordenServicioId,'id_cotizacion_producto' => $request->cotizacionServicioId])->delete();
+                        $cotizacionServicio = CotizacionProductos::find($request->cotizacionServicioId);
+                        $cotizacionServicio->update(['estado' => 1]);
+                    }
                     $cotizacion = Cotizacion::find($cotizacionServicio->id_cotizacion);
-                    $cotizacionServicio->update(['estado' => 1]);
                     $cotizacion->update(['estado' => 3]);
-                    if($cotizacion->cotizacionSerivicios()->count() == $cotizacion->cotizacionSerivicios()->where('estado',1)->count()){
+                    $cantidadTotalServicios = $cotizacion->cotizacionSerivicios()->count();
+                    $cantidadTotalProductos = $cotizacion->cotizacionProductos()->count();
+                    $cantidadServiosOs = $cotizacion->cotizacionSerivicios()->where('estado',1)->count();
+                    $cantidadProductosOs = $cotizacion->cotizacionProductos()->where('estado',1)->count();
+                    if(($cantidadTotalServicios + $cantidadTotalProductos) === ($cantidadServiosOs + $cantidadProductosOs)){
                         $cotizacion->update(['estado' => 2]);
                     }
                     $this->actualizarMontosOrdenServicio($request->ordenServicioId); 
                     DB::commit();
-                    return response()->json(['success' => 'Servicio eliminado correctamente']);
+                    return response()->json(['success' => 'Item eliminado correctamente']);
                 } catch (\Throwable $th) {
                     DB::rollBack();
                     return response()->json(['alerta' => $th->getMessage()]);
@@ -86,30 +101,44 @@ class OrdenServicio extends Controller
                     $respuesta = [];
                     $cotizacion = Cotizacion::find($request->idCotizacion);
                     $cotizacion->update(['estado' => 4]);
-                    $ordenServicio = ModelsOrdenServicio::find($request->idOrdenServicio);
-                    foreach ($cotizacion->cotizacionSerivicios()->where('estado',1)->get() as $servicio) {
-                        $servicio->update(['estado' => 2]);
-                        $datos = OrdenServicioCotizacion::updateOrCreate([
-                            'id_orden_servicio' => $request->idOrdenServicio,
-                            'id_cotizacion_servicio' => $servicio->id
-                        ],['estado' => 1]);
+                    $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
+                    $detallesCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id)->where('estado',1);
+                    foreach ($detallesCotizacion as $key => $servicio) {
+                        if($servicio->estado > 1){
+                            continue;
+                        }
+                        if($servicio->tipo === "servicio"){
+                            $datos = OrdenServicioCotizacionServicio::updateOrCreate([
+                                'id_orden_servicio' => $request->idOrdenServicio,
+                                'id_cotizacion_servicio' => $servicio->id,
+                                'orden' => $key + 1
+                            ],['estado' => 1]);
+                            $nombreDetalle = $servicio->servicios->servicio;
+                            CotizacionServicio::find($servicio->id)->update(['estado' => 2]);
+                        }else{
+                            $datos = OrdenServicioCotizacionProducto::updateOrCreate([
+                                'id_orden_servicio' => $request->idOrdenServicio,
+                                'id_cotizacion_producto' => $servicio->id,
+                                'orden' => $key + 1
+                            ],['estado' => 1]);
+                            $nombreDetalle = $servicio->productos->nombreProducto;
+                            CotizacionProductos::find($servicio->id)->update(['estado' => 2]);
+                        }
                         $respuesta[] = [
                             'cantidad' => $servicio->cantidad,
-                            'costo' => $servicio->costo,
                             'descuento' => $servicio->descuento,
-                            'fechaOs' => $ordenServicio->fecha,
                             'idCotizacionServicio' => $servicio->id,
                             'idOsCotizacion' => $datos->id,
-                            'igv' => $servicio->igv,
                             'importe' => $servicio->importe,
+                            'tipoServicioProducto' => $servicio->tipo,
                             'nroCotizacion' => str_pad($servicio->id_cotizacion,5,'0',STR_PAD_LEFT),
-                            'servicio' => $servicio->servicios->servicio,
+                            'servicio' => $nombreDetalle,
                             'total' => $servicio->total
                         ];
                     }
                     $this->actualizarMontosOrdenServicio($request->idOrdenServicio); 
                     DB::commit();
-                    return response()->json(['success' => 'Los servicios de la cotización se agregaron correctamente','listaServicios' => $respuesta]);
+                    return response()->json(['success' => 'Los servicios y/o productos de la cotización se agregaron correctamente','listaServicios' => $respuesta]);
                 }catch (\Throwable $th) {
                     DB::rollBack();
                     return response()->json(['alerta' => $th->getMessage()]);
@@ -118,7 +147,7 @@ class OrdenServicio extends Controller
             case 'actualizar-orden':
                 DB::beginTransaction();
                 try {
-                    ModelsOrdenServicio::find($request->ordenServicioId)->update(['fecha' => $request->fecha]);
+                    ModelsOrdenServicio::find($request->ordenServicioId)->update(['fecha' => $request->fecha,'observaciones' => $request->observaciones]);
                     if($request->has('descripcion')){
                         for ($i=0; $i < count($request->descripcion); $i++) { 
                             $idAdicional = isset($request->idAdicional[$i]) ? $request->idAdicional[$i] : null;
@@ -151,7 +180,7 @@ class OrdenServicio extends Controller
         }
     }
     function actualizarMontosOrdenServicio($idOrdenServicio){
-        $cotizaciones = OrdenServicioCotizacion::select("id_cotizacion_servicio")->where('id_orden_servicio',$idOrdenServicio)->get()->toArray();
+        $cotizaciones = OrdenServicioCotizacionServicio::select("id_cotizacion_servicio")->where('id_orden_servicio',$idOrdenServicio)->get()->toArray();
         $cotizaciones = array_map(function($val){
             return $val['id_cotizacion_servicio'];
         },$cotizaciones);
@@ -183,16 +212,32 @@ class OrdenServicio extends Controller
         $ordenesServicios = ModelsOrdenServicio::misOrdeneseServicio();
         return DataTables::of($ordenesServicios)->toJson();
     }
+    public function reporteOrdenServicio(ModelsOrdenServicio $ordenServicio) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $utilitarios = new Utilitarios();
+        $moneda = $ordenServicio->tipoMoneda === "USD" ? '$' : 'S/';
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $nombreDia = $utilitarios->obtenerFechaLarga(strtotime($ordenServicio->fecha));
+        $cliente = Clientes::find($ordenServicio->id_cliente);
+        $codigoOrdenServicio = str_pad($ordenServicio->id,5,'0',STR_PAD_LEFT);
+        $serviciosOS = OrdenServicioCotizacionServicio::mostrarServiciosOrdenServicio($ordenServicio->id);
+        $ordenServicioDetalle = OrdenServicioCotizacionProducto::mostrarProductosOrdenServicio($serviciosOS,$ordenServicio->id);
+        return  Pdf::loadView('ordenesServicio.reportes.ordenServicio',compact("moneda","configuracion","ordenServicio","cliente","nombreDia","codigoOrdenServicio","ordenServicioDetalle"))->stream("orden_servicio_".$codigoOrdenServicio.".pdf");
+    }
     public function obtenerDatosOrdenServicio(ModelsOrdenServicio $ordenServicio){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $ordenServicio->cotizaciones = ModelsOrdenServicio::datosCotizaciones($ordenServicio->id);
+        $serviciosOS = OrdenServicioCotizacionServicio::mostrarServiciosOrdenServicio($ordenServicio->id);
+        $ordenServicio->cotizaciones = OrdenServicioCotizacionProducto::mostrarProductosOrdenServicio($serviciosOS,$ordenServicio->id);
         $ordenServicio->adicionales = OrdenServicioAdicional::select("id AS idAdicional","descripcion","precio AS precioUnitario","cantidad","total")->where('id_orden_servicio',$ordenServicio->id)->get();
-        $ordenServicio->listaServicios = Cotizacion::obtenerCotizacionesAprobadas($ordenServicio->id_cliente,true);
+        $ordenServicio->listaServicios = Cotizacion::obtenerCotizacionesAprobadas($ordenServicio->id_cliente,$ordenServicio->tipoMoneda,true);
         $ordenServicio->nombreCliente = $ordenServicio->cliente->nombreCliente;
-        return response()->json(['ordenServicio' => $ordenServicio]);
+        return response()->json(['ordenServicio' => $ordenServicio->makeHidden("cliente","fechaActualizada","fechaCreada")]);
     }
     public function agregarOs(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);
@@ -201,15 +246,14 @@ class OrdenServicio extends Controller
         }
         DB::beginTransaction();
         try {
-            // dd($request->all());
-            if(!$request->has("listaServicios")) {
-                return response()->json(['alerta' => 'Para generar una orden de servicio se debe tener al menos un servicio'],400);
+            if(!$request->has("listaDetalleCotizacion")) {
+                return response()->json(['alerta' => 'Para generar una orden de servicio se debe tener al menos un item en su detalle'],400);
             }
-            $ordenServicioDatos = $request->only("id_cliente","fecha");
+            $ordenServicioDatos = $request->only("id_cliente","fecha","tipoMoneda","observaciones");
             $ordenServicioDatos['estado'] = 1;
             $ordenServicio = ModelsOrdenServicio::create($ordenServicioDatos);
-            $listaServicios = json_decode($request->listaServicios,true);
-            $listaCotizaciones =array_unique(array_column($listaServicios,'idCotizacion'));
+            $listaServiciosProductos = json_decode($request->listaDetalleCotizacion,true);
+            $listaCotizaciones =array_unique(array_column($listaServiciosProductos,'idCotizacion'));
             $cotizaciones = Cotizacion::whereIn('id',$listaCotizaciones);
             //Estado 3 se esta empezando a poner los servicios con sus respectivas ordenes
             $cotizaciones->update(['estado' => 3]);
@@ -220,21 +264,35 @@ class OrdenServicio extends Controller
                 'adicional' => 0,
                 'total' => 0
             ];
-            foreach ($listaServicios as $servicio) {
+            foreach ($listaServiciosProductos as $key => $servicio) {
                 $calculosTotales['importe'] += $servicio['total'];
                 $calculosTotales['descuento'] += $servicio['descuento'];
-                $calculosTotales['igv'] += $servicio['igv'];
-                OrdenServicioCotizacion::create([
+                $calculosTotales['igv'] += $servicio['total'] * 0.18;
+                if($servicio['tipoServicioProducto'] === "servicio"){
+                    OrdenServicioCotizacionServicio::create([
+                        'id_orden_servicio' => $ordenServicio->id,
+                        'id_cotizacion_servicio' => $servicio['idCotizacionServicio'],
+                        'orden' => $key + 1,
+                        'estado' => 1
+                    ]);
+                    CotizacionServicio::find($servicio['idCotizacionServicio'])->update(['estado' => 2]);
+                    continue;
+                }
+                OrdenServicioCotizacionProducto::create([
                     'id_orden_servicio' => $ordenServicio->id,
-                    'id_cotizacion_servicio' => $servicio['idCotizacionServicio'],
+                    'id_cotizacion_producto' => $servicio['idCotizacionServicio'],
+                    'orden' => $key + 1,
                     'estado' => 1
                 ]);
-                //El servicio ya paso con su orden
-                CotizacionServicio::find($servicio['idCotizacionServicio'])->update(['estado' => 2]);
+                CotizacionProductos::find($servicio['idCotizacionServicio'])->update(['estado' => 2]);
             }
             foreach ($cotizaciones->get() as $cotizacion) {
-                //verificamos si todos los servicios relacionados a la cotizacion se han asignado a sus ordenes
-                if($cotizacion->cotizacionSerivicios()->count() == $cotizacion->cotizacionSerivicios()->where('estado',2)->count()){
+                //verificamos si todos los servicios y productos relacionados a la cotizacion se han asignado a sus ordenes
+                $cantidadTotalServicios = $cotizacion->cotizacionSerivicios()->count();
+                $cantidadTotalProductos = $cotizacion->cotizacionProductos()->count();
+                $cantidadServiosOs = $cotizacion->cotizacionSerivicios()->where('estado',2)->count();
+                $cantidadProductosOs = $cotizacion->cotizacionProductos()->where('estado',2)->count();
+                if(($cantidadTotalServicios + $cantidadTotalProductos) === ($cantidadServiosOs + $cantidadProductosOs)){
                     $cotizacion->update(['estado' => 4]);
                 }
             }
@@ -260,7 +318,7 @@ class OrdenServicio extends Controller
             return response()->json(['success' => 'Orden de servicio generada de manera correcta']);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['error' => $th->getMessage()],400);
+            return response()->json(['error' => $th->getMessage(),'line' => $th->getLine()],400);
         }
     }
 }

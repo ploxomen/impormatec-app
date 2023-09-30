@@ -1,7 +1,9 @@
 @extends('helper.index')
 @section('head')
-    <script src="/ordenServicio/compartidoOs.js"></script>
-    <script src="/ordenServicio/agregar.js"></script>
+    <script src="/library/tinyeditor/tinyeditor.js"></script>
+    <script src="/library/tinyeditor/es.js"></script>
+    <script src="/ordenServicio/compartidoOs.js?v1.1"></script>
+    <script src="/ordenServicio/agregar.js?v1.1"></script>
     <title>Nueva orden de servicio</title>
 @endsection
 @section('body')
@@ -30,6 +32,14 @@
                             <label for="idModalfechaEmitida">Fecha emisión</label>
                             <input type="date" name="fecha" value="{{date('Y-m-d')}}" id="idModalfechaEmitida" class="form-control form-control-sm" required>
                         </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-2">
+                            <label for="idModaltipoMoneda">Tipo moneda</label>
+                            <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
+                                <option value=""></option>
+                                <option value="PEN">Soles (S/)</option>
+                                <option value="USD" selected>Dolar ($)</option>
+                            </select>
+                        </div>
                 </fieldset>
             </div>
             <div class="form-group">
@@ -42,7 +52,7 @@
                                 <tr>
                                     <th>ITEM</th>
                                     <th>N° COTIZACION</th>
-                                    <th style="min-width: 300px;">DESCRIPCIÓN</th>
+                                    <th style="min-width: 300px;">DESCRIPCION</th>
                                     <th style="width: 100px;">CANT.</th>
                                     <th>P. UNIT</th>
                                     <th>DESC.</th>
@@ -52,29 +62,29 @@
                             </thead>
                             <tbody id="contenidoServicios">
                                 <tr>
-                                    <td colspan="100%" class="text-center">No se seleccionaron servicios</td>
+                                    <td colspan="100%" class="text-center">No se seleccionaron servicios y/o productos</td>
                                 </tr>
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <th colspan="6">SUBTOTAL</th>
-                                    <th colspan="2" id="txtSubTotal">S/ 0.00</th>
+                                    <th colspan="2" id="txtSubTotal">$0.00</th>
                                 </tr>
                                 <tr>
                                     <th colspan="6">DESCUENTO</th>
-                                    <th colspan="2" id="txtDescuento">- S/ 0.00</th>
+                                    <th colspan="2" id="txtDescuento">- $0.00</th>
                                 </tr>
                                 <tr>    
                                     <th colspan="6">I.G.V</th>
-                                    <th colspan="2" id="txtIGV">S/ 0.00</th>
+                                    <th colspan="2" id="txtIGV">$0.00</th>
                                 </tr>
                                 <tr>
                                     <th colspan="6">COSTOS ADICIONALES</th>
-                                    <th colspan="2" id="txtCostoAdicional">S/ 0.00</th>
+                                    <th colspan="2" id="txtCostoAdicional">$0.00</th>
                                 </tr>
                                 <tr>
                                     <th colspan="6">TOTAL</th>
-                                    <th colspan="2" id="txtTotal">S/ 0.00</th>
+                                    <th colspan="2" id="txtTotal">$0.00</th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -107,6 +117,14 @@
                             </tbody>
                         </table>
                     </div>
+                </fieldset>
+            </div>
+            <div class="form-group">
+                <fieldset class="bg-white px-3 border">
+                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Observaciones</legend>
+                    <textarea id="observacionesOrdenServicio">
+                        <span>Sin observaciones</span>
+                    </textarea>
                 </fieldset>
             </div>
             <div class="col-12 form-group text-center">

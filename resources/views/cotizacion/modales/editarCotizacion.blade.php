@@ -183,11 +183,14 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="actualizarCotizacion">
-            <i class="far fa-save"></i>
-            <span>Actualizar</span>
-        </button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="actualizarCotizacion">
+                <i class="far fa-save"></i>
+                <span>Actualizar</span>
+            </button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="far fa-times-circle"></i>
+                <span>Cerrar</span>
+            </button>
         </div>
       </div>
     </div>

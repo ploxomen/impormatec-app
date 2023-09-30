@@ -60,19 +60,23 @@ class Cotizacion extends General{
     resultadosAlmacenServicio($tablaServiciosProductos){
         let resultado = [];
         for (const li of $tablaServiciosProductos.children) {
-            let productos = [];
-            for (const tr of li.querySelector("tbody").children) {
-                productos.push({
-                    idProducto : tr.dataset.producto,
-                    idAlmacen : tr.querySelector("select").value
-                });
-            }
+            let productos = this.resultadoAlmacenProducto(li.querySelector("tbody"));
             resultado.push({
                 idServicio : li.dataset.servicio,
                 productos
             });
         }
         return resultado;
+    }
+    resultadoAlmacenProducto($tablaProducto){
+        let productos = [];
+        for (const tr of $tablaProducto.children) {
+            productos.push({
+                idProducto : tr.dataset.producto,
+                idAlmacen : tr.querySelector("select").value
+            });
+        }
+        return productos;
     }
     filaProducto({idProducto,idServicio,index,urlImagen,nombreProducto,cantidadUsada,pVentaConvertido,precioTotal,descuento,tipo = "nuevo"}){
         const tr = document.createElement("tr");
@@ -113,7 +117,7 @@ class Cotizacion extends General{
         cbClonadoProductos.setAttribute("data-tabla-productos",`tablaBodyServiciosProductos${idServicio}`);
         cbClonadoProductos.setAttribute("data-servicio",`${idServicio}`);
         servicio.innerHTML = `
-        <div class="d-flex flex-wrap justify-content-between">
+        <div class="d-flex flex-wrap justify-content-between align-items-center">
             <h5 class="text-primary">
                 <i class="fas fa-concierge-bell"></i> ${nombreServicio}  
             </h5>
@@ -168,7 +172,7 @@ class Cotizacion extends General{
         cbClonadoProductos.setAttribute("data-tabla-productos",`tablaBodyServiciosProductos${idServicio}`);
         cbClonadoProductos.setAttribute("data-servicio",`${idServicio}`);
         servicio.innerHTML = `
-        <div class="d-flex flex-wrap justify-content-between">
+        <div class="d-flex flex-wrap justify-content-between align-items-center">
             <h5 class="text-primary">
                 <i class="fas fa-concierge-bell"></i> ${nombreServicio}  
             </h5>

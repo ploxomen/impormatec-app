@@ -23,8 +23,8 @@
                 <span>Restaurar</span>
             </button>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
-                    <i class="fas fa-eraser"></i>
-                    <span>Cancelar</span>
+                  <i class="far fa-times-circle"></i>
+                  <span>Cerrar</span>
             </button>
         </div>
       </div>

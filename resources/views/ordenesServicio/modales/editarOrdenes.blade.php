@@ -15,13 +15,21 @@
                         Orden de Servicio
                     </h5>
                 </div>
-                <div class="col-12 col-md-6 col-lg-8 form-group">
+                <div class="col-12 col-md-6 col-lg-4 form-group">
                     <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Clientes</label>
                     <input type="text" class="form-control form-control-sm" disabled id="idModalcliente">                    
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
                     <label for="idModalfechaEmitida">Fecha emisión</label>
                     <input type="date" name="fecha" id="idModalfechaEmitida" class="form-control form-control-sm" required>
+                </div>
+                <div class="form-group col-12 col-md-6 col-lg-4">
+                    <label for="idModaltipoMoneda">Tipo moneda</label>
+                    <select name="tipoMoneda" disabled id="idModaltipoMoneda" required class="select2-simple form-control-sm">
+                        <option value=""></option>
+                        <option value="PEN">Soles (S/)</option>
+                        <option value="USD">Dolar ($)</option>
+                    </select>
                 </div>
                 <div class="col-12">
                     <h5 class="text-primary">
@@ -112,6 +120,17 @@
                         </table>
                     </div>
                 </div>
+                <div class="col-12">
+                    <h5 class="text-primary">
+                        <i class="fas fa-caret-right"></i>
+                        Observaciones
+                    </h5>
+                </div>
+                <div class="form-group col-12">
+                    <textarea id="observacionesOrdenServicio">
+                        <span>Sin observaciones</span>
+                    </textarea>
+                </div>
                 <input type="submit" hidden id="btnEnviar">
             </form>
         </div>
@@ -121,8 +140,8 @@
                 <span>Guardar</span>
             </button>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
-                <i class="fas fa-eraser"></i>
-                <span>Cancelar</span>
+                <i class="far fa-times-circle"></i>
+                <span>Cerrar</span>
             </button>
         </div>
       </div>

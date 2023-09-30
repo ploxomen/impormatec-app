@@ -4,7 +4,7 @@ function loadPage() {
     let estadoCotizacion = [
         {
             class:"badge badge-warning",
-            value: "Por aprobar"
+            value: "Generado"
         },
         {
             class:"badge badge-success",
@@ -152,6 +152,10 @@ function loadPage() {
     const tablaServicioProductos = document.querySelector("#listaServiciosProductos");
     const formCotizacion = document.querySelector("#frmCotizacion");
     const cbRepresentastes = document.querySelector("#idModalrepresentanteCliente");
+    const tablaProductos = document.querySelector("#almacenProductosCotizacion #contanidoTablaProductos");
+    const contenidoProductosAlmacen = document.querySelector("#almacenProductosCotizacion #contenidoProductos");
+    const contenidoServiciosAlmacen = document.querySelector("#almacenProductosCotizacion #contenidoServicios");
+
     let cbServicios = document.querySelector("#cbServicios");
     let serviciosProductos = [];
     const contenedorArchivoPdf = document.querySelector("#contenedorArchivoPdf");
@@ -168,13 +172,22 @@ function loadPage() {
                 if(response.alerta){
                     return alertify.alert("Mensaje",response.alerta);
                 }
-                listaServiciosAlmacen.innerHTML = "";
-                response.servicios.forEach(servicio => {
-                    listaServiciosAlmacen.append(cotizacionGeneral.almacenServicios(servicio));
-                });
+                if(response.productos && response.productos.length){
+                    contenidoProductosAlmacen.hidden = false;
+                    response.productos.forEach((producto,key) => {
+                        producto.index = key + 1;
+                        tablaProductos.append(cotizacionGeneral.almacenProductos(producto));
+                    });
+                }
+                if(response.servicios && response.servicios.length){
+                    contenidoServiciosAlmacen.hidden = false;
+                    response.servicios.forEach(servicio => {
+                        listaServiciosAlmacen.append(cotizacionGeneral.almacenServicios(servicio));
+                    });
+                }
                 idCotizacion = e.target.dataset.cotizacion;
                 $('#almacenProductosCotizacion').modal("show");
-                $('#contenidoServiciosProductos select').select2({
+                $('#almacenProductosCotizacion select').select2({
                     theme: 'bootstrap',
                     width: '100%',
                     placeholder : "Seleccionar un almacen"
@@ -284,15 +297,23 @@ function loadPage() {
         $('#editarCotizacion .select2-simple').val("").trigger("change");
         contenedorArchivoPdf.innerHTML = "";
     });
+    $('#almacenProductosCotizacion').on('hidden.bs.modal', function (event) {
+        contenidoProductosAlmacen.hidden = true;
+        contenidoServiciosAlmacen.hidden = true;
+        tablaProductos.innerHTML = "";
+        listaServiciosAlmacen.innerHTML = "";
+    });
     $(cotizacionGeneral.$cbTipoMoneda).on("select2:select", function (e) {
         cotizacionGeneral.modificarMonedaTotal($(this).val(),serviciosProductos,tablaServicios)
     });
     document.querySelector("#actualizarAlmacenProductos").onclick = async function(e){
         const datos = new FormData();
         datos.append("acciones","aprobar-cotizacion");
-        let listaCotizacion = cotizacionGeneral.resultadosAlmacenServicio(listaServiciosAlmacen);
+        let listaServiciosProductos = cotizacionGeneral.resultadosAlmacenServicio(listaServiciosAlmacen);
+        let listaProductos = cotizacionGeneral.resultadoAlmacenProducto(tablaProductos);
         datos.append("idCotizacion",idCotizacion);
-        datos.append("servicios",JSON.stringify(listaCotizacion));
+        datos.append("servicios",JSON.stringify(listaServiciosProductos));
+        datos.append("productos",JSON.stringify(listaProductos));
         try {
             const response = await general.funcfetch("aprobar",datos,"POST");
             if (response.session) {
@@ -301,6 +322,7 @@ function loadPage() {
             if(response.alerta){
                 return alertify.alert("Mensaje",response.alerta);
             }
+            tablatablaCotizacionDatatable.draw();
             $('#almacenProductosCotizacion').modal("hide");
             idCotizacion = null;
             return alertify.success(response.success);

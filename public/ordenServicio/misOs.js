@@ -2,7 +2,24 @@ function loadPage() {
     const gen = new General();
     let ordenServicio = new OrdenServicio();
     const tablaOs = document.querySelector("#tablaCotizaciones");
-    const estadoOs = ["Generado","Facturado"];
+    const estadoOs = [
+        {
+            class:"badge badge-warning",
+            value: "Generado"
+        },
+        {
+            class:"badge badge-success",
+            value: "Informado"
+        },
+        {
+            class:"badge badge-info",
+            value: "Facturado"
+        },
+        {
+            class:"badge badge-primary",
+            value: "Con OS"
+        }
+    ];
     const tablaDataOs = $(tablaOs).DataTable({
         ajax: {
             url: 'obtener',
@@ -26,38 +43,38 @@ function loadPage() {
         },
         {
             data : 'importe',
-            render : function(data){
-                return gen.resetearMoneda(data);
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'descuento',
-            render : function(data){
-                return gen.resetearMoneda(data);
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'igv',
-            render : function(data){
-                return gen.resetearMoneda(data);
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'adicional',
-            render : function(data){
-                return gen.resetearMoneda(data);
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'total',
-            render : function(data){
-                return gen.resetearMoneda(data);
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'estado',
-            render : function(data){
-                return estadoOs[+data-1];
+            render : function(data,type,row){
+                return `<span class="${estadoOs[+data-1].class}">${estadoOs[+data-1].value}</span>`;
             }
         },
         {
@@ -65,6 +82,12 @@ function loadPage() {
             render : function(data){
                 return `
                 <div class="d-flex justify-content-center" style="gap:5px;">
+                    <a href="reporte/${data}" target="_blank" class="btn btn-sm btn-outline-primary p-1">
+                        <small>
+                        <i class="fas fa-file-pdf"></i>                        
+                        Reporte
+                        </small>
+                    </a>
                     <button class="btn btn-sm btn-outline-info p-1" data-orden-servicio="${data}">
                         <small>
                         <i class="fas fa-pencil-alt"></i>
@@ -82,8 +105,39 @@ function loadPage() {
         },
         ]
     });
+    tinymce.init({
+        selector: '#observacionesOrdenServicio',
+        language: 'es',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists searchreplace table visualblocks wordcount',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+        image_title: true,
+        branding: false,
+        height: "400px",
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        file_picker_callback: (cb, value, meta) => {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.addEventListener('load', () => {
+                const id = 'blobid' + (new Date()).getTime();
+                const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+                const base64 = reader.result.split(',')[1];
+                const blobInfo = blobCache.create(id, file, base64);
+                blobCache.add(blobInfo);
+                cb(blobInfo.blobUri(), { title: file.name });
+            });
+            reader.readAsDataURL(file);
+            });
+            input.click();
+        },
+    });
     let tablaServicios = document.querySelector("#contenidoServicios");
     let tablaServiciosAdicionales = document.querySelector("#tablaServiciosAdicionales");
+    let $tipoMoneda = document.querySelector("#editarOrdenServicio #idModaltipoMoneda");
     let listaServicios = [];
     let idOrdenServicio = null;
     const cbCotizaciones = document.querySelector("#idCotizacionServicio");
@@ -100,38 +154,44 @@ function loadPage() {
                     return alertify.alert("Alerta","No se encontró la información para esta orden de servicio");
                 }
                 let template = "";
-                response.ordenServicio.cotizaciones.forEach((servicio, key) => {
+                const detalleOrdenServicio = response.ordenServicio;
+                tinymce.activeEditor.setContent(!detalleOrdenServicio.observaciones ? "" : detalleOrdenServicio.observaciones);
+                const {fecha,tipoMoneda,id,adicionales,nombreCliente} = detalleOrdenServicio;
+                detalleOrdenServicio.cotizaciones.forEach((servicio, key) => {
                     servicio.index = key + 1;
+                    servicio.tipoMoneda = tipoMoneda;
                     template += ordenServicio.agregarDetallServicios(servicio).outerHTML;
+                    listaServicios.push(servicio);
                 });
-                idOrdenServicio = response.ordenServicio.id;
+                idOrdenServicio = id;
                 tablaServiciosAdicionales.dataset.tipo = "lleno";
-                listaServicios = response.ordenServicio.cotizaciones;
-                tablaServicios.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se seleccionaron servicios</td></tr>` : template;
+                tablaServicios.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se seleccionaron servicios y/o productos</td></tr>` : template;
                 tablaServiciosAdicionales.innerHTML = "";
-                response.ordenServicio.adicionales.forEach((adicional, key) => {
+                adicionales.forEach((adicional, key) => {
                     adicional.index = key + 1;
+                    adicional.tipoMoneda = tipoMoneda;
                     tablaServiciosAdicionales.append(ordenServicio.generarServiciosAdicionales(adicional));
                 });
-                if(!response.ordenServicio.adicionales.length){
+                if(!adicionales.length){
                     tablaServiciosAdicionales.innerHTML = `
                     <tr><td colspan="100%" class="text-center">No se agregaron servicios adicionales</td></tr>
                     `;
                     tablaServiciosAdicionales.dataset.tipo = "vacio";
                 }
                 cbCotizaciones.append(new Option("",""));
-                response.ordenServicio.listaServicios.forEach(cotizacion => {
-                    const opcion = new Option("N° " + cotizacion.nroCotizacion,cotizacion.idCotizacion);
+                detalleOrdenServicio.listaServicios.forEach(cotizacion => {
+                    const opcion = new Option("N° " + cotizacion.nroCotizacion,cotizacion.id);
                     cbCotizaciones.append(opcion);
                 });
                 for (const input of tablaServiciosAdicionales.querySelectorAll(
                     ".punitari-servicios, .cantidad-servicios"
                 )) {
-                    input.addEventListener("change", e => {ordenServicio.calcularMonto({e,listaServicios,tablaServiciosAdicionales})});
+                    input.addEventListener("change", e => {ordenServicio.calcularMonto({e,listaServicios,tablaServiciosAdicionales,tipoMoneda})});
                 }
-                document.querySelector("#idModalcliente").value = response.ordenServicio.nombreCliente;
-                document.querySelector("#idModalfechaEmitida").value = response.ordenServicio.fecha;
-                ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales);
+                document.querySelector("#idModalcliente").value = nombreCliente;
+                document.querySelector("#idModalfechaEmitida").value = fecha;
+                $("#editarOrdenServicio #idModaltipoMoneda").val(tipoMoneda).trigger("change");
+                ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales,tipoMoneda);
                 $('#editarOrdenServicio').modal("show");
             } catch (error) {
                 console.error(error);
@@ -157,31 +217,34 @@ function loadPage() {
             alertify.success(response.success);
             response.listaServicios.forEach(servicio => {
                 servicio.index = listaServicios.length + 1;
+                servicio.tipoMoneda = $tipoMoneda.value;
                 tablaServicios.append(ordenServicio.agregarDetallServicios(servicio));
                 listaServicios.push(servicio);
             });
-            ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales);
+            ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales,$tipoMoneda.value);
             const indiceBorrar = Array.from(cbCotizaciones.options).findIndex(option => option.value == $(cbCotizaciones).val());
             if(indiceBorrar >= 0){
                 cbCotizaciones.remove(indiceBorrar);
             }
         } catch (error) {
             console.error(error);
-            alertify.error("error al agregar los servicios de la cotizacion")
+            alertify.error("error al agregar los servicios y/o de la cotizacion")
         }
     })
     const btnAgregarServiciosAdicionales = document.querySelector(
         "#btnAgregarServiciosAdicionales"
     );
-    btnAgregarServiciosAdicionales.onclick = e => ordenServicio.agregarServiciosAdicionales(tablaServiciosAdicionales,listaServicios);
+    btnAgregarServiciosAdicionales.onclick = e => ordenServicio.agregarServiciosAdicionales(tablaServiciosAdicionales,listaServicios,$tipoMoneda.value);
     const frmOs = document.querySelector("#frmOrdenServicio");
     $('#editarOrdenServicio').on('hidden.bs.modal', function (event) {
-        frmOs.reset();
         cbCotizaciones.innerHTML = "";
         tablaServiciosAdicionales.innerHTML = "";
         listaServicios = [];
         idOrdenServicio = null;
-        ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales);
+        ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales,$tipoMoneda.value);
+        frmOs.reset();
+        tinymce.activeEditor.setContent("");
+        $("#editarOrdenServicio #idModaltipoMoneda").val("").trigger("change");
     });
     tablaServiciosAdicionales.addEventListener("click",(e) => {
         if(e.target.classList.contains("btn-danger")){
@@ -209,20 +272,21 @@ function loadPage() {
                     `;
                     tablaServiciosAdicionales.dataset.tipo = "vacio";
                 }
-                ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales);
+                ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales,$tipoMoneda.value);
                 alertify.success("Servicio adicional eliminado correctamente");
             },()=>{})
         }
     });
     tablaServicios.addEventListener("click",(e) => {
         if(e.target.classList.contains("btn-danger")){
-            alertify.confirm("Mensaje","¿Deseas eliminar este servicio?",async ()=>{
+            alertify.confirm("Mensaje","¿Deseas quitar este item de la orden de servicio?",async ()=>{
                 if(e.target.dataset.cotizacionServicio){
                     const cotizacionServicio = e.target.dataset.cotizacionServicio;
                     let datos = new FormData();
                     datos.append("cotizacionServicioId",cotizacionServicio);
                     datos.append("ordenServicioId",idOrdenServicio);
                     datos.append("acciones","eliminar-cotizacion");
+                    datos.append("tipoDetalle",e.target.dataset.tipo);
                     const response = await gen.funcfetch("acciones",datos,"POST");
                     if (response.session) {
                         return alertify.alert([...gen.alertaSesion], () => {
@@ -234,7 +298,7 @@ function loadPage() {
                     }
                 }
                 listaServicios = ordenServicio.eliminarServicio(e,listaServicios,tablaServicios);
-                ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales);
+                ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales,$tipoMoneda.value);
                 alertify.success("Servicio eliminado correctamente");
             },()=>{})
         }
@@ -244,6 +308,7 @@ function loadPage() {
         e.preventDefault();
         let datos = new FormData(e.target);
         datos.append("ordenServicioId",idOrdenServicio);
+        datos.append("observaciones",tinymce.activeEditor.getContent());
         datos.append("acciones","actualizar-orden");
         const response = await gen.funcfetch("acciones",datos,"POST");
         if (response.session) {

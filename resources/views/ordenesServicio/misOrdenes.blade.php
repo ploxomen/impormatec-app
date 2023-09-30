@@ -1,8 +1,10 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="/ordenServicio/compartidoOs.js"></script>
-    <script src="/ordenServicio/misOs.js"></script>
+    <script src="/library/tinyeditor/tinyeditor.js"></script>
+    <script src="/library/tinyeditor/es.js"></script>
+    <script src="/ordenServicio/compartidoOs.js?v1.1"></script>
+    <script src="/ordenServicio/misOs.js?v1.1"></script>
     <title>Mis Cotizaciones</title>
 @endsection
 @section('body')

@@ -1,9 +1,16 @@
 class OrdenServicio extends General {
     eliminarServicio = (event,listaServicio,tablaServicios) => {
         const valor = event.target.dataset.cotizacionServicio;
-        let lista = listaServicio.filter(servicio => servicio.idCotizacionServicio != valor);
+        const tipo = event.target.dataset.tipo;
+        console.log(listaServicio);
+        let lista = listaServicio.filter(function(detalle){
+            if(+detalle.idCotizacionServicio === +valor && detalle.tipoServicioProducto === tipo){
+                return false;
+            }
+            return true;
+        });
         if(!lista.length){
-            tablaServicios.innerHTML = `<tr><td colspan="100%" class="text-center">No se seleccionaron servicios</td></tr>`;
+            tablaServicios.innerHTML = `<tr><td colspan="100%" class="text-center">No se seleccionaron servicios y/o productos</td></tr>`;
         }else{
             event.target.parentElement.parentElement.remove();
         }
@@ -16,10 +23,10 @@ class OrdenServicio extends General {
         precioUnitario,
         cantidad,
         total,
+        tipoMoneda
     }) => {
         const tr = document.createElement("tr");
         let $adicional = "";
-        console.log(idAdicional);
         if(idAdicional){
             $adicional = document.createElement("input");
             $adicional.name = "idAdicional[]";
@@ -33,12 +40,12 @@ class OrdenServicio extends General {
         <td><input type="text" name="descripcion[]" required class="form-control form-control-sm descripcion-servicios" value="${descripcion}"></td>
         <td><input type="number" name="precio[]" step="0.01" required min="0.00" class="form-control form-control-sm punitari-servicios" value="${precioUnitario}"></td>
         <td><input type="number" name="cantidad[]" min="1" required class="form-control form-control-sm cantidad-servicios" value="${cantidad}"></td>
-        <td>${this.resetearMoneda(total)}</td>
+        <td>${this.resetearMoneda(total,tipoMoneda)}</td>
         <td class="text-center"><button class="btn btn-sm btn-danger" ${idAdicional ? 'data-adicional="' + idAdicional + '"' : ''} type="button"><i class="fas fa-trash-alt"></i></button></td>
         `;
         return tr;
     }
-    agregarDetallServicios = ({idOsCotizacion,index,nroCotizacion,servicio,cantidad,importe,descuento,total,idCotizacionServicio}) => {
+    agregarDetallServicios = ({idOsCotizacion,index,nroCotizacion,servicio,cantidad,importe,descuento,total,idCotizacionServicio,tipoServicioProducto,tipoMoneda}) => {
         let tr = document.createElement("tr");
         if(idOsCotizacion){
             tr.dataset.ordenServicioCotizacion = idOsCotizacion;
@@ -49,28 +56,28 @@ class OrdenServicio extends General {
             <td>${nroCotizacion}</td>
             <td>${servicio}</td>
             <td>${cantidad}</td>
-            <td>${this.resetearMoneda(importe)}</td>
-            <td>${this.resetearMoneda(descuento)}</td>
-            <td>${this.resetearMoneda(total)}</td>
-            <td class="text-center"><button class="btn btn-sm btn-danger" type="button" data-cotizacion-servicio="${idCotizacionServicio}"><i class="fas fa-trash-alt"></i></button></td>
+            <td>${this.resetearMoneda(importe,tipoMoneda)}</td>
+            <td>${this.resetearMoneda(descuento,tipoMoneda)}</td>
+            <td>${this.resetearMoneda(total,tipoMoneda)}</td>
+            <td class="text-center"><button class="btn btn-sm btn-danger" type="button" data-cotizacion-servicio="${idCotizacionServicio}" data-tipo="${tipoServicioProducto}"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
         `
         return tr;
     }
-    calcularServiciosTotales = (listaServicios,tablaServiciosAdicionales) => {
+    calcularServiciosTotales = (listaServicios,tablaServiciosAdicionales,tipoMoneda) => {
         let descuento = 0;
         let total = 0;
         listaServicios.forEach((cp) => {
             descuento += parseFloat(cp.descuento);
             total += parseFloat(cp.total);
         });
-        document.querySelector("#txtSubTotal").textContent = this.monedaSoles(
-            total - total * 0.18
+        document.querySelector("#txtSubTotal").textContent = this.resetearMoneda(
+            total - total * 0.18,tipoMoneda
         );
         document.querySelector("#txtDescuento").textContent =
-            "-" + this.monedaSoles(descuento);
-        document.querySelector("#txtIGV").textContent = this.monedaSoles(
-            total * 0.18
+            "-" + this.resetearMoneda(descuento,tipoMoneda);
+        document.querySelector("#txtIGV").textContent = this.resetearMoneda(
+            total * 0.18,tipoMoneda
         );
         let totalDetalle = 0;
         for (const tr of tablaServiciosAdicionales.children) {
@@ -80,14 +87,13 @@ class OrdenServicio extends General {
                 continue;
             }
             const subTotal = cantidad.value * precio.value;
-            tr.children[tr.children.length - 2].textContent = this.monedaSoles(subTotal);
+            tr.children[tr.children.length - 2].textContent = this.resetearMoneda(subTotal,tipoMoneda);
             totalDetalle += subTotal;
         }
-        document.querySelector("#txtCostoAdicional").textContent = this.monedaSoles(totalDetalle);
-        document.querySelector("#txtTotal").textContent = this.monedaSoles(total - descuento + totalDetalle);
+        document.querySelector("#txtCostoAdicional").textContent = this.resetearMoneda(totalDetalle,tipoMoneda);
+        document.querySelector("#txtTotal").textContent = this.resetearMoneda(total - descuento + totalDetalle,tipoMoneda);
     }
-    calcularMonto = ({e,listaServicios,tablaServiciosAdicionales}) => {
-        console.log(e);
+    calcularMonto = ({e,listaServicios,tablaServiciosAdicionales,tipoMoneda}) => {
         const step = !e.target.step ? 1 : parseFloat(e.target.step);
         const value = !e.target.step
             ? parseInt(e.target.value)
@@ -95,9 +101,9 @@ class OrdenServicio extends General {
         if (isNaN(value)) {
             e.target.value = step;
         }
-        this.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales);
+        this.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales,tipoMoneda);
     }
-    agregarServiciosAdicionales = (tablaServiciosAdicionales,listaServicios) => {
+    agregarServiciosAdicionales = (tablaServiciosAdicionales,listaServicios,tipoMoneda) => {
         const index =
             tablaServiciosAdicionales.dataset.tipo == "vacio"
                 ? 1
@@ -109,6 +115,7 @@ class OrdenServicio extends General {
             precioUnitario: "",
             cantidad: 1,
             total: 0,
+            tipoMoneda
         };
         if (index === 1) {
             tablaServiciosAdicionales.dataset.tipo = "lleno";
@@ -119,7 +126,7 @@ class OrdenServicio extends General {
         for (const input of trDetalle.querySelectorAll(
             ".punitari-servicios, .cantidad-servicios"
         )) {
-            input.addEventListener("change", e => {this.calcularMonto({e,listaServicios,tablaServiciosAdicionales})});
+            input.addEventListener("change", e => {this.calcularMonto({e,listaServicios,tablaServiciosAdicionales,tipoMoneda})});
         }
         return true;
     }

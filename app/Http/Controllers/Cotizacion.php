@@ -11,6 +11,8 @@ use App\Models\CotizacionPdf;
 use App\Models\CotizacionProductos;
 use App\Models\CotizacionServicio;
 use App\Models\CotizacionServicioProducto;
+use App\Models\OrdenServicioCotizacionProducto;
+use App\Models\OrdenServicioCotizacionServicio;
 use App\Models\PreCotizaion;
 use App\Models\ProductoAlmacen;
 use App\Models\Productos;
@@ -78,12 +80,13 @@ class Cotizacion extends Controller
         return response()->json($resultado);
     }
     public function renderPdf($idCotizacion) {
+        $utilitarios = new Utilitarios();
         $cotizacion = ModelsCotizacion::find($idCotizacion);
         $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
         $cliente = Clientes::find($cotizacion->id_cliente);
         $representante = ClientesContactos::find($cotizacion->representanteCliente);
-        $nombreDia = $this->obtenerFechaLarga(strtotime($cotizacion->fechaCotizacion));
-        $nombreMes = $this->obtenerNombreMes(strtotime($cotizacion->fechaCotizacion));
+        $nombreDia = $utilitarios->obtenerFechaLarga(strtotime($cotizacion->fechaCotizacion));
+        $nombreMes = $utilitarios->obtenerNombreMes(strtotime($cotizacion->fechaCotizacion));
         $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
         $productosServicios = CotizacionProductos::productosServicios($servicios,$cotizacion->id);
         $moneda = $cotizacion->tipoMoneda === "USD" ? '$' : 'S/';
@@ -272,12 +275,21 @@ class Cotizacion extends Controller
                 return response()->json(['success' => 'El prodcto se a eliminado de manera correcta']);
             break;
             case 'eliminar-producto-servicio':
-                CotizacionProductos::where(['id_cotizacion' => $request->idCotizacion, 'id_producto' => $request->idDetalle])->delete();
+                $cotizacion = CotizacionProductos::where(['id_cotizacion' => $request->idCotizacion, 'id_producto' => $request->idDetalle])->first();
+                $ordenServicio = OrdenServicioCotizacionProducto::where(['id_cotizacion_producto' => $cotizacion->id]);
+                if($ordenServicio->count() > 0){
+                    return response()->json(['alerta' => 'Este producto no puede ser eliminado debido a que esta asociado con la orden de servicio N° ' . str_pad($ordenServicio->first()->id_orden_servicio,5,"0",STR_PAD_LEFT)]);
+                }
+                $cotizacion->delete();
                 return response()->json(['success' => 'El producto se a eliminado de manera correcta']);
             break;
             case 'eliminar-servicio':
                 $servicios = CotizacionServicio::where('id_cotizacion',$request->idCotizacion);
                 $consultaServicio = $servicios->where('id_servicio',$request->idDetalle)->first();
+                $ordenServicio = OrdenServicioCotizacionServicio::where(['id_cotizacion_servicio' => $consultaServicio->id]);
+                if($ordenServicio->count() > 0){
+                    return response()->json(['alerta' => 'Este servicio no puede ser eliminado debido a que esta asociado con la orden de servicio N° ' . str_pad($ordenServicio->first()->id_orden_servicio,5,"0",STR_PAD_LEFT)]);
+                }
                 CotizacionServicioProducto::where('id_cotizacion_servicio',$consultaServicio->id)->delete();
                 $consultaServicio->delete();
                 return response()->json(['success' => 'El servicio se a eliminado de manera correcta']);
@@ -318,6 +330,7 @@ class Cotizacion extends Controller
         $resultado = [];
         switch ($request->acciones) {
             case 'consultar-almacenes':
+                $resultado['productos'] = CotizacionProductos::productosCotizacionAprobar($request->idCotizacion,0);
                 $resultado['servicios'] = ModelsCotizacion::obtenerServiciosProductos($request->idCotizacion);
             break;
             case 'consultar-aprobacion':
@@ -325,7 +338,7 @@ class Cotizacion extends Controller
                 if(empty($consulta)){
                     $resultado['alerta'] = "Esta cotización ya a sido aprobada";
                 }else{
-                    $resultado['productos'] = 
+                    $resultado['productos'] = CotizacionProductos::productosCotizacionAprobar($request->idCotizacion,0);
                     $resultado['servicios'] = ModelsCotizacion::obtenerServiciosProductos($request->idCotizacion);
                 }
             break;
@@ -338,20 +351,36 @@ class Cotizacion extends Controller
                         $cotizacion->update(['estado' => 2]);
                         $aprobacion = true;
                     }
-                    foreach (json_decode($request->servicios) as $servicio) {
-                        $cotizacionModel = CotizacionServicio::where(['id' => $servicio->idServicio, 'id_cotizacion' => $request->idCotizacion])->first();
-                        foreach ($servicio->productos as $producto) {
-                            $productoModel = $cotizacionModel->productos()->where('id_producto',$producto->idProducto)->first();
-                            $productoModel->update(['id_almacen' => $producto->idAlmacen]);
+                    foreach (json_decode($request->productos) as $productoAlmacen) {
+                        $almacenProducto = ProductoAlmacen::where(['id_almacen' => $productoAlmacen->idAlmacen, 'id_producto' => $productoAlmacen->idProducto,'estado' => 1])->first();
+                        if(empty($almacenProducto)){
+                            DB::rollBack();
+                            return response()->json(['alerta' => 'No se encontró el almacen para el producto ' . Productos::find($productoAlmacen->idProducto)->nombreProducto]);
+                        }
+                        $productoModel = CotizacionProductos::where(['id_producto' => $productoAlmacen->idProducto, 'id_cotizacion' => $request->idCotizacion])->first();
+                        if($productoModel->cantidad > $almacenProducto->stock){
+                            DB::rollBack();
+                            return response()->json(['alerta' => 'No hay suficiente stock en el almacen para el producto '. Productos::find($productoAlmacen->idProducto)->nombreProducto .', por favor aumente el stock o cambie de almacen']);
+                        }
+                        $productoModel->update(['id_almacen' => $productoAlmacen->idAlmacen]);
+                        if($aprobacion){
+                            $almacenProducto->update(['stock' => $almacenProducto->stock - $productoModel->cantidad]);
+                        }
+                    }
+                    foreach (json_decode($request->servicios) as $servicioAlmacen) {
+                        $cotizacionModel = CotizacionServicio::where(['id' => $servicioAlmacen->idServicio, 'id_cotizacion' => $request->idCotizacion])->first();
+                        foreach ($servicioAlmacen->productos as $producto) {
                             $productoAlmacen = ProductoAlmacen::where(['id_almacen' => $producto->idAlmacen, 'id_producto' => $producto->idProducto,'estado' => 1])->first();
                             if(empty($productoAlmacen)){
                                 DB::rollBack();
-                                return response()->json(['alerta' => 'No se encontró el almacen para el producto']);
+                                return response()->json(['alerta' => 'No se encontró el almacen para el producto ' . Productos::find($producto->idProducto)->nombreProducto . ' del servicio ' . $cotizacionModel->servicios->servicio]);
                             }
+                            $productoModel = $cotizacionModel->productos()->where('id_producto',$producto->idProducto)->first();
                             if($productoModel->cantidad > $productoAlmacen->stock){
                                 DB::rollBack();
-                                return response()->json(['alerta' => 'No hay suficiente stock en los almacenes, por favor aumente el stock o cambien de almacen']);
+                                return response()->json(['alerta' => 'No hay suficiente stock en el almacen para el producto ' .  Productos::find($producto->idProducto)->nombreProducto .' del servicio ' . $cotizacionModel->servicios->servicio . ', por favor aumente el stock o cambie de almacen']);
                             }
+                            $productoModel->update(['id_almacen' => $producto->idAlmacen]);
                             if($aprobacion){
                                 $productoAlmacen->update(['stock' => $productoAlmacen->stock - $productoModel->cantidad]);
                             }
@@ -469,18 +498,8 @@ class Cotizacion extends Controller
             return response()->json(['error' => $th->getMessage(), 'line' => $th->getLine()]);
         }
     }
-    public function obtenerNombresMeses() {
-        return ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","setiembre","octubre","noviembre","diciembre"];
-    }
-    public function obtenerFechaLarga($fechaTime) {
-        $meses = $this->obtenerNombresMeses();
-        $dias = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sábado"];
-        return $dias[date("w",$fechaTime)] . ', ' . date("d",$fechaTime) . ' de ' . $meses[date('n',$fechaTime) - 1] . ' del ' . date('Y',$fechaTime);
-    }
-    public function obtenerNombreMes($fechaTime) {
-        $meses = $this->obtenerNombresMeses();
-        return $meses[date('n',$fechaTime) - 1];
-    }
+    
+    
     public function indexMisCotizaciones() {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
         if(isset($verif['session'])){

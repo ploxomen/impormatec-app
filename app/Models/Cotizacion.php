@@ -34,17 +34,26 @@ class Cotizacion extends Model
         }
         return $servicios;
     }
-    public function scopeObtenerCotizacionesAprobadas($query,$idCliente,$soloCotizacion = false){
-        $cotizacion = $query->select("cotizacion.id AS idCotizacion","servicios.servicio","cotizacion_servicio.id AS idCotizacionServicio","cotizacion_servicio.cantidad","cotizacion_servicio.importe","cotizacion_servicio.descuento","cotizacion_servicio.igv","cotizacion_servicio.total")
-        ->selectRaw("LPAD(cotizacion.id,5,'0') AS nroCotizacion")
-        ->join("cotizacion_servicio","cotizacion.id","=","cotizacion_servicio.id_cotizacion")
-        ->join("servicios","cotizacion_servicio.id_servicio","=","servicios.id")
-        ->where(['cotizacion.id_cliente' => $idCliente,'cotizacion_servicio.estado' => 1])
-        ->whereIn('cotizacion.estado',[2,3]);
-        return $soloCotizacion ? $cotizacion->groupBy("cotizacion.id")->get() : $cotizacion->get();
+    public function scopeObtenerCotizacionesAprobadas($query,$idCliente,$tipoMoneda,$soloCotizacion = false){
+        $cotizaciones = $query->select("id","importeTotal","descuentoTotal","igvTotal","total")
+        ->selectRaw("LPAD(id,5,'0') AS nroCotizacion")
+        ->where(['id_cliente' => $idCliente,'tipoMoneda' => $tipoMoneda])
+        ->whereIn('estado',[2,3])->get();
+        if($soloCotizacion){
+            return $cotizaciones;
+        }
+        foreach ($cotizaciones as $cotizacion) {
+            $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
+            $cotizacion->detalleCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id)->where('estado',1);
+        }
+        return $cotizaciones;
     }
     public function cotizacionSerivicios()
     {
         return $this->hasMany(CotizacionServicio::class,'id_cotizacion');
+    }
+    public function cotizacionProductos()
+    {
+        return $this->hasMany(CotizacionProductos::class,'id_cotizacion');
     }
 }

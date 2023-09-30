@@ -26,7 +26,7 @@
                             <span>Siguiente</span>
                         </button>
                         <button type="reset" class="btn btn-outline-danger form-group">
-                            <i class="fas fa-eraser"></i>
+                            <i class="far fa-times-circle"></i>
                             <span>Cancelar</span>
                         </button>
                     </div>
