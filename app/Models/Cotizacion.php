@@ -24,7 +24,7 @@ class Cotizacion extends Model
         ->join("servicios","cotizacion_servicios.id_servicio","=","servicios.id")
         ->where(['cotizacion_servicios.id_cotizacion' => $idCotizacion])->get();
         foreach ($servicios as $servicio) {
-            $servicio->productos = CotizacionServicioProducto::obtenerProductosAprobar($servicio->id,$incluirAlmacen);
+            $servicio->productos = CotizacionServicioProducto::obtenerProductosAprobar($servicio->id,false);
             if(!$incluirAlmacen){
                 continue;
             }
