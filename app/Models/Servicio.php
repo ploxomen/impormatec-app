@@ -10,7 +10,7 @@ class Servicio extends Model
     public $table = "servicios";
     const UPDATED_AT = "fechaActualizada";
     const CREATED_AT = "fechaCreada";
-    protected $fillable = ['servicio','descripcion','estado'];
+    protected $fillable = ['servicio','descripcion','acciones','estado'];
     public function scopeObtenerServicios($query)
     {
         return $query->select("id","servicio","descripcion","estado")

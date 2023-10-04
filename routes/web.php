@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Clientes;
 use App\Http\Controllers\Cotizacion;
+use App\Http\Controllers\Informes;
 use App\Http\Controllers\OrdenServicio;
 use App\Http\Controllers\PreCotizacion;
 use App\Http\Controllers\Servicio;
@@ -208,6 +209,12 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         // Route::delete('eliminar/{cotizacion}', [Cotizacion::class, 'eliminarCotizacion']);
     });
     Route::prefix('ordenes-servicio')->group(function () {
+        Route::prefix('informe')->group(function () {
+            Route::get('cliente/{idCliente}', [Informes::class, 'obtenerOrdenesServicioCliente']);
+            Route::get('generar', [Informes::class, 'aprobarCotizacion'])->name("informe.generar");
+            Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.lista");
+
+        });
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
         Route::post('agregar', [OrdenServicio::class, 'agregarOs']);

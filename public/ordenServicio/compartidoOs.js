@@ -2,7 +2,6 @@ class OrdenServicio extends General {
     eliminarServicio = (event,listaServicio,tablaServicios) => {
         const valor = event.target.dataset.cotizacionServicio;
         const tipo = event.target.dataset.tipo;
-        console.log(listaServicio);
         let lista = listaServicio.filter(function(detalle){
             if(+detalle.idCotizacionServicio === +valor && detalle.tipoServicioProducto === tipo){
                 return false;
@@ -15,6 +14,13 @@ class OrdenServicio extends General {
             event.target.parentElement.parentElement.remove();
         }
         return lista;
+    }
+    obtenerOrdenServicio(listaOrdenServicios){
+        let template = "";
+        listaOrdenServicios.forEach(ordenServicio => {
+            template = `<option value="${ordenServicio.id}">${ordenServicio.nroOs}</option>`;
+        });
+        return template;
     }
     generarServiciosAdicionales = ({
         index,
