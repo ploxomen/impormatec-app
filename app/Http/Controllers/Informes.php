@@ -8,6 +8,8 @@ use App\Models\InformeServicioSeccionesImg;
 use App\Models\OrdenServicio;
 use App\Models\OrdenServicioCotizacionServicio;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Informes extends Controller
 {
@@ -114,6 +116,47 @@ class Informes extends Controller
             'columnas' => $request->columnas
         ]);
         return response()->json(['success' => 'seccion agregada correctamente', 'titulo' => $informeSeccion->titulo, 'columna' => $informeSeccion->columnas, 'idSeccion' => $informeSeccion->id,'idOs' => $ordenServicio->id, 'idServicio' => $osServicio->id, 'listaImagenes' => []]);
+    }
+    public function agregarImagenEnLaSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        if(isset($verif['session'])){        
+            return response()->json(['session' => true]);
+        }
+        $ordenServicio = $this->verificarDisponibilidadOs($request->os,false);
+        if(isset($ordenServicio['alerta'])){
+            return response()->json($ordenServicio);
+        }
+        $osServicio = OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'id' => $request->servicio])->first();
+        if(empty($osServicio)){
+            return response()->json(['alerta' => 'No se encontró el servicio para esta orden de servicio']);
+        }
+        $seccion = InformeServicioSecciones::where([
+            'id_os_servicio' => $osServicio->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        $nombreArchivo = null;
+        DB::beginTransaction();
+        try {
+            $img = InformeServicioSeccionesImg::create([
+                'id_informe_os_secciones' => $seccion->id,
+                'url_imagen' => 'informeImgSeccion'
+            ]);
+            $extension = $request->file('imagen')->getClientOriginalExtension();
+            $nombreArchivo = $seccion->id . '_' . $img->id . '_' .time() . '.' . $extension;
+            $request->file('imagen')->storeAs('informeImgSeccion',$nombreArchivo);
+            $img->update(['url_imagen' => $nombreArchivo]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            if(!is_null($nombreArchivo) && Storage::disk('informeImgSeccion')->exists($nombreArchivo)){
+                Storage::disk('informeImgSeccion')->delete($nombreArchivo);
+            }
+            return response()->json(['alerta' => $th->getMessage()]);
+        }
+        return response()->json(['success' => 'imagen agregada correctamente', 'idSeccion' => $seccion->id,'idOs' => $ordenServicio->id, 'idServicio' => $osServicio->id, 'url_imagen' => route("urlImagen",["informeImgSeccion",$nombreArchivo])]);
     }
     public function eliminarSeccion(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);

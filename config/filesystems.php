@@ -67,6 +67,11 @@ return [
             'root' => storage_path('app/cotizacion/documentos'),
             'url' => env('APP_URL').'/storage/cotizacion/documentos',
         ],
+        'informeImgSeccion' => [
+            'driver' => 'local',
+            'root' => storage_path('app/imgInformes'),
+            'url' => env('APP_URL').'/storage/imgInformes',
+        ],
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

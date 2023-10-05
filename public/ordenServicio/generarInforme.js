@@ -70,6 +70,31 @@ function loadPage() {
             },
         });
     }
+    async function cargarImagen(e) {
+        if(!this.files.length){
+            return
+        }
+        const imagen = this.files[0];
+        const pattern = /image-*/;
+        let datos = new FormData();   
+        if(!imagen.type.match(pattern)){
+            return alertify.alert("Mensaje", "El archivo " + imagen.name +" no es una imagen");
+        }
+        datos.append("os",$dom.dataset.os);
+        datos.append("servicio",$dom.dataset.servicio);
+        datos.append("seccion",$dom.dataset.seccion);
+        datos.append("imagen",imagen);
+        let response = await general.funcfetch("seccion/imagen/agregar",datos,"POST");
+        if(response.session){
+            return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+        }
+        if(response.alerta){
+            return alertify.alert("Alerta",response.alerta);
+        }
+    }
+    for (const imgFile of document.querySelectorAll("#contenidoInformes input[type='file']")) {
+        imgFile.addEventListener("change",cargarImagen)
+    }
     const $contenidoInformes = document.querySelector("#contenidoInformes");
     const $tituloSeccion = document.querySelector("#agregarSeccion #tituloSeccion");
     let datosSecciones = {
@@ -86,6 +111,9 @@ function loadPage() {
             datosSecciones.servicio = $dom.dataset.servicio;
             datosSecciones.contenido = $dom.dataset.contenido;
             $("#agregarSeccion").modal("show");
+        }
+        if($dom.classList.contains("agregar-imagen")){
+            document.querySelector($dom.dataset.file).click();
         }
         if($dom.classList.contains("editar-seccion")){
             try {
@@ -269,7 +297,8 @@ function loadPage() {
                     <i class="fas fa-caret-right"></i>
                     Imágenes de la sección
                 </h6>
-                <button data-toggle="tooltip" data-placement="top" title="Agregar una imagen" class="btn btn-sm btn-light" data-contenido="#contenidoImagenes${idServicio}Seccion${idSeccion}" type="button">
+                <input type="file" name="imagenSeccion" accept="image/*" id="imagenServicio${idServicio}Seccion${idSeccion}" data-servicio="${idServicio}" data-os="${idOs}" data-seccion="${idSeccion}" data-contenido="#contenidoImagenes${idServicio}Seccion${idSeccion}">
+                <button data-toggle="tooltip" data-file="#imagenServicio${idServicio}Seccion${idSeccion}" data-placement="top" title="Agregar una imagen" class="btn btn-sm btn-light" type="button">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>

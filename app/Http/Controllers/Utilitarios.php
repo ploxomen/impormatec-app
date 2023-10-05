@@ -16,4 +16,5 @@ class Utilitarios extends Controller
         $dias = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sábado"];
         return $dias[date("w",$fechaTime)] . ', ' . date("d",$fechaTime) . ' de ' . $meses[date('n',$fechaTime) - 1] . ' del ' . date('Y',$fechaTime);
     }
+    
 }

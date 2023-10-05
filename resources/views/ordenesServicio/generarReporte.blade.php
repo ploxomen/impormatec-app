@@ -158,7 +158,8 @@
                                                         <i class="fas fa-caret-right"></i>
                                                         Imágenes de la sección
                                                     </h6>
-                                                    <button class="btn btn-sm btn-light" data-contenido="#contenidoImagenes{{$servicio->id}}Seccion{{$seccion->id}}" data-toggle="tooltip" data-placement="top" title="Agregar una imagen" type="button">
+                                                    <input type="file" accept="image/*" id="imagenServicio{{$servicio->id}}Seccion{{$seccion->id}}" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" data-contenido="#contenidoImagenes{{$servicio->id}}Seccion{{$seccion->id}}">
+                                                    <button class="btn btn-sm agregar-imagen btn-light" data-file="#imagenServicio{{$servicio->id}}Seccion{{$seccion->id}}" data-toggle="tooltip" data-placement="top" title="Agregar una imagen" type="button">
                                                         <i class="fas fa-plus"></i>
                                                     </button>
                                                 </div>
@@ -173,7 +174,7 @@
                                                         @foreach ($seccion->imagenes as $imagen)
                                                             <div class="col-12 col-lg-6 form-group contenido-img">
                                                                 <div class="form-group">
-                                                                    <img src="{{route('urlImagen',['productos','bomba espa_1693769746.jpeg'])}}" alt="Imagen {{$imagen->descripcion}}" class="img-guias">
+                                                                    <img src="{{route('urlImagen',["informeImgSeccion",$imagen->url_imagen])}}" alt="Imagen {{$imagen->descripcion}}" class="img-guias">
                                                                 </div>
                                                                 <textarea class="form-control form-control-sm" rows="2">{{$imagen->descripcion}}</textarea>
                                                                 <button class="btn btn-sm btn-danger" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" data-img="{{$imagen->id}}" type="button">
