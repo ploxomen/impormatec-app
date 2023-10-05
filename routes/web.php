@@ -211,9 +211,14 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
     Route::prefix('ordenes-servicio')->group(function () {
         Route::prefix('informe')->group(function () {
             Route::get('cliente/{idCliente}', [Informes::class, 'obtenerOrdenesServicioCliente']);
+            Route::post('servicios/actualizar', [Informes::class, 'actualizarServiciosDescripciones']);
+            Route::post('seccion/agregar', [Informes::class, 'agregarNuevaSeccion']);
+            Route::post('seccion/editar', [Informes::class, 'editarSeccion']);
+            Route::post('seccion/obtener', [Informes::class, 'obtenerInformacionSeccion']);
+            Route::post('seccion/eliminar', [Informes::class, 'eliminarSeccion']);
+
             Route::get('generar', [Informes::class, 'aprobarCotizacion'])->name("informe.generar");
             Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.lista");
-
         });
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);

@@ -47,8 +47,8 @@
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 400px;">
-                <img src="/img/modulo/orden.png" alt="Imagen de cotizacion" width="120px" class="img-fluid d-block m-auto">
-                <h4 class="text-center text-primary my-2">Generar reporte</h4>
+                <img src="/img/modulo/notas.png" alt="Imagen de un libro de notas" width="120px" class="img-fluid d-block m-auto">
+                <h4 class="text-center text-primary my-2">Generar nuevo informe</h4>
             </div>
         </div>
         <form class="form-group" method="GET" action="{{route('informe.generar')}}">
@@ -59,14 +59,17 @@
                         <select name="cliente" id="cbClientes" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione un cliente">
                             <option value=""></option>
                             @foreach ($clientes as $cliente)
-                                <option value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
+                                <option {{$cliente->id == $idCliente ? 'selected' : ''}} value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl-3 form-group">
                         <label for="cbOrdenServicio" class="col-form-label col-form-label-sm">Ordenes de servicio</label>
                         <select name="ordenServicio" id="cbOrdenServicio" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una orden de servicio">
-                            <option value=""></option>                            
+                            <option value=""></option>
+                            @foreach ($listaOs as $os)
+                                <option value="{{$os->id}}" {{$os->id == $idOs ? 'selected' : ''}}>{{$os->nroOs}}</option>
+                            @endforeach                         
                         </select>
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl-3 form-group">
@@ -79,7 +82,13 @@
         @if (!is_null($ordenServicio))
             <div class="p-3 bg-white form-row" id="contenidoInformes">
                 @foreach ($ordenServicio->servicios as $servicio)
-                <form class="col-xl-6">
+                <div class="col-12 form-group">
+                    <h4 class="text-primary mb-0">
+                        <i class="fas fa-caret-right"></i>
+                        Lista de servicios               
+                    </h4>
+                </div>
+                <div class="col-xl-6">
                     <div class="card">
                         <div class="card-header posicion-visible">
                             <h5 class="card-title mb-0">{{$servicio->cotizacionServicio->servicios->servicio}}</h5>
@@ -92,15 +101,15 @@
                             </div>
                             <div class="form-group col-12">
                                 <label for="objetivos{{$servicio->id}}">Objetivos</label>
-                                <textarea class="informe" required data-height="200px" name="obetivos[]" id="objetivos{{$servicio->id}}">{{$servicio->objetivos}}</textarea>
+                                <textarea class="informe" data-os="{{$ordenServicio->id}}" data-servicio="{{$servicio->id}}" data-columna="objetivos" required data-height="200px" name="obetivos[]" id="objetivos{{$servicio->id}}">{{$servicio->objetivos}}</textarea>
                             </div>
                             <div class="form-group col-12">
                                 <label for="acciones{{$servicio->id}}">Acciones</label>
-                                <textarea class="informe" required name="acciones[]" id="acciones{{$servicio->id}}">{{$servicio->acciones}}</textarea>
+                                <textarea class="informe" data-os="{{$ordenServicio->id}}" data-servicio="{{$servicio->id}}" data-columna="acciones" required name="acciones[]" id="acciones{{$servicio->id}}">{{$servicio->acciones}}</textarea>
                             </div>
                             <div class="form-group col-12">
-                                <label for="descripciones{{$servicio->id}}">Descripción</label>
-                                <textarea class="informe" required name="descripciones[]" id="descripciones{{$servicio->id}}">{{$servicio->descripcion}}</textarea>
+                                <label for="descripciones{{$servicio->id}}">Descripciones</label>
+                                <textarea class="informe" data-os="{{$ordenServicio->id}}" data-servicio="{{$servicio->id}}" data-columna="descripcion" required name="descripciones[]" id="descripciones{{$servicio->id}}">{{$servicio->descripcion}}</textarea>
                             </div>
                             <div class="form-group col-12">
                                 <div class="d-flex justify-content-between flex-wrap" style="gap:5px;">
@@ -108,7 +117,7 @@
                                         <i class="fas fa-caret-right"></i>
                                         Lista de secciones
                                     </h5>
-                                    <button class="btn btn-sm btn-light">
+                                    <button data-toggle="tooltip" data-placement="top" title="Agregar una sección" class="btn btn-sm btn-light agregar-seccion" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-contenido="#contenidoSeccionServicio{{$servicio->id}}" type="button">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
@@ -122,29 +131,26 @@
                                     @foreach ($servicio->secciones as $ks => $seccion)
                                         <div class="form-group p-2">
                                             <div class="justify-content-between align-items-center d-flex" style="gap: 5px;">
-                                                <h6 class="mb-0">
+                                                <h6 class="mb-0 nombre-seccion">
                                                     <i class="fas fa-caret-right"></i>
                                                     Sección N° {{$ks + 1}}
                                                 </h6>
                                                 <div class="align-items-center d-flex" style="gap: 5px;">
-                                                    <ul class="pagination mb-0">
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="javascrip:void(0)" data-valor="2">2</a></li>
-                                                        <li class="page-item active" aria-current="page">
-                                                            <a class="page-link" href="javascrip:void(0)" data-valor="3">3</a>
-                                                        </li>
-                                                        <li class="page-item">
-                                                            <a class="page-link" href="javascrip:void(0)" data-valor="4">4</a>
-                                                        </li>
-                                                    </ul>
-                                                    <button class="btn btn-sm btn-danger">
+                                                    <button class="btn btn-sm btn-light" data-toggle="tooltip" data-placement="top" title="Número de columnas" type="button" id="servicio{{$servicio->id}}Seccion{{$seccion->id}}Columna">
+                                                        <i class="fas fa-columns"></i>
+                                                        <span>{{$seccion->columnas}}</span>
+                                                    </button>
+                                                    <button class="btn btn-sm editar-seccion btn-info" data-servicio="{{$servicio->id}}" data-toggle="tooltip" data-placement="top" title="Editar sección" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" type="button">
+                                                        <i class="fas fa-pencil-alt"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm eliminar-seccion btn-danger" data-servicio="{{$servicio->id}}" data-toggle="tooltip" data-placement="top" title="Eliminar sección" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" type="button">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>   
                                                 </div>
                                             </div>
                                             <div class="form-group">
                                                 <label for="servicio{{$servicio->id}}Seccion{{$seccion->id}}">Título de la sección</label>
-                                                <input required id="servicio{{$servicio->id}}Seccion{{$seccion->id}}" type="text" class="form-control form-control-sm" value="{{$seccion->titulo}}">
+                                                <input required readonly id="servicio{{$servicio->id}}Seccion{{$seccion->id}}" type="text" class="form-control form-control-sm" value="{{$seccion->titulo}}">
                                             </div>
                                             <div class="form-group">
                                                 <div class="d-flex justify-content-between flex-wrap" style="gap:5px;">
@@ -152,7 +158,7 @@
                                                         <i class="fas fa-caret-right"></i>
                                                         Imágenes de la sección
                                                     </h6>
-                                                    <button class="btn btn-sm btn-light" data-contenido="#contenidoImagenes{{$servicio->id}}Seccion{{$seccion->id}}">
+                                                    <button class="btn btn-sm btn-light" data-contenido="#contenidoImagenes{{$servicio->id}}Seccion{{$seccion->id}}" data-toggle="tooltip" data-placement="top" title="Agregar una imagen" type="button">
                                                         <i class="fas fa-plus"></i>
                                                     </button>
                                                 </div>
@@ -167,10 +173,10 @@
                                                         @foreach ($seccion->imagenes as $imagen)
                                                             <div class="col-12 col-lg-6 form-group contenido-img">
                                                                 <div class="form-group">
-                                                                    <img src="{{route('urlImagen',['productos','bomba espa_1693769746.jpeg'])}}" alt="Imagen de descripción" class="img-guias">
+                                                                    <img src="{{route('urlImagen',['productos','bomba espa_1693769746.jpeg'])}}" alt="Imagen {{$imagen->descripcion}}" class="img-guias">
                                                                 </div>
-                                                                <textarea name="" id="" class="form-control form-control-sm" rows="2">{{$imagen->descripcion}}</textarea>
-                                                                <button class="btn btn-sm btn-danger">
+                                                                <textarea class="form-control form-control-sm" rows="2">{{$imagen->descripcion}}</textarea>
+                                                                <button class="btn btn-sm btn-danger" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" data-img="{{$imagen->id}}" type="button">
                                                                     <i class="fas fa-trash-alt"></i>
                                                                 </button>
                                                             </div>
@@ -189,6 +195,18 @@
                   </div>
                 @endforeach
             </div>
+        @else
+            <div class="p-3 bg-white" id="contenidoInformes">
+                <div class="m-auto">
+                    <div class="form-group">
+                        <img src="/img/modulo/sin-contenido.png" alt="Imagen de sin contenido" width="120px" class="img-fluid d-block m-auto">
+                    </div>
+                    <h5 class="text-center text-primary">No se encontraron resultados para esta busqueda</h5>
+                </div>
+            </div>
         @endif
     </section>
+    @if (!is_null($ordenServicio))
+        @include('ordenesServicio.modales.agregarSeccion')
+    @endif
 @endsection
