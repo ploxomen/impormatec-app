@@ -79,27 +79,40 @@ function loadPage() {
         },
         {
             data: 'id',
-            render : function(data){
-                return `
-                <div class="d-flex justify-content-center" style="gap:5px;">
-                    <a href="reporte/${data}" target="_blank" class="btn btn-sm btn-outline-primary p-1">
-                        <small>
-                        <i class="fas fa-file-pdf"></i>                        
-                        Reporte
-                        </small>
+            render : function(data,type,row){
+                let opcionesInforme = "";
+                if(row.estado > 1){
+                    opcionesInforme = `
+                    <a href="informe/completado/${data}" target="_blank" class="dropdown-item">
+                        <i class="fas fa-pencil-alt text-info"></i>
+                        <span>Editar Informe</span>
                     </a>
-                    <button class="btn btn-sm btn-outline-info p-1" data-orden-servicio="${data}">
-                        <small>
-                        <i class="fas fa-pencil-alt"></i>
-                        Editar
-                        </small>
+                    <a href="/informe/completado/${data}" class="dropdown-item">
+                        <i class="fas fa-file-pdf text-danger"></i> 
+                        <span>Ver Informe PDF</span>
+                    </a>
+                    `
+                }
+                return `
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger p-1" data-orden-servicio="${data}">
-                        <small>    
-                        <i class="fas fa-trash-alt"></i>
-                        Eliminar
-                        </small>
-                    </button>
+                    <div class="dropdown-menu">
+                        <a href="reporte/${data}" target="_blank" class="dropdown-item">
+                            <i class="fas fa-file-pdf text-danger"></i>                        
+                            <span>Reporte OS PDF</span>
+                        </a>
+                        <a href="javascript:void(0)" class="dropdown-item editar-os" data-orden-servicio="${data}">
+                            <i class="fas fa-pencil-alt text-info"></i>
+                            <span>Editar OS</span>
+                        </a>
+                        ${opcionesInforme}
+                        <a href="javascript:void(0)" class="dropdown-item eliminar-os" data-orden-servicio="${data}">
+                            <i class="fas fa-trash-alt text-danger"></i>
+                            <span>Eliminar OS</span>
+                        </a>
+                    </div>
                 </div>`
             }
         },
@@ -142,7 +155,7 @@ function loadPage() {
     let idOrdenServicio = null;
     const cbCotizaciones = document.querySelector("#idCotizacionServicio");
     tablaOs.addEventListener("click",async (e)=>{
-        if(e.target.classList.contains("btn-outline-info")){
+        if(e.target.classList.contains("editar-os")){
             try {
                 const response = await gen.funcfetch("mostrar/" + e.target.dataset.ordenServicio,null,"GET");
                 if (response.session) {

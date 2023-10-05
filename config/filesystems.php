@@ -69,8 +69,8 @@ return [
         ],
         'informeImgSeccion' => [
             'driver' => 'local',
-            'root' => storage_path('app/imgInformes'),
-            'url' => env('APP_URL').'/storage/imgInformes',
+            'root' => storage_path('app/informeImgSeccion'),
+            'url' => env('APP_URL').'/storage/informeImgSeccion',
         ],
         's3' => [
             'driver' => 's3',

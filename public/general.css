@@ -266,6 +266,10 @@ button small i{
     display: grid;
     place-items: center;
 }
+.dropdown-item > *{
+    pointer-events: none;
+    user-select: none;
+}
 .img-vistas-pequena{
     width: 130px;
     height: 100px;

@@ -217,6 +217,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('seccion/obtener', [Informes::class, 'obtenerInformacionSeccion']);
             Route::post('seccion/eliminar', [Informes::class, 'eliminarSeccion']);
             Route::post('seccion/imagen/agregar', [Informes::class, 'agregarImagenEnLaSeccion']);
+            Route::post('actualizar/datos', [Informes::class, 'actualizarDatos']);
+            Route::get('completado/{ordenServicio}', [Informes::class, 'editarInformeGenerado']);
+            Route::post('seccion/imagen/eliminar', [Informes::class, 'eliminarImagenEnLaSeccion']);
+            Route::post('generar', [Informes::class, 'generarInforme']);
             Route::get('generar', [Informes::class, 'aprobarCotizacion'])->name("informe.generar");
             Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.lista");
         });

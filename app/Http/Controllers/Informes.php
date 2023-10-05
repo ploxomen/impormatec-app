@@ -8,13 +8,14 @@ use App\Models\InformeServicioSeccionesImg;
 use App\Models\OrdenServicio;
 use App\Models\OrdenServicioCotizacionServicio;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class Informes extends Controller
 {
     private $usuarioController;
-    private $moduloMisInformes = "admin.informe.lista";
+    private $moduloMisOs = "admin.ordenesServicios.index";
     private $moduloGenerarInforme = "informe.generar";
     function __construct()
     {
@@ -117,6 +118,85 @@ class Informes extends Controller
         ]);
         return response()->json(['success' => 'seccion agregada correctamente', 'titulo' => $informeSeccion->titulo, 'columna' => $informeSeccion->columnas, 'idSeccion' => $informeSeccion->id,'idOs' => $ordenServicio->id, 'idServicio' => $osServicio->id, 'listaImagenes' => []]);
     }
+    public function generarInforme(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        if(isset($verif['session'])){        
+            return response()->json(['session' => true]);
+        }
+        $ordenServicio = OrdenServicio::where(['id' => $request->os,'estado' => 1])->first();
+        if(empty($ordenServicio)){
+            return response()->json(['alerta' => 'No se puede actualizar la orden de servicio debido a que no exite o se haya actualizado de estado']);
+        }
+        $ordenServicio->update(['estado' => 2,'usuario_informe' => Auth::id()]);
+        return response()->json(['success' => 'Informe generado correctamente']);
+    }
+    public function eliminarImagenEnLaSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        if(isset($verif['session'])){        
+            return response()->json(['session' => true]);
+        }
+        $ordenServicio = $this->verificarDisponibilidadOs($request->os,false);
+        if(isset($ordenServicio['alerta'])){
+            return response()->json($ordenServicio);
+        }
+        $osServicio = OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'id' => $request->servicio])->first();
+        if(empty($osServicio)){
+            return response()->json(['alerta' => 'No se encontró el servicio para esta orden de servicio']);
+        }
+        $seccion = InformeServicioSecciones::where([
+            'id_os_servicio' => $osServicio->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        $imagen = InformeServicioSeccionesImg::where(['id_informe_os_secciones' => $seccion->id,'id' => $request->img])->first();
+        if(!empty($imagen) && Storage::disk('informeImgSeccion')->exists($imagen->url_imagen)){
+            Storage::disk('informeImgSeccion')->delete($imagen->url_imagen);
+        }
+        $imagen->delete();
+        return response()->json(['success' => 'imagen eliminada correctamente']);
+
+    }
+    public function editarInformeGenerado(OrdenServicio $ordenServicio){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisOs);
+        if(isset($verif['session'])){        
+            return redirect()->route("home"); 
+        }
+        if($ordenServicio->estado < 2){
+            return abort(404,'No se encontró el informe');
+        }
+        $modulos = $this->usuarioController->obtenerModulos();
+        return view("ordenesServicio.editarReporte",compact("modulos","ordenServicio"));
+
+    }
+    public function actualizarDatos(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        if(isset($verif['session'])){        
+            return response()->json(['session' => true]);
+        }
+        $ordenServicio = $this->verificarDisponibilidadOs($request->os,false);
+        if(isset($ordenServicio['alerta'])){
+            return response()->json($ordenServicio);
+        }
+        $osServicio = OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'id' => $request->servicio])->first();
+        if(empty($osServicio)){
+            return response()->json(['alerta' => 'No se encontró el servicio para esta orden de servicio']);
+        }
+        if(!$request->has("seccion") && !$request->has("imagen")){
+            $osServicio->update(['fecha_termino' => $request->valor]);
+            return response()->json(['success' => 'fecha actualizada correctamente']);
+        }
+        $seccion = InformeServicioSecciones::where([
+            'id_os_servicio' => $osServicio->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        InformeServicioSeccionesImg::where(['id_informe_os_secciones' => $seccion->id,'id' => $request->imagen])->update(['descripcion' => $request->valor]);
+        return response()->json(['success' => 'descripcion actualizada correctamente']);
+    }
     public function agregarImagenEnLaSeccion(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
         if(isset($verif['session'])){        
@@ -149,6 +229,7 @@ class Informes extends Controller
             $request->file('imagen')->storeAs('informeImgSeccion',$nombreArchivo);
             $img->update(['url_imagen' => $nombreArchivo]);
             DB::commit();
+            return response()->json(['success' => 'imagen agregada correctamente', 'idSeccion' => $seccion->id,'idOs' => $ordenServicio->id, 'idServicio' => $osServicio->id, 'urlImagen' => route("urlImagen",["informeImgSeccion",$nombreArchivo]), 'idImagen' => $img->id, 'descripcion' => ""]);
         } catch (\Throwable $th) {
             DB::rollBack();
             if(!is_null($nombreArchivo) && Storage::disk('informeImgSeccion')->exists($nombreArchivo)){
@@ -156,7 +237,6 @@ class Informes extends Controller
             }
             return response()->json(['alerta' => $th->getMessage()]);
         }
-        return response()->json(['success' => 'imagen agregada correctamente', 'idSeccion' => $seccion->id,'idOs' => $ordenServicio->id, 'idServicio' => $osServicio->id, 'url_imagen' => route("urlImagen",["informeImgSeccion",$nombreArchivo])]);
     }
     public function eliminarSeccion(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
@@ -178,7 +258,12 @@ class Informes extends Controller
         if(empty($seccion)){
             return response()->json(['alerta' => 'No se encontró la seccion para ser eliminada']);
         }
-        InformeServicioSeccionesImg::where('id_informe_os_secciones',$seccion->id)->delete();
+        foreach (InformeServicioSeccionesImg::where('id_informe_os_secciones',$seccion->id)->get() as $key => $imagen) {
+            if(Storage::disk('informeImgSeccion')->exists($imagen->url_imagen)){
+                Storage::disk('informeImgSeccion')->delete($imagen->url_imagen);
+            }
+            $imagen->delete();
+        }
         $seccion->delete();
         return response()->json(['success' => 'seccion eliminada correctamente']);
     }
