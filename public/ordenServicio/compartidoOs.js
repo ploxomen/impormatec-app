@@ -18,7 +18,7 @@ class OrdenServicio extends General {
     obtenerOrdenServicio(listaOrdenServicios){
         let template = "";
         listaOrdenServicios.forEach(ordenServicio => {
-            template = `<option value="${ordenServicio.id}">${ordenServicio.nroOs}</option>`;
+            template += `<option value="${ordenServicio.id}">${ordenServicio.nroOs}</option>`;
         });
         return template;
     }
