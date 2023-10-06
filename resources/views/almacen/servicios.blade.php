@@ -1,7 +1,9 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="/almacen/misServicios.js"></script>
+    <script src="/library/tinyeditor/tinyeditor.js"></script>
+    <script src="/library/tinyeditor/es.js"></script>
+    <script src="/almacen/misServicios.js?v1.1"></script>
     <title>Mis servicios</title>
 @endsection
 @section('body')
@@ -24,7 +26,7 @@
                 <tr>
                     <th>N° Servicio</th>
                     <th>Servicio</th>
-                    <th>Descripción</th>
+                    {{-- <th>Descripción</th> --}}
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>

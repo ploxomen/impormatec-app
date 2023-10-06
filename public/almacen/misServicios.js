@@ -17,9 +17,9 @@ function loadPage(){
         {
             data: 'servicio'
         },
-        {
-            data: 'descripcion',
-        },
+        // {
+        //     data: 'descripcion',
+        // },
         {
             data : 'estado',
             render : function(data){
@@ -58,9 +58,45 @@ function loadPage(){
     let serviciosSeleccionados = 0;
     const btnModalSave = document.querySelector("#btnGuardarFrm");
     const formServicio = document.querySelector("#formServicio");
+    for (const editor of document.querySelectorAll("#agregarServicio .editor-texto")) {
+        tinymce.init({
+            selector: `#agregarServicio #${editor.id}`,
+            language: 'es',
+            plugins: 'anchor autolink charmap codesample emoticons link lists searchreplace visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            image_title: true,
+            branding: false,
+            height: editor.dataset.height || "400px",
+            automatic_uploads: true,
+            file_picker_types: 'image',
+            file_picker_callback: (cb, value, meta) => {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
+                input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.addEventListener('load', () => {
+                    const id = 'blobid' + (new Date()).getTime();
+                    const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+                    const base64 = reader.result.split(',')[1];
+                    const blobInfo = blobCache.create(id, file, base64);
+                    blobCache.add(blobInfo);
+                    cb(blobInfo.blobUri(), { title: file.name });
+                });
+                reader.readAsDataURL(file);
+                });
+                input.click();
+            },
+        });
+    }
     formServicio.addEventListener("submit",async function(e){
         e.preventDefault();
         let datos = new FormData(this);
+        datos.append("descripcion",tinymce.get("descripcionServicios").getContent());
+        datos.append("objetivos",tinymce.get("objetivosServicios").getContent());
+        datos.append("acciones",tinymce.get("accionesServicios").getContent());
+
         try {
             gen.cargandoPeticion(btnModalSave, gen.claseSpinner, true);
             const response = await gen.funcfetch(idServicio ? "servicio/editar/" + idServicio : "servicio/crear",datos);
@@ -109,7 +145,7 @@ function loadPage(){
         let $idProducto = idProducto ? `<input type="hidden" value="${idProducto}" name="idProducto[]">` : "";
         tr.innerHTML = 
         `
-        <td><img class="img-vistas-pequeña" src="${window.origin + "/intranet/storage/productos/" + urlProducto}"></td>
+        <td><img class="img-vistas-pequena" src="${window.origin + "/intranet/storage/productos/" + urlProducto}"></td>
         <td>${$idProducto}${nombreProducto}</td>
         <td><input title="Cantidad a utilizar" type="number" name="cantidadProducto[]" min="1" required class="form-control form-control-sm" value="${cantidadProducto}" placeholder="Cantidad"></td>
         <td>
@@ -148,6 +184,18 @@ function loadPage(){
                     if (Object.hasOwnProperty.call(response.servicio, key)) {
                         const valor = response.servicio[key];
                         const dom = document.querySelector("#idModal" + key);
+                        if(key == "acciones"){
+                            tinymce.get("accionesServicios").setContent(!valor ? "" : valor);
+                            continue;
+                        }
+                        if(key == "descripcion"){
+                            tinymce.get("descripcionServicios").setContent(!valor ? "" : valor);
+                            continue;
+                        }
+                        if(key == "objetivos"){
+                            tinymce.get("objetivosServicios").setContent(!valor ? "" : valor);
+                            continue;
+                        }
                         if (key == "listaProductos"){
                             serviciosSeleccionados = valor.length;
                             if(serviciosSeleccionados){

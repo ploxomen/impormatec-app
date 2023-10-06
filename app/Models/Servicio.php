@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Servicio extends Model
@@ -10,7 +8,7 @@ class Servicio extends Model
     public $table = "servicios";
     const UPDATED_AT = "fechaActualizada";
     const CREATED_AT = "fechaCreada";
-    protected $fillable = ['servicio','descripcion','acciones','estado'];
+    protected $fillable = ['servicio','descripcion','acciones','objetivos','estado'];
     public function scopeObtenerServicios($query)
     {
         return $query->select("id","servicio","descripcion","estado")

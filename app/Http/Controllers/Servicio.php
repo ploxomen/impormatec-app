@@ -51,7 +51,7 @@ class Servicio extends Controller
         }
         DB::beginTransaction();
         try {
-            $datos = $request->only("servicio","descripcion");
+            $datos = $request->only("servicio","descripcion","acciones","objetivos");
             $datos['estado'] = 1;
             $servicio = ModelsServicio::create($datos);
             if($request->has("idProducto")){
@@ -98,7 +98,7 @@ class Servicio extends Controller
         }
         DB::beginTransaction();
         try {
-            $datos = $request->only("servicio","descripcion");
+            $datos = $request->only("servicio","descripcion","acciones","objetivos");
             $datos['estado'] = $request->has('estado');
             $servicio->update($datos);
             if($request->has("idProducto")){
