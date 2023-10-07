@@ -87,7 +87,7 @@ function loadPage() {
                         <i class="fas fa-pencil-alt text-info"></i>
                         <span>Editar Informe</span>
                     </a>
-                    <a href="/informe/completado/${data}" class="dropdown-item">
+                    <a href="informe/reporte/previa/${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <span>Ver Informe PDF</span>
                     </a>

@@ -216,6 +216,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('seccion/editar', [Informes::class, 'editarSeccion']);
             Route::post('seccion/obtener', [Informes::class, 'obtenerInformacionSeccion']);
             Route::post('seccion/eliminar', [Informes::class, 'eliminarSeccion']);
+            Route::get('reporte/previa/{idOrdenServicio}/{idServicio?}', [Informes::class, 'reportePrevioInforme'])->name("reporte.previo.informe");
             Route::post('seccion/imagen/agregar', [Informes::class, 'agregarImagenEnLaSeccion']);
             Route::post('actualizar/datos', [Informes::class, 'actualizarDatos']);
             Route::get('completado/{ordenServicio}', [Informes::class, 'editarInformeGenerado']);

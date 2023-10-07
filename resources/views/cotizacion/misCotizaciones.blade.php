@@ -3,7 +3,7 @@
     @include('helper.headDatatable')
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
-    <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.3">
+    <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.5">
     <script src="/cotizacion/compartido.js?v1.3"></script>
     <script src="/cotizacion/misCotizaciones.js?v1.1"></script>
     <title>Mis Cotizaciones</title>

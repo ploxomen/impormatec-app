@@ -3,7 +3,7 @@
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
     <script src="/cotizacion/compartido.js?v1.3"></script>
-    <script src="/cotizacion/nuevaCotizacion.js"></script>
+    <script src="/cotizacion/nuevaCotizacion.js?v1.5"></script>
     <title>Nueva cotización</title>
 @endsection
 @section('body')

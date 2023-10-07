@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clientes;
+use App\Models\Configuracion;
 use App\Models\InformeServicioSecciones;
 use App\Models\InformeServicioSeccionesImg;
 use App\Models\OrdenServicio;
 use App\Models\OrdenServicioCotizacionServicio;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +40,7 @@ class Informes extends Controller
                 foreach ($ordenServicio->servicios as $servicio) {
                     $data = is_null($servicio->objetivos) || is_null($servicio->acciones) || is_null($servicio->descripcion) ? OrdenServicioCotizacionServicio::obtenerServicio($ordenServicio->id,$servicio->id) : null;
                     if(is_null($servicio->objetivos) && !is_null($data)){
-                        $servicio->update(['objetivos' => $data->servicio]);
+                        $servicio->update(['objetivos' => $data->objetivos]);
                     }
                     if(is_null($servicio->acciones) && !is_null($data)){
                         $servicio->update(['acciones' => $data->acciones]);
@@ -49,8 +51,55 @@ class Informes extends Controller
                 }
             }
         }
-        // dd($ordenServicio);
         return view("ordenesServicio.generarReporte",compact("modulos","clientes","ordenServicio","idCliente","idOs","listaOs"));
+    }
+    public function reportePrevioInforme($idOrdenServicio,$idServicio = null) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisOs);
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return redirect()->route("home"); 
+        }
+        $ordenServicioDetalle = OrdenServicio::findOrFail($idOrdenServicio);
+        $nroOrdenServicio = str_pad($ordenServicioDetalle->id,5,'0',STR_PAD_LEFT);
+        $utilitarios = new Utilitarios();
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        if(empty($idServicio)){
+            $contenidoInformes = "";
+            $tituloPdf = "INFORME GENERAL - OS " .  $nroOrdenServicio;
+            foreach ($ordenServicioDetalle->servicios as $servicio) {
+                $ordenServicio = $servicio;
+                $fechaTime = 0;
+                $fechaTerminoLargo = 'No se establecio la fecha de termino';
+                $fechaNormal = "";
+                if(!empty($servicio->fecha_termino)){
+                    $fechaTime = strtotime($servicio->fecha_termino);
+                    $fechaTerminoLargo = $utilitarios->obtenerFechaLarga($fechaTime);
+                    $fechaNormal = date('d/m/Y',$fechaTime);
+                }
+                $nroOrdenServicio = str_pad($servicio->id_orden_servicio,5,'0',STR_PAD_LEFT);
+                $nroInforme = str_pad($servicio->id,5,'0',STR_PAD_LEFT);
+                $contenidoInformes .= view('ordenesServicio.reportes.informe',compact("ordenServicio","nroOrdenServicio","fechaTerminoLargo","fechaNormal","tituloPdf","configuracion","nroInforme","ordenServicioDetalle"));
+            }
+            $dompdf = Pdf::loadHtml($contenidoInformes);
+            $dompdf->render();
+            $output = $dompdf->output();
+            return response($output, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename=INFORME_GENERAL_OS_'.$nroOrdenServicio.'.pdf',
+            ]);
+        }
+        $ordenServicio = OrdenServicioCotizacionServicio::where(['id' => $idServicio, 'id_orden_servicio' => $idOrdenServicio])->firstOrFail();
+        $fechaTime = 0;
+        $fechaTerminoLargo = 'No se establecio la fecha de termino';
+        $fechaNormal = "";
+        if(!empty($ordenServicio->fecha_termino)){
+            $fechaTime = strtotime($ordenServicio->fecha_termino);
+            $fechaTerminoLargo = $utilitarios->obtenerFechaLarga($fechaTime);
+            $fechaNormal = date('d/m/Y',$fechaTime);
+        }
+        $nroInforme = str_pad($ordenServicio->id,5,'0',STR_PAD_LEFT);
+        $tituloPdf = "INFORME DEL SERVICIO - " .  $nroInforme;
+        return Pdf::loadView('ordenesServicio.reportes.informe',compact("ordenServicio","tituloPdf","nroOrdenServicio","fechaTerminoLargo","fechaNormal","configuracion","nroInforme","ordenServicioDetalle"))->stream("INF_".$nroInforme.'.pdf');
     }
     public function actualizarServiciosDescripciones(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
@@ -61,7 +110,7 @@ class Informes extends Controller
         if(isset($ordenServicio['alerta'])){
             return response()->json($ordenServicio);
         }
-        $columnas = ['objetivos','acciones','descripcion'];
+        $columnas = ['objetivos','acciones','descripcion','conclusiones_recomendaciones'];
         $busqueda = array_search($request->columna,$columnas);
         if($busqueda === false){
             return response()->json(['alerta' => 'No se encontró la columna ' . $request->columna .' para editar el informe']);
@@ -114,7 +163,8 @@ class Informes extends Controller
         $informeSeccion = InformeServicioSecciones::create([
             'id_os_servicio' => $osServicio->id,
             'titulo' => $request->titulo,
-            'columnas' => $request->columnas
+            'columnas' => $request->columnas,
+            'estado' => 1
         ]);
         return response()->json(['success' => 'seccion agregada correctamente', 'titulo' => $informeSeccion->titulo, 'columna' => $informeSeccion->columnas, 'idSeccion' => $informeSeccion->id,'idOs' => $ordenServicio->id, 'idServicio' => $osServicio->id, 'listaImagenes' => []]);
     }
@@ -222,7 +272,7 @@ class Informes extends Controller
         try {
             $img = InformeServicioSeccionesImg::create([
                 'id_informe_os_secciones' => $seccion->id,
-                'url_imagen' => 'informeImgSeccion'
+                'estado' => 1
             ]);
             $extension = $request->file('imagen')->getClientOriginalExtension();
             $nombreArchivo = $seccion->id . '_' . $img->id . '_' .time() . '.' . $extension;

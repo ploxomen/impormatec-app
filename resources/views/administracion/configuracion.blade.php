@@ -2,7 +2,7 @@
 @section('head')
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
-    <script src="/administrador/configuracion.js"></script>
+    <script src="/administrador/configuracion.js?v1.1"></script>
     <title>Mi configuración</title>
 @endsection
 @section('body')

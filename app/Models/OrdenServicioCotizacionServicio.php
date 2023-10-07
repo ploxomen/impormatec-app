@@ -14,7 +14,7 @@ class OrdenServicioCotizacionServicio extends Model
         return $this->hasMany(InformeServicioSecciones::class,'id_os_servicio');
     }
     public static function obtenerServicio($idOSservicio,$idServicio) {
-       return self::mostrarServiciosOrdenServicio($idOSservicio)->where('orden_servicio_cotizacion_servicio.id',$idServicio)->select("servicios.acciones","servicios.descripcion","servicios.servicio")->first();
+       return self::mostrarServiciosOrdenServicio($idOSservicio)->where('orden_servicio_cotizacion_servicio.id',$idServicio)->select("servicios.acciones","servicios.descripcion","servicios.servicio","servicios.objetivos")->first();
     }
     public function cotizacionServicio()
     {

@@ -2,8 +2,8 @@
 @section('head')
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
-    <script src="/tecnico/primeraVisitaPreCoti.js?v1.1"></script>
-    <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.2">
+    <script src="/tecnico/primeraVisitaPreCoti.js?v1.5"></script>
+    <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.5">
     <title>Visitas Pre - Cotización</title>
 @endsection
 @section('body')

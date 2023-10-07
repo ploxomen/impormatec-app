@@ -11,6 +11,9 @@
     .text-justify{
         text-align: justify;
     }
+    .saltopagina{
+        page-break-after:always;
+    }
     @page{
         font-family: 'Courier New', Courier, monospace;
         margin-top: 130px;

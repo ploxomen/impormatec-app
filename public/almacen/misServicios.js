@@ -65,6 +65,7 @@ function loadPage(){
             plugins: 'anchor autolink charmap codesample emoticons link lists searchreplace visualblocks wordcount',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
             image_title: true,
+            content_style: "body { font-family: andale mono, monospace; }",
             branding: false,
             height: editor.dataset.height || "400px",
             automatic_uploads: true,

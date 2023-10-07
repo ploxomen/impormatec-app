@@ -26,15 +26,16 @@ function loadPage() {
         tinymce.init({
             selector: `#contenidoInformes #${editor.id}`,
             language: 'es',
-            plugins: 'anchor autolink charmap codesample emoticons link lists searchreplace visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            plugins: 'anchor autolink charmap codesample emoticons image link lists searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
             image_title: true,
+            content_style: "body { font-family: 'Courier New', Courier, monospace; }",
             branding: false,
             height: editor.dataset.height || "400px",
             automatic_uploads: true,
             file_picker_types: 'image',
             setup: (editor) => {
-                editor.on("blur", async (e) => {
+                editor.on("change", async (e) => {
                     let datos = new FormData();
                     const {os,servicio,columna} = editor.targetElm.dataset;
                     datos.append("columna",columna);
@@ -68,7 +69,7 @@ function loadPage() {
                 reader.readAsDataURL(file);
                 });
                 input.click();
-            },
+            }
         });
     }
     async function cargarImagen(e) {
