@@ -41,7 +41,6 @@
         font-family: Arial, Helvetica, sans-serif;
         color: #1F2B53;
     }
-    .saltopagina{page-break-after:always;}
     .tabla-precio{
         font-size: 13px;
         margin-bottom: 20px;

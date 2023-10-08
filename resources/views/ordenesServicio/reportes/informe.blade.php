@@ -40,6 +40,7 @@
             color: #1F2B53;
             font-weight: bold;
             width: 100%;
+            text-transform: uppercase;
         }
         .contenido-cabecera{
             font-weight: bold;
@@ -123,7 +124,7 @@
                         }
                         $inicioContador = 1;
                     @endphp
-                    <table class="text-center">
+                    <table>
                         @foreach ($seccion->imagenes as $imagen)
                             @php
                                 $path = storage_path('app/informeImgSeccion/' . $imagen->url_imagen);
@@ -134,9 +135,9 @@
                             @if ($inicioContador === 1)
                                 <tr>
                             @endif
-                            <td style="width:{{$ancho}}px;">
+                            <td style="width:{{$ancho}}px;" class="text-center">
                                 <div>
-                                    <img style="object-fit: conver;" src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px">
+                                    <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px">
                                 </div>
                                 <h4 class="descripcion-img">
                                     {{$imagen->descripcion}}
