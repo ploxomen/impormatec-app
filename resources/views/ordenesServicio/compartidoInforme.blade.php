@@ -99,7 +99,7 @@
                                             @foreach ($seccion->imagenes as $imagen)
                                                 <div class="col-12 col-xl-6 form-group contenido-img">
                                                     <div class="form-group">
-                                                        <img src="{{route('urlImagen',["informeImgSeccion",$imagen->url_imagen])}}" alt="Imagen {{$imagen->descripcion}}" class="img-guias">
+                                                        <img loading="lazy" src="{{route('urlImagen',["informeImgSeccion",$imagen->url_imagen])}}" alt="Imagen {{$imagen->descripcion}}" class="img-guias">
                                                     </div>
                                                     <textarea class="form-control contenido-descripcion form-control-sm" rows="2" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" data-imagen="{{$imagen->id}}">{{$imagen->descripcion}}</textarea>
                                                     <button class="btn btn-sm eliminar-img btn-danger" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" data-img="{{$imagen->id}}" type="button">

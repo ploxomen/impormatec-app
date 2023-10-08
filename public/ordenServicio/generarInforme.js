@@ -333,7 +333,7 @@ function loadPage() {
         div.className = "col-12 col-xl-6 form-group contenido-img";
         div.innerHTML = `
         <div class="form-group">
-            <img src="${urlImagen}" alt="Imagen ${descripcion}" class="img-guias">
+            <img src="${urlImagen}" loading="lazy" alt="Imagen ${descripcion}" class="img-guias">
         </div>
         <textarea class="form-control contenido-descripcion form-control-sm" rows="2" data-servicio="${idServicio}" data-os="${idOs}" data-seccion="${idSeccion}" data-imagen="${idImagen}">${descripcion}</textarea>  
         <button class="btn btn-sm eliminar-img btn-danger" data-servicio="${idServicio}" data-os="${idOs}" data-seccion="${idSeccion}" data-img="${idImagen}" type="button">
