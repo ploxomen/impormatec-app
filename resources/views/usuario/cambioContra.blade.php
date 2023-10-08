@@ -11,7 +11,7 @@
     <meta name="csrf-token" content="{{csrf_token()}}">
     <link rel="stylesheet" href="/library/alertify/alertify.min.css">
     <script src="/library/alertify/alertify.min.js"></script>
-    <script src="/general.js"></script>
+    <script src="/general.js?v1.5"></script>
     <link rel="stylesheet" href="/iconos/fontawesome/css/all.css">
     <link rel="stylesheet" href="/general.css">
     <link rel="stylesheet" href="/library/bootstrap/bootstrap.min.css">

@@ -80,6 +80,101 @@ function loadPage(){
         },
         ]
     });
+    const btnFileProducto = document.querySelector("#subirExcelUtilidades");
+    const inputFileUtilidad = document.querySelector("#inputFileExcelUtilidades");
+    const $contenidoUtilidades = document.querySelector("#contenidoUtilidades");
+    const btnUtilidadesImportar = document.querySelector("#btnImportarUtilidadesGuardar");
+    btnFileProducto.onclick = e => inputFileUtilidad.click();
+    let contenidoUtilidades = [];
+    inputFileUtilidad.addEventListener("change",async function(e){
+        const file = e.target.files[0];
+        if(!file){
+            return false
+        }
+        let datos = new FormData();
+        datos.append("excel_file",file);
+        try{
+            const response = await gen.funcfetch("producto/importar/utilidades",datos,"POST");
+            if(response.session){
+                return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
+            }
+            if(!response.listaProductos.length){
+                const tr = gen.creacionDOM("tr");
+                const td = gen.creacionDOM("td",{class:"text-center",colspan:"100%"},{textContent:"No se encontraron productos"});
+                tr.append(td);
+                $contenidoUtilidades.append(tr);
+                contenidoUtilidades = [];
+                return;
+            }
+            response.listaProductos.forEach((producto,keyProducto) => {
+                const tr = gen.creacionDOM("tr",{class:!producto.idProducto ? 'table-danger' : ''});
+                const tdIndex = gen.creacionDOM("td",{class:"text-center"},{textContent:keyProducto + 1});
+                const tdProducto = gen.creacionDOM("td",null,{textContent:producto.nombreProducto});
+                const tdPrecioCompra = gen.creacionDOM("td",{class:"text-center"},{textContent:gen.resetearMoneda(Number.parseFloat(producto.precioCompra).toFixed(2),producto.tipoMoneda)});
+                const tdUtilidad = gen.creacionDOM("td",{class:"text-center"},{textContent:producto.utilidad});
+                const tdPrecioVenta = gen.creacionDOM("td",{class:"text-center"},{textContent:gen.resetearMoneda(Number.parseFloat(producto.precioVenta).toFixed(2),producto.tipoMoneda)});
+                tr.append(tdIndex,tdProducto,tdPrecioCompra,tdUtilidad,tdPrecioVenta);
+                $contenidoUtilidades.append(tr);
+            });
+            contenidoUtilidades = response.listaProductos;
+            $("#importarUtilidades").modal("show");
+        }catch(error){
+            console.log(error);
+            alertify.error("error al cargar los datos del excel");
+        }finally{
+            inputFileUtilidad.value = "";
+        }
+    });
+    const txtUtilidad = document.querySelector("#idModalutilidad");
+    const txtPrecioVenta = document.querySelector("#idModalprecioVenta");
+    const txtPrecioCompra = document.querySelector("#idModalprecioCompra");
+    txtUtilidad.addEventListener("input",e => {
+        let utilidad = Number.parseFloat(e.target.value);
+        if(isNaN(utilidad)){
+            utilidad = 0;
+        }
+        const precioVenta = Number.parseFloat(txtPrecioCompra.value)/(1 - utilidad / 100);
+        txtPrecioVenta.value = precioVenta.toFixed(2);
+    });
+    txtPrecioCompra.addEventListener("input",e => {
+        let precioCompra = Number.parseFloat(e.target.value);
+        if(isNaN(precioCompra)){
+            precioCompra = 0;
+        }
+        const precioVenta = precioCompra/(1 - Number.parseFloat(txtUtilidad.value) / 100);
+        txtPrecioVenta.value = precioVenta.toFixed(2);
+    });
+    btnUtilidadesImportar.onclick = e => {
+        if(!contenidoUtilidades.length){
+            return alertify.alert("Alerta","No se encontraron productos para ser importados");
+        }
+        const productosNoEncontrados = contenidoUtilidades.filter(producto => producto.idProducto === null);
+        if(productosNoEncontrados.length === contenidoUtilidades.length){
+            return alertify.alert("Alerta","Todos los productos importados no se encuentran registrados en el sistema");
+        }
+        alertify.confirm("Mensaje",`Al continuar se procederan a actualizar las utilidades los productos ${contenidoUtilidades.length - productosNoEncontrados.length} de ${contenidoUtilidades.length} <br>¿Deseas continuar de todas formas?`,async ()=>{
+            let datos = new FormData();
+            datos.append("utilidad_importar",JSON.stringify(contenidoUtilidades.filter(producto => producto.idProducto !== null)));
+            try{
+                const response = await gen.funcfetch("producto/importar/utilidades/actualizar",datos,"POST");
+                if(response.session){
+                    return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
+                }
+                tablaProductoDatatable.draw();
+                $("#importarUtilidades").modal("hide");
+                return alertify.alert("Mensaje",response.success);
+            }catch(error){
+                console.log(error);
+                alertify.error("error al actualizar las utilidades de los productos");
+            }finally{
+                inputFileUtilidad.value = "";
+            }
+        },()=>{})
+    }
+    $('#importarUtilidades').on("hidden.bs.modal",function(e){
+        contenidoUtilidades = [];
+        $contenidoUtilidades.innerHTML = "";
+    });
     let idProducto = null;
     const prevImagen = document.querySelector("#imgPrevio");
     const fileImagen = document.querySelector("#customFileLang");

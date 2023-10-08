@@ -1,7 +1,7 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="/productos/adminProductos.js"></script>
+    <script src="/productos/adminProductos.js?v1.5"></script>
     <title>Productos</title>
 @endsection
 @section('body')
@@ -13,7 +13,12 @@
             </div>
         </div>
         <div class="form-group text-right">
-            <button class="btn btn-outline-primary" data-toggle="modal" data-target="#agregarProducto">
+            <input type="file" hidden id="inputFileExcelUtilidades" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            <button class="btn btn-success" id="subirExcelUtilidades">
+                <i class="fas fa-file-upload"></i>
+                <span>Importar utilidades</span>
+            </button>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#agregarProducto">
                 <i class="fas fa-plus"></i>
                 <span>Agregar</span>
             </button>
@@ -36,4 +41,5 @@
        </div>
     </section>
     @include('productos.modales.agregarProducto')
+    @include('productos.modales.importarUtilidades')
 @endsection

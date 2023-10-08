@@ -56,6 +56,22 @@
                     </div>
                 </div>
                 <div class="form-group col-6 form-required">
+                    <label for="idModalutilidad">Utilidad (%)</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <button type="button" class="btn btn-sm btn-outline-info cambiar-cantidad" data-number="#idModalutilidad" data-accion="disminuir">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                        <input type="number" name="utilidad" step="0.01" max="100" class="form-control" id="idModalutilidad" required>
+                        <div class="input-group-prepend">
+                            <button type="button" class="btn btn-sm btn-outline-info cambiar-cantidad" data-number="#idModalutilidad" data-accion="aumentar">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-6 form-required">
                     <label for="idModalprecioVenta">Precio Venta</label>
                     <div class="input-group">
                         <div class="input-group-prepend">

@@ -6,6 +6,22 @@ class General{
         'X-CSRF-TOKEN': this.token,
         'X-Requested-With': 'XMLHttpRequest'
     }
+    creacionDOM(etiqueta,atributos,adicionales){
+        const dom = document.createElement(etiqueta);
+        for (const key in atributos) {
+            if (Object.hasOwnProperty.call(atributos, key)) {
+                const valor = atributos[key];
+                dom.setAttribute(key,valor);
+            }
+        }
+        for (const key in adicionales) {
+            if (Object.hasOwnProperty.call(adicionales, key)) {
+                const valor = adicionales[key];
+                dom[key] = valor;
+            }
+        }
+        return dom;
+    }
     claseSpinner = "fas fa-spinner fa-spin";
     funcfetch(url,dato,metodo = "POST"){
         return fetch(url,{

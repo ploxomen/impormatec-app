@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Usuario;
+use App\Imports\UtilidadesProductos;
 use App\Models\Almacen;
 use App\Models\ProductoAlmacen;
 use App\Models\Productos;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class MisProductos extends Controller
 {
-    private $moduloArea = "admin.producto.index";
+    private $moduloProductos = "admin.producto.index";
     private $usuarioController;
     
     function __construct()
@@ -22,7 +24,7 @@ class MisProductos extends Controller
     }
     public function index()
     {
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
@@ -30,9 +32,43 @@ class MisProductos extends Controller
         $almacenes = Almacen::where('estado',1)->get();
         return view("productos.productos",compact("modulos","almacenes"));
     }
+    public function importarUtilidades() {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]); 
+        }
+        $excelData = Excel::toArray(new UtilidadesProductos, request()->file('excel_file'));
+        $productosUtilidades = [];
+        foreach ($excelData[0] as $keyRow => $row) {
+            if($keyRow < 2){
+                continue;
+            }
+            $model = Productos::where(['nombreProducto' => $row[2]])->first();
+            $productosUtilidades[] = [
+                'idProducto' => empty($model) ? null : $model->id,
+                'nombreProducto' => $row[2],
+                'utilidad' => empty($row[3]) ? 0 : $row[3],
+                'tipoMoneda' => empty($model) ? 'USD' : $model->tipoMoneda,
+                'precioCompra' => !empty($model) ? $model->precioCompra : 0,
+                'precioVenta' => !empty($model) && !empty($row[3]) ? $model->precioCompra/(1 - $row[3] / 100) : 0
+            ];
+        }
+        return response()->json(['listaProductos' => $productosUtilidades]);
+    }
+    public function actualizarUtilidades(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]); 
+        }
+        $productos = json_decode($request->utilidad_importar);
+        foreach ($productos as $producto) {
+            Productos::find($producto->idProducto)->update(['utilidad' => $producto->utilidad, 'precioVenta' => $producto->precioVenta]);
+        }
+        return response()->json(['success' => 'Se actualizaron correctamente las utilidades de los productos']);
+    }
     public function listar(Request $request)
     {
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
@@ -41,14 +77,14 @@ class MisProductos extends Controller
     }
     public function store(Request $request)
     {
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
         $urlImage = null;
         DB::beginTransaction();
         try {
-            $datos = $request->only("nombreProveedor","nombreProducto","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
+            $datos = $request->only("nombreProveedor","utilidad","nombreProducto","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
             if($request->has('urlImagen')){
                 $datos['urlImagen'] = $this->guardarArhivo($request,'urlImagen',"productos");
                 $urlImage = $datos['urlImagen'];
@@ -80,7 +116,7 @@ class MisProductos extends Controller
     }
     public function show(Productos $producto)
     {
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
@@ -89,7 +125,7 @@ class MisProductos extends Controller
         return response()->json(['producto' => $producto->makeHidden("fechaCreada","fechaActualizada")]);
     }
     public function eliminarAlmacen(Request $request){
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
@@ -98,14 +134,14 @@ class MisProductos extends Controller
     }
     public function update(Productos $producto, Request $request)
     {
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
         $urlImage = null;
         DB::beginTransaction();
         try {
-            $datos = $request->only("nombreProducto","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
+            $datos = $request->only("nombreProducto","utilidad","descripcion","tipoMoneda","precioCompra","precioVenta","stockMin","esIntangible");
             $datos['esIntangible'] = $request->has("esIntangible");
             if($request->has('urlImagen')){
                 if(!empty($producto->urlImagen) && Storage::disk('productos')->exists($producto->urlImagen)){
@@ -141,7 +177,7 @@ class MisProductos extends Controller
         }
     }
     public function destroyImagen(Productos $producto) {
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
@@ -156,7 +192,7 @@ class MisProductos extends Controller
     }
     public function destroy(Productos $producto)
     {
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloArea);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }

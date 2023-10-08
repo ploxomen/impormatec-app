@@ -90,6 +90,8 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::prefix('producto')->group(function () {
             Route::get('/', [MisProductos::class, 'index'])->name('admin.producto.index');
             Route::post('listar', [MisProductos::class, 'listar']);
+            Route::post('importar/utilidades',[MisProductos::class,'importarUtilidades']);
+            Route::post('importar/utilidades/actualizar',[MisProductos::class,'actualizarUtilidades']);
             Route::get('listar/{producto}', [MisProductos::class, 'show']);
             Route::post('almacen/eliminar', [MisProductos::class, 'eliminarAlmacen']);
             Route::post('crear', [MisProductos::class, 'store']);
