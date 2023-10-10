@@ -63,43 +63,12 @@ class Informes extends Controller
         $nroOrdenServicio = str_pad($ordenServicioDetalle->id,5,'0',STR_PAD_LEFT);
         $utilitarios = new Utilitarios();
         $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
-        if(empty($idServicio)){
-            $contenidoInformes = "";
-            $tituloPdf = "INFORME GENERAL - OS " .  $nroOrdenServicio;
-            foreach ($ordenServicioDetalle->servicios as $servicio) {
-                $ordenServicio = $servicio;
-                $fechaTime = 0;
-                $fechaTerminoLargo = 'No se establecio la fecha de termino';
-                $fechaNormal = "";
-                if(!empty($servicio->fecha_termino)){
-                    $fechaTime = strtotime($servicio->fecha_termino);
-                    $fechaTerminoLargo = $utilitarios->obtenerFechaLarga($fechaTime);
-                    $fechaNormal = date('d/m/Y',$fechaTime);
-                }
-                $nroOrdenServicio = str_pad($servicio->id_orden_servicio,5,'0',STR_PAD_LEFT);
-                $nroInforme = str_pad($servicio->id,5,'0',STR_PAD_LEFT);
-                $contenidoInformes .= view('ordenesServicio.reportes.informe',compact("ordenServicio","nroOrdenServicio","fechaTerminoLargo","fechaNormal","tituloPdf","configuracion","nroInforme","ordenServicioDetalle"));
-            }
-            $dompdf = Pdf::loadHtml($contenidoInformes);
-            $dompdf->render();
-            $output = $dompdf->output();
-            return response($output, 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename=INFORME_GENERAL_OS_'.$nroOrdenServicio.'.pdf',
-            ]);
+        $ordenServicio = !empty($idServicio) ? $ordenServicioDetalle->servicios()->where('id',$idServicio)->get() : $ordenServicioDetalle->servicios()->get();
+        if($ordenServicio->isEmpty()){
+            return abort(404,'No se encontro el informe');
         }
-        $ordenServicio = OrdenServicioCotizacionServicio::where(['id' => $idServicio, 'id_orden_servicio' => $idOrdenServicio])->firstOrFail();
-        $fechaTime = 0;
-        $fechaTerminoLargo = 'No se establecio la fecha de termino';
-        $fechaNormal = "";
-        if(!empty($ordenServicio->fecha_termino)){
-            $fechaTime = strtotime($ordenServicio->fecha_termino);
-            $fechaTerminoLargo = $utilitarios->obtenerFechaLarga($fechaTime);
-            $fechaNormal = date('d/m/Y',$fechaTime);
-        }
-        $nroInforme = str_pad($ordenServicio->id,5,'0',STR_PAD_LEFT);
-        $tituloPdf = "INFORME DEL SERVICIO - " .  $nroInforme;
-        return Pdf::loadView('ordenesServicio.reportes.informe',compact("ordenServicio","tituloPdf","nroOrdenServicio","fechaTerminoLargo","fechaNormal","configuracion","nroInforme","ordenServicioDetalle"))->stream("INF_".$nroInforme.'.pdf');
+        $tituloPdf = empty($idServicio) ? "INFORME GENERAL - OS " .  $nroOrdenServicio : "INFORME DEL SERVICIO - " .  str_pad($ordenServicio->first()->id,5,'0',STR_PAD_LEFT);
+        return Pdf::loadView('ordenesServicio.reportes.informe',compact("utilitarios","ordenServicio","tituloPdf","nroOrdenServicio","configuracion","ordenServicioDetalle"))->stream($tituloPdf);
     }
     public function actualizarServiciosDescripciones(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,7 +51,19 @@
             padding: 5px;
         }
     </style>
-    <div>
+    @foreach ($ordenServicio as $keyServicio=>$servicio)
+        @php
+            $fechaTime = 0;
+            $fechaTerminoLargo = 'No se establecio la fecha de termino';
+            $fechaNormal = "";
+            if(!empty($servicio->fecha_termino)){
+                $fechaTime = strtotime($servicio->fecha_termino);
+                $fechaTerminoLargo = $utilitarios->obtenerFechaLarga($fechaTime);
+                $fechaNormal = date('d/m/Y',$fechaTime);
+            }
+            $nroOrdenServicio = str_pad($servicio->id_orden_servicio,5,'0',STR_PAD_LEFT);
+            $nroInforme = str_pad($servicio->id,5,'0',STR_PAD_LEFT);
+        @endphp 
         <table border="1" class="contenido-cabecera">
             <tr>
                 <td style="text-align: center; font-size: 25px; width: 400px;">
@@ -71,98 +83,98 @@
                 </td>
             </tr>
         </table>
-    </div>
-    <div class="titulo-general">
-        <h1 class="text-center">INFORME TÉCNICO DE {{$ordenServicio->cotizacionServicio->servicios->servicio}}</h1>
-    </div>
-    <div class="saltopagina"></div>
-    <p>
-        El día {{$fechaTerminoLargo}} se culminó con los trabajos de {{$ordenServicio->cotizacionServicio->servicios->servicio}}
-    </p>
-    <p>
-        Con la finalidad de ofrecerle los detalles durante la ejecución del servicio, se ha generado el informe técnico correspondiente. Líneas abajo se incluye fotografías que evidencian la objetividad del servicio generado.
-    </p>
-    <ol style="margin: 10px 0;">
-        <li>
-            <h2 class="estilos-subitulos">1. Objetivos</h2>
-            {!!$ordenServicio->objetivos!!}
-        </li>
-        <li>
-            <h2 class="estilos-subitulos">2. Actuaciones realizadas</h2>
-            {!!$ordenServicio->acciones!!}
-        </li>
-        <li>
-            <h2 class="estilos-subitulos">3. Descripción clara y precisa de la forma técnica e instrumentos utilizados</h2>
-            {!!$ordenServicio->descripcion!!}
-        </li>
-        <li>
-            <h2 class="estilos-subitulos">4. Álbum de imágenes</h2>
-            @foreach ($ordenServicio->secciones as $ks => $seccion)
-                <div>
-                    <h3 class="text-center titulo-seccion">
-                    {{$seccion->titulo}}
-                    </h3>
-                    @if ($seccion->imagenes->count() === 0)
-                        <h4 class="text-center">NO SE ASIGNARON FOTOS A ESTA SECCION</h4>
-                        @php
-                            continue;
-                        @endphp
-                    @endif
-                    @php
-                        $columna = $seccion->columnas;
-                        $ancho = 100;
-                        switch ($columna) {
-                            case 2:
-                                $ancho = 350;
-                            break;
-                            case 3:
-                                $ancho = 235;
-                            break;
-                            case 4:
-                                $ancho = 175;
-                            break;
-                        }
-                        $inicioContador = 1;
-                    @endphp
-                    <table>
-                        @foreach ($seccion->imagenes as $imagen)
+        <div class="titulo-general">
+            <h1 class="text-center">INFORME TÉCNICO DE {{$servicio->cotizacionServicio->servicios->servicio}}</h1>
+        </div>
+        <div class="saltopagina"></div>
+        <p>
+            El día {{$fechaTerminoLargo}} se culminó con los trabajos de {{$servicio->cotizacionServicio->servicios->servicio}}
+        </p>
+        <p>
+            Con la finalidad de ofrecerle los detalles durante la ejecución del servicio, se ha generado el informe técnico correspondiente. Líneas abajo se incluye fotografías que evidencian la objetividad del servicio generado.
+        </p>
+        <ol style="margin: 10px 0;">
+            <li>
+                <h2 class="estilos-subitulos">1. Objetivos</h2>
+                {!!$servicio->objetivos!!}
+            </li>
+            <li>
+                <h2 class="estilos-subitulos">2. Actuaciones realizadas</h2>
+                {!!$servicio->acciones!!}
+            </li>
+            <li>
+                <h2 class="estilos-subitulos">3. Descripción clara y precisa de la forma técnica e instrumentos utilizados</h2>
+                {!!$servicio->descripcion!!}
+            </li>
+            <li>
+                <h2 class="estilos-subitulos">4. Álbum de imágenes</h2>
+                @foreach ($servicio->secciones as $ks => $seccion)
+                    <div>
+                        <h3 class="text-center titulo-seccion">
+                        {{$seccion->titulo}}
+                        </h3>
+                        @if ($seccion->imagenes->count() === 0)
+                            <h4 class="text-center">NO SE ASIGNARON FOTOS A ESTA SECCION</h4>
                             @php
-                                $path = storage_path('app/informeImgSeccion/' . $imagen->url_imagen);
-                                if (!\File::exists($path) || empty($imagen->url_imagen)) {
-                                    $path = storage_path('app/productos/sin-imagen.png');
-                                }
+                                continue;
                             @endphp
-                            @if ($inicioContador === 1)
-                                <tr>
-                            @endif
-                            <td style="width:{{$ancho}}px;" class="text-center">
-                                <div>
-                                    <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px">
-                                </div>
-                                <h4 class="descripcion-img">
-                                    {{$imagen->descripcion}}
-                                </h4>
-                            </td>
-                            @if ($inicioContador === $columna)
-                                </tr>
+                        @endif
+                        @php
+                            $columna = $seccion->columnas;
+                            $ancho = 100;
+                            switch ($columna) {
+                                case 2:
+                                    $ancho = 350;
+                                break;
+                                case 3:
+                                    $ancho = 235;
+                                break;
+                                case 4:
+                                    $ancho = 175;
+                                break;
+                            }
+                            $inicioContador = 1;
+                        @endphp
+                        <table>
+                            @foreach ($seccion->imagenes as $imagen)
                                 @php
-                                    $inicioContador = 1;
+                                    $path = storage_path('app/informeImgSeccion/' . $imagen->url_imagen);
+                                    if (!\File::exists($path) || empty($imagen->url_imagen)) {
+                                        $path = storage_path('app/productos/sin-imagen.png');
+                                    }
                                 @endphp
-                            @else
-                                @php
-                                    $inicioContador++;
-                                @endphp
-                            @endif
-                        @endforeach
-                    </table>
-                </div>
-            @endforeach
-        </li>
-        <li style="page-break-inside:avoid;">
-            <h2 class="estilos-subitulos">5. Conclusiones y Recomendaciones</h2>
-            {!!$ordenServicio->conclusiones_recomendaciones!!}
-        </li>
-    </ol>
-    
+                                @if ($inicioContador === 1)
+                                    <tr>
+                                @endif
+                                <td style="width:{{$ancho}}px;" class="text-center">
+                                    <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px"/>
+                                    <h4 class="descripcion-img">
+                                        {{$imagen->descripcion}}
+                                    </h4>
+                                </td>
+                                @if ($inicioContador === $columna)
+                                    </tr>
+                                    @php
+                                        $inicioContador = 1;
+                                    @endphp
+                                @else
+                                    @php
+                                        $inicioContador++;
+                                    @endphp
+                                @endif
+                            @endforeach
+                        </table>
+                    </div>
+                @endforeach
+            </li>
+            <li style="page-break-inside:avoid;">
+                <h2 class="estilos-subitulos">5. Conclusiones y Recomendaciones</h2>
+                {!!$servicio->conclusiones_recomendaciones!!}
+            </li>
+        </ol>
+        @if (($keyServicio + 1) !== $ordenServicio->count())
+        <div class="saltopagina"></div>
+        @endif
+    @endforeach
 </body>
 </html>
