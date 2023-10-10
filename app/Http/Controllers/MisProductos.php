@@ -40,7 +40,7 @@ class MisProductos extends Controller
         $excelData = Excel::toArray(new UtilidadesProductos, request()->file('excel_file'));
         $productosUtilidades = [];
         foreach ($excelData[0] as $keyRow => $row) {
-            if($keyRow < 2){
+            if($keyRow < 2 || (empty($row[2]) && empty($row[3]))){
                 continue;
             }
             $model = Productos::where(['nombreProducto' => $row[2]])->first();
