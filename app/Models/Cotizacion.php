@@ -7,17 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 class Cotizacion extends Model
 {
     public $table = "cotizacion";
-    protected $fillable = ['id_cliente','id_pre_cotizacion','fechaCotizacion','fechaFinCotizacion','conversionMoneda','textoNota','tipoMoneda','referencia','representanteCliente','direccionCliente','importeTotal','descuentoTotal','igvTotal','total','cotizadorUsuario','reportePreCotizacion','documento','reporteDetallado','estado'];
+    protected $fillable = ['id_cliente','fecha_fin_garantia','id_pre_cotizacion','fechaCotizacion','fechaFinCotizacion','conversionMoneda','textoNota','tipoMoneda','referencia','representanteCliente','direccionCliente','importeTotal','descuentoTotal','igvTotal','total','cotizadorUsuario','reportePreCotizacion','documento','reporteDetallado','estado'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
     
     public function scopeObtenerCotizacion($query){
-        return $query->select("cotizacion.id","cotizacion.tipoMoneda","clientes.nombreCliente","cotizacion.importeTotal","cotizacion.descuentoTotal","cotizacion.igvTotal","cotizacion.total","cotizacion.estado")
-        ->selectRaw("DATE_FORMAT(cotizacion.fechaCotizacion,'%d/%m/%Y') AS fechaCotizada,DATE_FORMAT(cotizacion.fechaFinCotizacion,'%d/%m/%Y') AS fechaFinCotizada,LPAD(cotizacion.id,5,'0') AS nroCotizacion,IF(cotizacion.id_pre_cotizacion IS NULL,'SIN PRE - COTIZACIÓN',LPAD(cotizacion.id_pre_cotizacion,5,'0')) AS nroPreCotizacion,CONCAT(usuarios.nombres,' ',usuarios.apellidos) AS atendidoPor")
+        return $query->select("cotizacion.id","cotizacion.tipoMoneda","usuarios.celular","fechaCotizacion","fecha_fin_garantia","clientes.nombreCliente","cotizacion.importeTotal","cotizacion.descuentoTotal","cotizacion.igvTotal","cotizacion.total","cotizacion.estado")
+        ->selectRaw("DATE_FORMAT(cotizacion.fechaCotizacion,'%d/%m/%Y') AS fechaCotizada,DATE_FORMAT(cotizacion.fecha_fin_garantia,'%d/%m/%Y') AS fechaFinGarantia,DATE_FORMAT(cotizacion.fechaFinCotizacion,'%d/%m/%Y') AS fechaFinCotizada,LPAD(cotizacion.id,5,'0') AS nroCotizacion,IF(cotizacion.id_pre_cotizacion IS NULL,'SIN PRE - COTIZACIÓN',LPAD(cotizacion.id_pre_cotizacion,5,'0')) AS nroPreCotizacion,CONCAT(usuarios.nombres,' ',usuarios.apellidos) AS atendidoPor")
         ->leftjoin("cotizacion_pre","cotizacion.id_pre_cotizacion","=","cotizacion_pre.id")
         ->join("clientes","cotizacion.id_cliente","=","clientes.id")
-        ->join("usuarios","cotizacion.cotizadorUsuario","=","usuarios.id")
-        ->get();
+        ->join("usuarios","cotizacion.cotizadorUsuario","=","usuarios.id");
     }
     public function scopeObtenerServiciosProductos($query, $idCotizacion,$incluirAlmacen = true){
         $servicios = CotizacionServicio::select("cotizacion_servicios.id","servicios.servicio","cotizacion_servicios.id_servicio","cotizacion_servicios.precio","cotizacion_servicios.cantidad","cotizacion_servicios.descuento","cotizacion_servicios.total")
@@ -48,6 +47,10 @@ class Cotizacion extends Model
         }
         return $cotizaciones;
     }
+    public function cliente()
+    {
+        return $this->belongsTo(Clientes::class,'id_cliente');
+    }
     public function cotizacionSerivicios()
     {
         return $this->hasMany(CotizacionServicio::class,'id_cotizacion');
@@ -55,5 +58,9 @@ class Cotizacion extends Model
     public function cotizacionProductos()
     {
         return $this->hasMany(CotizacionProductos::class,'id_cotizacion');
+    }
+    public function historialSeguimientos()
+    {
+        return $this->hasMany(CotizacionSeguimiento::class,'id_cotizacion');
     }
 }

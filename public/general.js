@@ -104,6 +104,64 @@ class General{
         const mes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Setiembre','Octubre','Noviembre','Diciembre'];
         return mes[numeroMes - 1];
     }
+    contenidoHistorialSeguimiento({descripcion,fechaCreadaFormato,porcentaje,nombreUsuario}){
+        const div = document.createElement("div");
+        div.className = "form-group border p-2";
+        div.innerHTML = `
+            <div class="d-flex justify-content-between flex-wrap" style="gap:5px;">
+                <div class="d-inline-block">
+                    <b>Reponsable: </b>
+                    <span>${nombreUsuario}</span>
+                </div>
+                <div class="d-inline-block">
+                    <b>Fecha Hr.: </b>
+                    <span>${fechaCreadaFormato}</span>
+                </div>
+                <div class="d-inline-block">
+                    <b>Porcentaje (%): </b>
+                    <span>${porcentaje}</span>
+                </div>
+            </div>
+            <p><b>Descripción:</b><br>${descripcion}</p>
+        `
+        return div;
+    }
+    contenidoHistorialSeguimientoEditar({id,descripcion,fechaCreadaFormato,porcentaje,nombreUsuario}){
+        const div = document.createElement("div");
+        div.className = "form-group border p-2";
+        div.innerHTML = `
+            <div class="form-row">
+                <div class="form-group text-center col-12">
+                    <button type="button" class="btn btn-sm btn-light" data-seguimiento="${id}">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Eliminar seguimiento</span>
+                    </button>
+                </div>
+                <div class="form-group col-12">
+                    <input type="hidden" value="${id}" name="seguimiento[]" />
+                    <label for="txtEditarResponsable${id}">Responsable</label>
+                    <input type="text" id="txtEditarResponsable${id}" required disabled class="form-control form-control-sm" value="${nombreUsuario}"/>
+                </div>
+                <div class="form-group col-12 col-md-8">
+                    <label for="id="txtEditarFechaHr${id}"">Fecha Hr.</label>
+                    <input type="text" required disabled class="form-control form-control-sm" value="${fechaCreadaFormato}" id="txtEditarFechaHr${id}"/>
+                </div>
+                <div class="form-group col-12 col-md-4">
+                    <label for="txtEditarPorcentaje${id}">Porcentaje</label>
+                    <input type="number" required name="porcentaje[]" min="1" max="100" step="0.01"  class="form-control form-control-sm" value="${porcentaje}" id="txtEditarPorcentaje${id}"/>
+                </div>
+                <div class="form-group col-12">
+                    <label for="txtEditarDescripcion${id}">Descripción</label>
+                    <textarea class="form-control form-control-sm" required name="descripcion[]" maxlength="500" id="txtEditarDescripcion${id}" rows="4">${descripcion}</textarea>
+                </div>
+            </div>
+        `
+        return div;
+    }
+    enviarNotificacionWhatsApp(numero,texto){
+        let whatsappLink = 'https://api.whatsapp.com/send?phone=' + encodeURIComponent(numero) + '&text=' + encodeURIComponent(texto);
+        window.open(whatsappLink);
+    }
     seleccionarServicios(cbJq,frmServicios,txtNoServicios){
         if(cbJq.val() == ""){
             return

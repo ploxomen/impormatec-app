@@ -518,7 +518,7 @@ class Cotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $cotizaciones = ModelsCotizacion::obtenerCotizacion();
+        $cotizaciones = ModelsCotizacion::obtenerCotizacion()->get();
         return DataTables::of($cotizaciones)->toJson();
     }
 }

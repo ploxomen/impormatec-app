@@ -20,6 +20,7 @@ use App\Http\Controllers\Informes;
 use App\Http\Controllers\OrdenServicio;
 use App\Http\Controllers\PreCotizacion;
 use App\Http\Controllers\Programacion;
+use App\Http\Controllers\Seguimiento;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
 // use App\Http\Controllers\Ventas\Comprobantes;
@@ -206,7 +207,16 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::prefix('tecnico')->group(function () {
             Route::get('pre-cotizacion', [Tecnico::class, 'indexPrimeraVisitaPreCotizacion'])->name('cotizacion.tecnico.visita.pre');
             Route::post('acciones', [Tecnico::class, 'accionesPreCotizacion']);
-            
+        });
+        Route::prefix('seguimiento')->group(function () {
+            Route::get('/', [Seguimiento::class, 'index'])->name('admin.cotizacion.seguimiento');
+            Route::get('listar', [Seguimiento::class, 'all']);
+            Route::get('historial/{cotizacion}', [Seguimiento::class, 'showHistorialSeguimiento']);
+            Route::post('agregar', [Seguimiento::class, 'store']);
+            Route::put('editar/{cotizacion}', [Seguimiento::class, 'update']);
+            Route::get('notificar/{cotizacion}', [Seguimiento::class, 'notificacion']);
+            Route::delete('eliminar/{seguimiento}/{cotizacion}', [Seguimiento::class, 'destroy']);
+
         });
         // Route::get('comprobante/{cotizacion}', [Cotizacion::class, 'comprobanteCotizacion']);
         // Route::post('registrar', [Cotizacion::class, 'registrarCotizacion']);

@@ -43,19 +43,21 @@ function loadPage() {
                 if(row.tipo === "VISITA"){
                     return '';
                 }
-                return `<div class="d-flex justify-content-center" style="gap:5px;">
-                <button class="btn btn-sm btn-outline-info p-1" data-programacion="${data}">
-                    <small>
-                        <i class="fas fa-pencil-alt"></i>
-                        <span>Editar</span>
-                    </small>
-                </button>
-                <button class="btn btn-sm btn-outline-danger p-1" data-programacion="${data}">
-                    <small>
-                        <i class="fas fa-trash-alt"></i>
-                        <span>Eliminar</span>
-                    </small>
-                </button></div>`
+                return `
+                <div class="d-flex justify-content-center" style="gap:5px;">
+                    <button class="btn btn-sm btn-outline-info p-1" data-programacion="${data}">
+                        <small>
+                            <i class="fas fa-pencil-alt"></i>
+                            <span>Editar</span>
+                        </small>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger p-1" data-programacion="${data}">
+                        <small>
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Eliminar</span>
+                        </small>
+                    </button>
+                </div>`
             }
         },
         ]

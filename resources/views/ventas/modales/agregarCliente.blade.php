@@ -34,7 +34,7 @@
                 </div>
                 <div class="form-group col-12 col-md-6">
                     <label for="idModalcelular">Celular</label>
-                    <input type="tel" name="celular" class="form-control" id="idModalcelular">
+                    <input type="tel" name="celular" pattern="\+[0-9]+" class="form-control" id="idModalcelular">
                 </div>
                 <div class="form-group col-12 col-md-6">
                     <label for="idModaltelefono">Teléfono</label>

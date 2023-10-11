@@ -42,7 +42,6 @@
                 </div>
             </div>
         </form>
-        
        <div class="bg-white p-3 border">
         <div class="form-group text-right">
             <button class="btn btn-outline-primary" data-toggle="modal" data-target="#agregarProgramacion">
