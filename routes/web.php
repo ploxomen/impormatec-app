@@ -19,6 +19,7 @@ use App\Http\Controllers\Cotizacion;
 use App\Http\Controllers\Informes;
 use App\Http\Controllers\OrdenServicio;
 use App\Http\Controllers\PreCotizacion;
+use App\Http\Controllers\Programacion;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
 // use App\Http\Controllers\Ventas\Comprobantes;
@@ -138,11 +139,15 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
     });
 
     Route::prefix('ventas')->group(function () {
-//         Route::prefix('administrador')->group(function () {
-//             Route::get('listar/{producto}', [Ventas::class, 'verProductoAsignarVenta']);
-//             Route::get('listar/comprobante/{comprobante}', [Ventas::class, 'verComprobante']);
-//             Route::get('listar/cliente/{cliente}', [Ventas::class, 'verCliente']);
-//         });
+        Route::prefix('programacion')->group(function () {
+            Route::get('/', [Programacion::class, 'index'])->name("admin.programacion.index");
+            Route::get('listar', [Programacion::class, 'all']);
+            Route::post('agregar', [Programacion::class, 'store']);
+            Route::get('{programacion}', [Programacion::class, 'show']);
+            Route::put('{programacion}', [Programacion::class, 'update']);
+            Route::delete('{programacion}', [Programacion::class, 'destroy']);
+            Route::get('reporte/pdf', [Programacion::class, 'reporteProgramacion'])->name('reporte.programacion');
+        });
 //         Route::prefix('general')->group(function () {
 //             Route::get('/', [Ventas::class, 'verMisVentas'])->name("admin.ventas.index");
 //             Route::post('listar', [Ventas::class, 'listaMisVentas']);

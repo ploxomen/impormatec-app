@@ -36,7 +36,7 @@ class PreCotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $preCotizaciones = PreCotizaion::obtenerPreCotizaciones();
+        $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->groupBy("cp.id")->get();
         return DataTables::of($preCotizaciones)->toJson();
     }
     public function showPreCotizacion(PreCotizaion $precotizacion, Request $request){

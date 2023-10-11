@@ -45,9 +45,9 @@ class PreCotizaion extends Model
             $join->on("cp.id","=","cpt.id_pre_cotizacion")
             ->where('cpt.responsable','=',1);
         })->join("tecnicos AS t","t.id","=","cpt.id_tecnico")
-        ->join("usuarios AS u","u.id","=","t.idUsuario")
-        ->groupBy("cp.id")->get();
+        ->join("usuarios AS u","u.id","=","t.idUsuario");
     }
+    
     public static function validarPrecotizacionResponsable($idPreCotizacion,$idTecnico,$estado)
     {
         return DB::table("cotizacion_pre AS cp")

@@ -61,6 +61,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(Tecnico::class,'idUsuario');
     }
+    public static function obtenerUsuariosNoSonClientes(){
+        return User::whereNotIn('id',function($q){
+            $q->select("id_usuario")->from("clientes");
+        })->where('estado','>=',1)->get();
+    }
     public static function validarTecnico(array $idRoles)
     {
         return DB::table("rol")->where('nombreRol','tecnico')->whereIn('id',$idRoles)->count();
