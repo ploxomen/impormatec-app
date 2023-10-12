@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Clientes;
 use App\Models\ClientesContactos;
+use App\Models\Configuracion;
 use App\Models\CotizacionImagenes;
 use App\Models\PreCotizacionServicios;
 use App\Models\PreCotizaion;
@@ -15,11 +16,13 @@ use App\Models\Tecnico;
 use App\Models\TipoDocumento;
 use App\Models\User;
 use App\Models\UsuarioRol;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Webklex\PDFMerger\Facades\PDFMergerFacade as PDFMerger;
 use Yajra\DataTables\Facades\DataTables;
 
 class PreCotizacion extends Controller
@@ -38,6 +41,31 @@ class PreCotizacion extends Controller
         }
         $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->groupBy("cp.id")->get();
         return DataTables::of($preCotizaciones)->toJson();
+    }
+    public function visualizacionPdfReporte(PreCotizaion $preCotizacion){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $preCotizacion->img = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
+        $titulo = 'REPORTE_PRECOTIZACION_'.str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT);
+        $rutaVisataUnica = '/formatoVisitas/'.$preCotizacion->formato_visita_pdf;
+        try {
+            $pdf = Pdf::loadView('preCotizacion.reporte',compact("configuracion","preCotizacion","titulo"));
+            if(!empty($preCotizacion->formato_visita_pdf) && Storage::exists($rutaVisataUnica)){
+                $oMerger = PDFMerger::init();
+                $oMerger->addString($pdf->output());
+                $oMerger->addPDF(storage_path("app".$rutaVisataUnica));
+                $oMerger->merge();
+                $oMerger->setFileName($titulo);
+                return $oMerger->stream();
+            }else{
+                return $pdf->stream($titulo);
+            }
+        } catch (\Throwable $th) {
+            echo 'Error :' . $th->getMessage();
+        }
     }
     public function showPreCotizacion(PreCotizaion $precotizacion, Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);

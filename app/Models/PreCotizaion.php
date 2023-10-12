@@ -38,7 +38,7 @@ class PreCotizaion extends Model
     public static function obtenerPreCotizaciones()
     {
         return DB::table("cotizacion_pre AS cp")
-        ->select("cp.id","c.nombreCliente","u.nombres AS nombreTecnico","u.apellidos AS aspellidosTecnico","cp.estado")
+        ->select("cp.id","c.nombreCliente","cp.formato_visita_pdf","u.nombres AS nombreTecnico","u.apellidos AS aspellidosTecnico","cp.estado")
         ->selectRaw("DATE_FORMAT(cp.fecha_hr_visita,'%d/%m/%Y %h:%i %p') AS fechaHrProgramada,LPAD(cp.id,5,'0') AS nroPreCotizacion")
         ->join("clientes AS c","c.id","=","cp.id_cliente")
         ->join("cotizacion_pre_tecnicos AS cpt",function($join){

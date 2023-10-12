@@ -41,26 +41,39 @@ function loadPage() {
         },
         {
             data: 'id',
-            render : function(data){
-                return `<div class="d-flex justify-content-center" style="gap:5px;">
-                <button class="btn btn-sm btn-outline-success p-1" data-precotizacion="${data}">
-                    <small>
-                    <i class="fas fa-pencil-alt"></i>
-                        Editar precotización
-                    </small>
-                </button>
-                <button class="btn btn-sm btn-outline-info p-1" data-precotizacion="${data}">
-                    <small>
-                    <i class="fas fa-pencil-alt"></i>
-                        Editar Informe
-                    </small>
-                </button>
-                <button class="btn btn-sm btn-outline-danger p-1" data-precotizacion="${data}">
-                    <small>    
-                    <i class="fas fa-trash-alt"></i>
-                        Eliminar precotización
-                    </small>
-                </button></div>`
+            render : function(data,type,row){
+                let pdfInformeVisita = (row.estado > 1 && row.formato_visita_pdf) && `
+                <a class="dropdown-item" href="${window.origin + '/intranet/storage/formatoVisitas/' + row.formato_visita_pdf}" target="_blank">
+                    <i class="far fa-file-pdf text-danger mr-1"></i>
+                    <span class="text-secondary">Ver informe de visitas</span>
+                </a>`;
+                let pdfInforme = row.estado > 1 && `
+                <a class="dropdown-item" href="reporte/${data}" target="_blank">
+                    <i class="far fa-file-pdf text-danger mr-1"></i>
+                    <span class="text-secondary">Ver informe</span>
+                </a>`;
+                return `
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item editar-precotizacion" href="javascript:void(0)" data-precotizacion="${data}">
+                            <i class="fas fa-pencil-alt text-primary mr-1"></i>
+                            <span class="text-secondary">Editar precotizacion</span>
+                        </a>
+                        <a class="dropdown-item editar-informe" href="javascript:void(0)" data-precotizacion="${data}">
+                            <i class="fas fa-pencil-alt text-primary mr-1"></i>
+                            <span class="text-secondary">Editar informe</span>
+                        </a>
+                        ${pdfInforme === false ? '' : pdfInforme}
+                        ${pdfInformeVisita === false ? '' : pdfInformeVisita}
+                        <a class="dropdown-item eliminar-cotizacion" href="javascript:void(0)">
+                            <i class="fas fa-trash-alt text-danger mr-1"></i>
+                            <span class="text-secondary">Eliminar precotización</span>
+                        </a>
+                    </div>
+                </div>`
             }
         },
         ]
@@ -205,7 +218,7 @@ function loadPage() {
         }
     }
     tablaPreCotizacion.addEventListener("click",async function(e){
-        if (e.target.classList.contains("btn-outline-info")){
+        if (e.target.classList.contains("editar-informe")){
             btnModalSave.querySelector("span").textContent = "Editar reporte";
             try {
                 general.cargandoPeticion(e.target, general.claseSpinner, true);
@@ -243,7 +256,7 @@ function loadPage() {
                 alertify.error("error al obtener el reporte de pre - cotización");
             }
         }
-        if (e.target.classList.contains("btn-outline-success")) {
+        if (e.target.classList.contains("editar-precotizacion")) {
             try {
                 general.cargandoPeticion(e.target, general.claseSpinner, true);
                 const response = await general.funcfetch("listar-pre/" + e.target.dataset.precotizacion,null,"GET");
@@ -288,8 +301,8 @@ function loadPage() {
                 general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);
             }
         }
-        if (e.target.classList.contains("btn-outline-danger")) {
-            alertify.confirm("Alerta","¿Estás seguro de eliminar este producto?",async ()=>{
+        if (e.target.classList.contains("eliminar-precotizacion")) {
+            alertify.confirm("Alerta","¿Estás seguro de eliminar esta precotizacion?",async ()=>{
                 try {
                     general.cargandoPeticion(e.target, general.claseSpinner, true);
                     const response = await general.funcfetch("producto/eliminar/" + e.target.dataset.producto, null,"DELETE");
@@ -301,7 +314,7 @@ function loadPage() {
                 } catch (error) {
                     general.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
                     console.error(error);
-                    alertify.error("error al eliminar el usuario");
+                    alertify.error("error al eliminar la precotizacion");
                 }
             },()=>{});
         }

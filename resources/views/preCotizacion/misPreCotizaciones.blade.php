@@ -10,7 +10,7 @@
 @section('body')
     <section class="p-3">
         <div class="mb-4">
-            <div class="m-auto" style="max-width: 400px;">
+            <div class="m-auto" style="max-width: 450px;">
                 <img src="/img/modulo/atencion-al-cliente.png" alt="Imagen de servicios" width="120px" class="img-fluid d-block m-auto">
                 <h4 class="text-center text-primary my-2">Administración de Pre - Cotizaciones</h4>
             </div>
