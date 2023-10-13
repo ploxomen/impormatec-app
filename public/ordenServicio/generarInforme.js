@@ -76,31 +76,39 @@ function loadPage() {
         if(!this.files.length){
             return
         }
-        const imagen = this.files[0];
-        const pattern = /image-*/;
-        let datos = new FormData();   
-        if(!imagen.type.match(pattern)){
-            return alertify.alert("Mensaje", "El archivo " + imagen.name +" no es una imagen");
+        try {
+            const imagenes = this.files;
+            const pattern = /image-*/;
+            for (let i = 0; i < imagenes.length; i++) {
+                if(!this.files[i].type.match(pattern)){
+                    alertify.alert("Mensaje", "El archivo " + this.files[i].name +" no es se cargo correctamente debido a que no es una imagen");
+                    continue;
+                }
+                let datos = new FormData();   
+                datos.append("os",$dom.dataset.os);
+                datos.append("servicio",$dom.dataset.servicio);
+                datos.append("seccion",$dom.dataset.seccion);
+                datos.append("imagen",this.files[i]);
+                let response = await general.funcfetch(url + "seccion/imagen/agregar",datos,"POST");
+                if(response.session){
+                    return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                }
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
+                }
+                const $img = generarDomSeccionImg(response);
+                const $contenidoImg = document.querySelector($dom.dataset.contenido);
+                if($contenidoImg.querySelector(".contenido-vacio-img")){
+                    $contenidoImg.querySelector(".contenido-vacio-img").remove();
+                }
+                $contenidoImg.append($img);
+                $img.querySelector("textarea.contenido-descripcion").addEventListener("change",cambioValorUnico);
+            }
+            alertify.success(imagenes.length > 1 ? imagenes.length + ' imagenes cargadas correctamente' : '1 imagen cargada correctamente');
+        } catch (error) {
+            console.error(error);
+            alertify.error("error al cargar las imagenes");
         }
-        datos.append("os",$dom.dataset.os);
-        datos.append("servicio",$dom.dataset.servicio);
-        datos.append("seccion",$dom.dataset.seccion);
-        datos.append("imagen",imagen);
-        let response = await general.funcfetch(url + "seccion/imagen/agregar",datos,"POST");
-        if(response.session){
-            return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
-        }
-        if(response.alerta){
-            return alertify.alert("Alerta",response.alerta);
-        }
-        alertify.success(response.success);
-        const $img = generarDomSeccionImg(response);
-        const $contenidoImg = document.querySelector($dom.dataset.contenido);
-        if($contenidoImg.querySelector(".contenido-vacio-img")){
-            $contenidoImg.querySelector(".contenido-vacio-img").remove();
-        }
-        $contenidoImg.append($img);
-        $img.querySelector("textarea.contenido-descripcion").addEventListener("change",cambioValorUnico);
     }
     for (const imgFile of document.querySelectorAll("#contenidoInformes input[type='file']")) {
         imgFile.addEventListener("change",cargarImagen)
@@ -385,7 +393,7 @@ function loadPage() {
                     <i class="fas fa-caret-right"></i>
                     Imágenes de la sección
                 </h6>
-                <input hidden type="file" name="imagenSeccion" accept="image/*" id="imagenServicio${idServicio}Seccion${idSeccion}" data-servicio="${idServicio}" data-os="${idOs}" data-seccion="${idSeccion}" data-contenido="#contenidoImagenes${idServicio}Seccion${idSeccion}">
+                <input hidden type="file" multiple name="imagenSeccion" accept="image/*" id="imagenServicio${idServicio}Seccion${idSeccion}" data-servicio="${idServicio}" data-os="${idOs}" data-seccion="${idSeccion}" data-contenido="#contenidoImagenes${idServicio}Seccion${idSeccion}">
                 <button data-toggle="tooltip" data-file="#imagenServicio${idServicio}Seccion${idSeccion}" data-placement="top" title="Agregar una imagen" class="btn btn-sm agregar-imagen btn-light" type="button">
                     <i class="fas fa-plus"></i>
                 </button>

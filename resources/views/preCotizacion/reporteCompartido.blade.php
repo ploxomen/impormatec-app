@@ -10,29 +10,35 @@
             <u>IMAGENES DETALLADAS:</u>
         </strong>
     </p>
-    <table border="1" class="tabla-precio">
-        <thead>
-            <tr>
-                <th>ITEM</th>
-                <th style="width: 220px;">IMAGEN</th>
-                <th style="width: 420px;">DESCRIPCION</th>
-            </tr>
-        </thead>
+    <table class="tabla-precio">
         <tbody>
+            @php
+                $columna = 0;
+            @endphp
             @foreach ($reportePreCotizacionImagenes as $keyImagen => $imagen)
                 @php
                     $pathReporte = storage_path('app/imgCotizacionPre/' . $imagen->url_imagen);
-                    $pixelReporte = 200;
+                    $pixelReporte = 160;
                     if (!\File::exists($pathReporte) || empty($imagen->url_imagen)) {
                         $pathReporte = storage_path('app/productos/sin-imagen.png');
-                        $pixelReporte = 50;
                     }
-                @endphp    
-            <tr>
-                    <td>{{$keyImagen + 1}}</td>
-                    <td style="padding: 5px; text-align: center;"><img src="{{$pathReporte}}" alt="Imagen del informe" width="{{$pixelReporte}}px"></td>
-                    <td>{{$imagen->descripcion}}</td>
-                </tr>
+                    $columna++;
+                @endphp
+                @if ($columna === 1)
+                    <tr>
+                @endif
+                    <td style="padding: 5px; text-align: center; vertical-align: top !important;">
+                        <img src="{{$pathReporte}}" alt="Imagen del informe" width="{{$pixelReporte}}px" height="{{$pixelReporte}}px">
+                        <p>
+                            {{$imagen->descripcion}}
+                        </p>
+                    </td>
+                @if ($columna === 4 || ($columna !== 4 && ($keyImagen + 1) === count($reportePreCotizacionImagenes)))
+                    </tr>
+                    @php
+                        $columna = 0;
+                    @endphp
+                @endif
             @endforeach
         </tbody>
     </table>

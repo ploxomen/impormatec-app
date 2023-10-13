@@ -136,7 +136,7 @@
                             $inicioContador = 1;
                         @endphp
                         <table>
-                            @foreach ($seccion->imagenes as $imagen)
+                            @foreach ($seccion->imagenes as $keyImagen => $imagen)
                                 @php
                                     $path = storage_path('app/informeImgSeccion/' . $imagen->url_imagen);
                                     if (!\File::exists($path) || empty($imagen->url_imagen)) {
@@ -146,13 +146,13 @@
                                 @if ($inicioContador === 1)
                                     <tr>
                                 @endif
-                                <td style="width:{{$ancho}}px;" class="text-center">
-                                    <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px"/>
+                                <td style="width:{{$ancho}}px;vertical-align: top !important;" class="text-center">
+                                    <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
                                     <h4 class="descripcion-img">
                                         {{$imagen->descripcion}}
                                     </h4>
                                 </td>
-                                @if ($inicioContador === $columna)
+                                @if ($inicioContador === $columna || ($columna !== $inicioContador && ($keyImagen + 1) === count($seccion->imagenes)))
                                     </tr>
                                     @php
                                         $inicioContador = 1;

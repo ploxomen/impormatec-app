@@ -84,7 +84,7 @@
                                                     <i class="fas fa-caret-right"></i>
                                                     Imágenes de la sección
                                                 </h6>
-                                                <input hidden type="file" accept="image/*" id="imagenServicio{{$servicio->id}}Seccion{{$seccion->id}}" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" data-contenido="#contenidoImagenes{{$servicio->id}}Seccion{{$seccion->id}}">
+                                                <input hidden type="file" multiple accept="image/*" id="imagenServicio{{$servicio->id}}Seccion{{$seccion->id}}" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" data-seccion="{{$seccion->id}}" data-contenido="#contenidoImagenes{{$servicio->id}}Seccion{{$seccion->id}}">
                                                 <button class="btn btn-sm agregar-imagen btn-light" data-file="#imagenServicio{{$servicio->id}}Seccion{{$seccion->id}}" data-toggle="tooltip" data-placement="top" title="Agregar una imagen" type="button">
                                                     <i class="fas fa-plus"></i>
                                                 </button>

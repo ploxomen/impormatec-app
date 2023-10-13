@@ -40,8 +40,8 @@
                         <label for="idModaltipoMoneda">Tipo moneda</label>
                         <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
                             <option value=""></option>
-                            <option value="PEN">Soles (S/)</option>
-                            <option value="USD" selected>Dolar ($)</option>
+                            <option value="PEN" selected>Soles (S/)</option>
+                            <option value="USD">Dolar ($)</option>
                         </select>
                     </div>
                     <div class="form-group col-12 col-md-6 col-xl-2">
@@ -130,19 +130,19 @@
                                     <tfoot>
                                         <tr>
                                             <th colspan="5">SUBTOTAL</th>
-                                            <th colspan="2" id="idModalimporteTotal">$ 0.00</th>
+                                            <th colspan="2" id="idModalimporteTotal">S/ 0.00</th>
                                         </tr>
                                         <tr>
                                             <th colspan="5">DESCUENTO</th>
-                                            <th colspan="2" id="idModaldescuentoTotal">- $ 0.00</th>
+                                            <th colspan="2" id="idModaldescuentoTotal">- S/ 0.00</th>
                                         </tr>
                                         <tr>    
                                             <th colspan="5">I.G.V</th>
-                                            <th colspan="2" id="idModaligvTotal">$ 0.00</th>
+                                            <th colspan="2" id="idModaligvTotal">S/ 0.00</th>
                                         </tr>
                                         <tr>
                                             <th colspan="5">TOTAL</th>
-                                            <th colspan="2" id="idModaltotal">$ 0.00</th>
+                                            <th colspan="2" id="idModaltotal">S/ 0.00</th>
                                         </tr>
                                     </tfoot>
                                 </table>

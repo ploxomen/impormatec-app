@@ -36,8 +36,8 @@
                             <label for="idModaltipoMoneda">Tipo moneda</label>
                             <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
                                 <option value=""></option>
-                                <option value="PEN">Soles (S/)</option>
-                                <option value="USD" selected>Dolar ($)</option>
+                                <option value="PEN" selected>Soles (S/)</option>
+                                <option value="USD">Dolar ($)</option>
                             </select>
                         </div>
                 </fieldset>
@@ -68,23 +68,23 @@
                             <tfoot>
                                 <tr>
                                     <th colspan="6">SUBTOTAL</th>
-                                    <th colspan="2" id="txtSubTotal">$0.00</th>
+                                    <th colspan="2" id="txtSubTotal">S/ 0.00</th>
                                 </tr>
                                 <tr>
                                     <th colspan="6">DESCUENTO</th>
-                                    <th colspan="2" id="txtDescuento">- $0.00</th>
+                                    <th colspan="2" id="txtDescuento">- S/ 0.00</th>
                                 </tr>
-                                <tr>    
+                                <tr>
                                     <th colspan="6">I.G.V</th>
-                                    <th colspan="2" id="txtIGV">$0.00</th>
+                                    <th colspan="2" id="txtIGV">S/ 0.00</th>
                                 </tr>
                                 <tr>
                                     <th colspan="6">COSTOS ADICIONALES</th>
-                                    <th colspan="2" id="txtCostoAdicional">$0.00</th>
+                                    <th colspan="2" id="txtCostoAdicional">S/ 0.00</th>
                                 </tr>
                                 <tr>
                                     <th colspan="6">TOTAL</th>
-                                    <th colspan="2" id="txtTotal">$0.00</th>
+                                    <th colspan="2" id="txtTotal">S/ 0.00</th>
                                 </tr>
                             </tfoot>
                         </table>
