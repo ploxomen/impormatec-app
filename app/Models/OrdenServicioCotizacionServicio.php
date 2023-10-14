@@ -9,7 +9,7 @@ class OrdenServicioCotizacionServicio extends Model
     public $table = "orden_servicio_cotizacion_servicio";
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-    protected $fillable = ['id_orden_servicio','id_cotizacion_servicio','orden','fecha_termino','objetivos','acciones','descripcion','estado'];
+    protected $fillable = ['id_orden_servicio','id_cotizacion_servicio','orden','fecha_termino','objetivos','acciones','descripcion','conclusiones_recomendaciones','estado'];
     public function secciones() {
         return $this->hasMany(InformeServicioSecciones::class,'id_os_servicio');
     }

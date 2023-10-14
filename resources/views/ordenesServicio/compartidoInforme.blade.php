@@ -7,7 +7,8 @@
     </div>
     <div class="p-3 bg-white form-row" id="contenidoInformes">
         @foreach ($ordenServicio->servicios as $servicio)
-        <div class="form-group col-12">
+        <form class="form-group col-12">
+            @csrf
             <div class="card form-group">
                 <div class="card-header posicion-visible d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">{{$servicio->cotizacionServicio->servicios->servicio}}</h5>
@@ -116,7 +117,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
         @endforeach
     </div>
     @if ($botonGenerar)

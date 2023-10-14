@@ -23,6 +23,7 @@ use App\Http\Controllers\Programacion;
 use App\Http\Controllers\Seguimiento;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
+use App\Http\Controllers\Utilitarios;
 // use App\Http\Controllers\Ventas\Comprobantes;
 // use App\Http\Controllers\Ventas\Cotizacion;
 // use App\Http\Controllers\Ventas\Ventas;
@@ -241,7 +242,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('completado/{ordenServicio}', [Informes::class, 'editarInformeGenerado']);
             Route::post('seccion/imagen/eliminar', [Informes::class, 'eliminarImagenEnLaSeccion']);
             Route::post('generar', [Informes::class, 'generarInforme']);
-            Route::get('generar', [Informes::class, 'aprobarCotizacion'])->name("informe.generar");
+            Route::get('generar/nuevo', [Informes::class, 'aprobarCotizacion'])->name("informe.generar");
             Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.lista");
         });
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
@@ -266,6 +267,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('modulo/accion', [Modulos::class, 'accionesModulos']);
         Route::post('rol/accion', [Rol::class, 'accionesRoles']);
     });
+    Route::post('storage/editor/img/save',[Utilitarios::class,'guardarImagenesEditorTexto']);
     Route::get('storage/{tipo}/{filename}', function ($tipo,$filename){
         $path = storage_path('app/'.$tipo . '/' . $filename);
         if (!File::exists($path)) {

@@ -56,7 +56,7 @@
                 <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Filtros</legend>
                     <div class="col-12 col-md-6 col-lg-4 col-xl-3 form-group">
                         <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Clientes</label>
-                        <select name="cliente" id="cbClientes" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione un cliente">
+                        <select name="cliente" id="cbClientes" required class="form-control select2-simple" data-placeholder="Seleccione un cliente">
                             <option value=""></option>
                             @foreach ($clientes as $cliente)
                                 <option {{$cliente->id == $idCliente ? 'selected' : ''}} value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
@@ -65,7 +65,7 @@
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl-3 form-group">
                         <label for="cbOrdenServicio" class="col-form-label col-form-label-sm">Ordenes de servicio</label>
-                        <select name="ordenServicio" id="cbOrdenServicio" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una orden de servicio">
+                        <select name="ordenServicio" id="cbOrdenServicio" required class="form-control select2-simple" data-placeholder="Seleccione una orden de servicio">
                             <option value=""></option>
                             @foreach ($listaOs as $os)
                                 <option value="{{$os->id}}" {{$os->id == $idOs ? 'selected' : ''}}>{{$os->nroOs}}</option>

@@ -9,9 +9,11 @@ use App\Models\InformeServicioSeccionesImg;
 use App\Models\OrdenServicio;
 use App\Models\OrdenServicioCotizacionServicio;
 use Barryvdh\DomPDF\Facade\Pdf;
+use DOMDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 class Informes extends Controller
@@ -40,13 +42,16 @@ class Informes extends Controller
                 foreach ($ordenServicio->servicios as $servicio) {
                     $data = is_null($servicio->objetivos) || is_null($servicio->acciones) || is_null($servicio->descripcion) ? OrdenServicioCotizacionServicio::obtenerServicio($ordenServicio->id,$servicio->id) : null;
                     if(is_null($servicio->objetivos) && !is_null($data)){
-                        $servicio->update(['objetivos' => $data->objetivos]);
+                        $servicio->update(['objetivos' => '<h2 style="font-size:14px;">1. Objetivos</h2>' . trim($data->objetivos)]);
                     }
                     if(is_null($servicio->acciones) && !is_null($data)){
-                        $servicio->update(['acciones' => $data->acciones]);
+                        $servicio->update(['acciones' => '<h2 style="font-size:14px;">2. Actuaciones realizadas</h2>' . trim($data->acciones)]);
                     }
                     if(is_null($servicio->descripcion) && !is_null($data)){
-                        $servicio->update(['descripcion' => $data->descripcion]);
+                        $servicio->update(['descripcion' => '<h2 style="font-size:14px;">3. Descripción clara y precisa de la forma técnica e instrumentos utilizados</h2>' . trim($data->descripcion) . '<h2 style="font-size:14px; ">4. Álbum de imágenes</h2>']);
+                    }
+                    if(is_null($servicio->conclusiones_recomendaciones)){
+                        $servicio->update(['conclusiones_recomendaciones' => '<h2 style="font-size:14px;">5. Conclusiones y Recomendaciones</h2>']);
                     }
                 }
             }
@@ -84,6 +89,39 @@ class Informes extends Controller
         if($busqueda === false){
             return response()->json(['alerta' => 'No se encontró la columna ' . $request->columna .' para editar el informe']);
         }
+        $informacion = OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'id' => $request->servicio])->first();
+        if(empty($informacion)){
+            return response()->json(['alerta' => 'No se encontró la columna el servicio para ser actualizado']);
+        }
+        $dom = new DOMDocument();
+        @$dom->loadHTML($request->texto);
+        $imagenes = $dom->getElementsByTagName('img');
+        $domDB = new DOMDocument();
+        @$domDB->loadHTML(empty($informacion->{$columnas[$busqueda]}) ? '<div></div>' : $informacion->{$columnas[$busqueda]});
+        $imagenesDB = $domDB->getElementsByTagName('img');
+        foreach ($imagenesDB as $imagenDB) {
+            $srcDB = $imagenDB->getAttribute('src');
+            $srcPathDB = pathinfo($srcDB);
+            $nombreArchivoDB = $srcPathDB['basename'];
+            $encontrado = false;
+            foreach ($imagenes as $imagen) {
+                $src = $imagen->getAttribute('src');
+                $srcPath = pathinfo($src);
+                $nombreArchivo = $srcPath['basename'];
+                if($nombreArchivo === $nombreArchivoDB){
+                    $encontrado = true;
+                    break;
+                }
+            }
+            if(!$encontrado){
+                $rutaCarpetaPublica = public_path('imagenesEditor');
+                $rutaArchivo = $rutaCarpetaPublica . '/' . $nombreArchivoDB;
+                if (File::exists($rutaArchivo)) {
+                    File::delete($rutaArchivo);
+                }
+            }
+        }
+        $nuevoHtml = $dom->saveHTML();
         OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'id' => $request->servicio])->update([$columnas[$busqueda] => $request->texto]);
         return response()->json(['success' => 'datos actualizados correctamente']);
     }

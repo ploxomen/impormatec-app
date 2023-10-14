@@ -9,14 +9,14 @@
 <body>
     @include('helper.headerFooterPdfVertical')
     <style>
-        ol{
+        .lista-principal{
             list-style: none;
             padding-left: 0;
         }
-        ol p{
-            margin:0; 
+        p{
+            margin-bottom:3px; 
         }
-        ol li{
+        .lista-principal > li{
             margin:0 0 10px 0;
         }
         .estilos-subitulos{
@@ -37,7 +37,6 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -90%);
-            color: #1F2B53;
             font-weight: bold;
             width: 100%;
             text-transform: uppercase;
@@ -90,24 +89,21 @@
         <p>
             El día {{$fechaTerminoLargo}} se culminó con los trabajos de {{$servicio->cotizacionServicio->servicios->servicio}}
         </p>
-        <p>
+        <p class="parrafo">
             Con la finalidad de ofrecerle los detalles durante la ejecución del servicio, se ha generado el informe técnico correspondiente. Líneas abajo se incluye fotografías que evidencian la objetividad del servicio generado.
         </p>
-        <ol style="margin: 10px 0;">
-            <li>
-                <h2 class="estilos-subitulos">1. Objetivos</h2>
-                {!!$servicio->objetivos!!}
-            </li>
-            <li>
-                <h2 class="estilos-subitulos">2. Actuaciones realizadas</h2>
-                {!!$servicio->acciones!!}
-            </li>
-            <li>
-                <h2 class="estilos-subitulos">3. Descripción clara y precisa de la forma técnica e instrumentos utilizados</h2>
-                {!!$servicio->descripcion!!}
-            </li>
-            <li>
-                <h2 class="estilos-subitulos">4. Álbum de imágenes</h2>
+        <div>
+            <div>
+                {!!str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->objetivos)!!}
+            </div>
+            <div>
+                {!!str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->acciones)!!}
+            </div>
+            <div>
+                {!!str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->descripcion)!!}
+            </div>
+            <div>
+        
                 @foreach ($servicio->secciones as $ks => $seccion)
                     <div>
                         <h3 class="text-center titulo-seccion">
@@ -142,6 +138,8 @@
                                     if (!\File::exists($path) || empty($imagen->url_imagen)) {
                                         $path = storage_path('app/productos/sin-imagen.png');
                                     }
+                                    // dd($path);
+
                                 @endphp
                                 @if ($inicioContador === 1)
                                     <tr>
@@ -165,13 +163,15 @@
                             @endforeach
                         </table>
                     </div>
+                    @if (($ks + 1) !== count($servicio->secciones))
+                        <div class="saltopagina"></div>
+                    @endif
                 @endforeach
-            </li>
-            <li style="page-break-inside:avoid;">
-                <h2 class="estilos-subitulos">5. Conclusiones y Recomendaciones</h2>
-                {!!$servicio->conclusiones_recomendaciones!!}
-            </li>
-        </ol>
+            </div>
+            <div style="page-break-inside:avoid;">
+                {!! str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->conclusiones_recomendaciones)  !!}
+            </div>
+        </div>
         @if (($keyServicio + 1) !== $ordenServicio->count())
         <div class="saltopagina"></div>
         @endif
