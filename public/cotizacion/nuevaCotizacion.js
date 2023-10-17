@@ -26,7 +26,11 @@ function loadPage(){
             tr.remove();
             cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
         }
-    })
+    });
+    $('#idModalincluirIGV').on("select2:select",async function(e){
+        cotizacionGeneral.ocultarMostrarIGV($(this).val());
+        cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
+    });
     const txtDireccion = document.querySelector("#idModaldireccion");
     $(cbClientes).on("select2:select",async function(e){
         let datos = new FormData();

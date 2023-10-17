@@ -36,7 +36,7 @@
                         <label for="idModalfechaVencimiento">Fecha vencimiento</label>
                         <input type="date" name="fechaVencimiento" value="{{date('Y-m-d',strtotime(date('Y-m-d') . '+15 days'))}}" class="form-control form-control-sm" id="idModalfechaVencimiento" min="{{date('Y-m-d')}}" required>
                     </div>
-                    <div class="form-group col-12 col-md-6 col-xl-2">
+                    <div class="form-group col-12 col-md-6 col-lg-3 col-xl-2">
                         <label for="idModaltipoMoneda">Tipo moneda</label>
                         <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
                             <option value=""></option>
@@ -44,11 +44,23 @@
                             <option value="USD">Dolar ($)</option>
                         </select>
                     </div>
-                    <div class="form-group col-12 col-md-6 col-xl-2">
+                    <div class="form-group col-12 col-md-6 col-lg-3 col-xl-2">
                         <label for="idModalconversionMoneda" class="col-form-label col-form-label-sm">Conversión (S/.) </label>
                         <input type="number" step="0.001" class="form-control form-control-sm" required id="idModalconversionMoneda" value="3.70" name="conversionMoneda">
                     </div>
-                    <div class="col-12 form-group">
+                    <div class="form-group col-md-6 col-lg-3 col-xl-2">
+                        <label for="idModalmesesGarantia" class="col-form-label col-form-label-sm">Garantia</label>
+                        <input type="number" min="1" class="form-control form-control-sm" required id="idModalmesesGarantia" value="6" name="mesesGarantia">
+                    </div>
+                    <div class="form-group col-md-6 col-lg-3 col-xl-2">
+                        <label for="idModalincluirIGV" class="col-form-label col-form-label-sm">Incluir IGV </label>
+                        <select name="incluirIGV" id="idModalincluirIGV" required class="select2-simple form-control-sm">
+                            <option value=""></option>
+                            <option value="1" selected>Si</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                    <div class="col-12 form-group col-xl-8">
                         <label for="cbCliente" class="col-form-label col-form-label-sm">Referencia</label>
                         <input type="text" class="form-control form-control-sm" required id="idModalreferencia" name="referencia">
                     </div>

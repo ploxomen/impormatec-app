@@ -158,9 +158,13 @@ function loadPage() {
 
     let cbServicios = document.querySelector("#cbServicios");
     let serviciosProductos = [];
+    let calcularGarantia = false;
     const contenedorArchivoPdf = document.querySelector("#contenedorArchivoPdf");
     tablaCotizacion.addEventListener("click",async function(e){
         if (e.target.classList.contains("aprobar-cotizacion") || e.target.classList.contains("cotizacion-almacen")){
+            tablaProductos.innerHTML = "";
+            calcularGarantia = false;
+            listaServiciosAlmacen.innerHTML = "";
             const datos = new FormData();
             datos.append("idCotizacion",e.target.dataset.cotizacion);
             datos.append("acciones",e.target.classList.contains("aprobar-cotizacion") ? "consultar-aprobacion" : "consultar-almacenes" );
@@ -172,8 +176,10 @@ function loadPage() {
                 if(response.alerta){
                     return alertify.alert("Mensaje",response.alerta);
                 }
+                let contenidoProductosTangibles = 0;
                 if(response.productos && response.productos.length){
                     contenidoProductosAlmacen.hidden = false;
+                    contenidoProductosTangibles++;
                     response.productos.forEach((producto,key) => {
                         producto.index = key + 1;
                         tablaProductos.append(cotizacionGeneral.almacenProductos(producto));
@@ -182,16 +188,45 @@ function loadPage() {
                 if(response.servicios && response.servicios.length){
                     contenidoServiciosAlmacen.hidden = false;
                     response.servicios.forEach(servicio => {
-                        listaServiciosAlmacen.append(cotizacionGeneral.almacenServicios(servicio));
+                        if(servicio.productos.length){
+                            contenidoProductosTangibles++;
+                        }
+                        const $tablaServicioDetalle = cotizacionGeneral.almacenServicios(servicio);
+                        if($tablaServicioDetalle){
+                            listaServiciosAlmacen.append(cotizacionGeneral.almacenServicios(servicio));
+                        }
                     });
                 }
-                idCotizacion = e.target.dataset.cotizacion;
-                $('#almacenProductosCotizacion').modal("show");
-                $('#almacenProductosCotizacion select').select2({
-                    theme: 'bootstrap',
-                    width: '100%',
-                    placeholder : "Seleccionar un almacen"
-                });
+                if(response.aprobar === 1){
+                    calcularGarantia = true;
+                }
+                if(response.aprobar === 0 && contenidoProductosTangibles === 0){
+                    return alertify.alert("Mensaje","Esta cotización no cuenta con productos tangibles para la asignación de almacen");
+                }else if(response.aprobar === 1 && contenidoProductosTangibles === 0){
+                    alertify.confirm("Mensaje","Esta cotización no cuenta con productos tangibles para la asignación de almacen.<br>¿Deseas aprobar esta cotización de todas formas?",async ()=>{
+                        calcularGarantia = true;
+                        const datos = new FormData();
+                        datos.append("idCotizacion",e.target.dataset.cotizacion);
+                        datos.append("acciones","aprobar-solo");
+                        datos.append("calcularGarantia",calcularGarantia);
+                        const response = await general.funcfetch("aprobar",datos,"POST");
+                        if (response.session) {
+                            return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
+                        }
+                        if(response.alerta){
+                            return alertify.alert("Mensaje",response.alerta);
+                        }
+                        alertify.success(response.success);
+                    },()=>{})
+                }else{
+                    idCotizacion = e.target.dataset.cotizacion;
+                    $('#almacenProductosCotizacion').modal("show");
+                    $('#almacenProductosCotizacion select').select2({
+                        theme: 'bootstrap',
+                        width: '100%',
+                        placeholder : "Seleccionar un almacen"
+                    });
+                }
             } catch (error) {
                 console.error(error);
                 alertify.error("error al consultar la cotizaicon");
@@ -302,6 +337,7 @@ function loadPage() {
         contenidoServiciosAlmacen.hidden = true;
         tablaProductos.innerHTML = "";
         listaServiciosAlmacen.innerHTML = "";
+        calcularGarantia = false;
     });
     $(cotizacionGeneral.$cbTipoMoneda).on("select2:select", function (e) {
         cotizacionGeneral.modificarMonedaTotal($(this).val(),serviciosProductos,tablaServicios)
@@ -314,6 +350,7 @@ function loadPage() {
         datos.append("idCotizacion",idCotizacion);
         datos.append("servicios",JSON.stringify(listaServiciosProductos));
         datos.append("productos",JSON.stringify(listaProductos));
+        datos.append("calcularGarantia",calcularGarantia);
         try {
             const response = await general.funcfetch("aprobar",datos,"POST");
             if (response.session) {
@@ -333,6 +370,10 @@ function loadPage() {
     }
     $(cbServicios).on("select2:select", function (e) {
         cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos,e.params.data.element.dataset.tipo||"servicio");
+    });
+    $('#idModalincluirIGV').on("select2:select",async function(e){
+        cotizacionGeneral.ocultarMostrarIGV($(this).val());
+        cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
     });
     tablaServicioProductos.addEventListener("click",function (e) {  
         if (e.target.classList.contains("btn-danger")){

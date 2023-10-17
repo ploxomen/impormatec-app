@@ -228,23 +228,25 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         // Route::post('listar', [Cotizacion::class, 'verCotizacionesAdmin']);
         // Route::delete('eliminar/{cotizacion}', [Cotizacion::class, 'eliminarCotizacion']);
     });
+    Route::prefix('informe')->group(function () {
+        Route::get('cliente/{idCliente}', [Informes::class, 'obtenerOrdenesServicioCliente']);
+        Route::post('servicios/actualizar', [Informes::class, 'actualizarServiciosDescripciones']);
+        Route::post('seccion/agregar', [Informes::class, 'agregarNuevaSeccion']);
+        Route::post('seccion/editar', [Informes::class, 'editarSeccion']);
+        Route::post('seccion/obtener', [Informes::class, 'obtenerInformacionSeccion']);
+        Route::post('seccion/eliminar', [Informes::class, 'eliminarSeccion']);
+        Route::get('reporte/previa/{idOrdenServicio}/{idServicio?}', [Informes::class, 'reportePrevioInforme'])->name("reporte.previo.informe");
+        Route::post('seccion/imagen/agregar', [Informes::class, 'agregarImagenEnLaSeccion']);
+        Route::post('actualizar/datos', [Informes::class, 'actualizarDatos']);
+        Route::get('completado/{ordenServicio}', [Informes::class, 'editarInformeGenerado']);
+        Route::post('seccion/imagen/eliminar', [Informes::class, 'eliminarImagenEnLaSeccion']);
+        Route::post('generar', [Informes::class, 'generarInforme']);
+        Route::get('generar/nuevo', [Informes::class, 'visualizarInforme'])->name("informe.generar");
+        Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.index");
+        Route::get('obtener', [Informes::class, 'listarInformes']);
+
+    });
     Route::prefix('ordenes-servicio')->group(function () {
-        Route::prefix('informe')->group(function () {
-            Route::get('cliente/{idCliente}', [Informes::class, 'obtenerOrdenesServicioCliente']);
-            Route::post('servicios/actualizar', [Informes::class, 'actualizarServiciosDescripciones']);
-            Route::post('seccion/agregar', [Informes::class, 'agregarNuevaSeccion']);
-            Route::post('seccion/editar', [Informes::class, 'editarSeccion']);
-            Route::post('seccion/obtener', [Informes::class, 'obtenerInformacionSeccion']);
-            Route::post('seccion/eliminar', [Informes::class, 'eliminarSeccion']);
-            Route::get('reporte/previa/{idOrdenServicio}/{idServicio?}', [Informes::class, 'reportePrevioInforme'])->name("reporte.previo.informe");
-            Route::post('seccion/imagen/agregar', [Informes::class, 'agregarImagenEnLaSeccion']);
-            Route::post('actualizar/datos', [Informes::class, 'actualizarDatos']);
-            Route::get('completado/{ordenServicio}', [Informes::class, 'editarInformeGenerado']);
-            Route::post('seccion/imagen/eliminar', [Informes::class, 'eliminarImagenEnLaSeccion']);
-            Route::post('generar', [Informes::class, 'generarInforme']);
-            Route::get('generar/nuevo', [Informes::class, 'aprobarCotizacion'])->name("informe.generar");
-            Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.lista");
-        });
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
         Route::post('agregar', [OrdenServicio::class, 'agregarOs']);

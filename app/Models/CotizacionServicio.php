@@ -15,6 +15,10 @@ class CotizacionServicio extends Model
     public function servicios() {
         return $this->belongsTo(Servicio::class,'id_servicio');
     }
+    public function cotizacion()
+    {
+        return $this->belongsTo(Cotizacion::class,'id_cotizacion');
+    }
     public function productos() {
         return $this->hasMany(CotizacionServicioProducto::class,'id_cotizacion_servicio');
     }

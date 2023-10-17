@@ -83,11 +83,11 @@ function loadPage() {
                 let opcionesInforme = "";
                 if(row.estado > 1){
                     opcionesInforme = `
-                    <a href="informe/completado/${data}" target="_blank" class="dropdown-item">
+                    <a href="../informe/completado/${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-pencil-alt text-info"></i>
                         <span>Editar Informe</span>
                     </a>
-                    <a href="informe/reporte/previa/${data}" target="_blank" class="dropdown-item">
+                    <a href="../informe/reporte/previa/${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <span>Ver Informe PDF</span>
                     </a>
@@ -99,15 +99,15 @@ function loadPage() {
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <div class="dropdown-menu">
-                        <a href="reporte/${data}" target="_blank" class="dropdown-item">
-                            <i class="fas fa-file-pdf text-danger"></i>                        
-                            <span>Reporte OS PDF</span>
-                        </a>
                         <a href="javascript:void(0)" class="dropdown-item editar-os" data-orden-servicio="${data}">
                             <i class="fas fa-pencil-alt text-info"></i>
                             <span>Editar OS</span>
                         </a>
                         ${opcionesInforme}
+                        <a href="reporte/${data}" target="_blank" class="dropdown-item">
+                            <i class="fas fa-file-pdf text-danger"></i>                        
+                            <span>Reporte OS PDF</span>
+                        </a>
                         <a href="javascript:void(0)" class="dropdown-item eliminar-os" data-orden-servicio="${data}">
                             <i class="fas fa-trash-alt text-danger"></i>
                             <span>Eliminar OS</span>

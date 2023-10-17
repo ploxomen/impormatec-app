@@ -49,6 +49,10 @@
     .tabla-precio th{
         padding: 8px 5px;
     }
+    .tabla-moderna td,
+    .tabla-moderna th{
+        border: 1px solid black;
+    }
     .tabla-precio th{
         background: rgb(223, 223, 223);
     }

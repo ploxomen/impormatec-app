@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class CotizacionProductos extends Model
 {
     public $table = "cotizacion_productos";
-    protected $fillable = ['id_cotizacion','id_producto','id_almacen','orden','cantidad','precio','importe','descuento','igv','total','estado'];
+    protected $fillable = ['id_cotizacion','id_producto','fecha_fin_garantia','id_almacen','orden','cantidad','precio','importe','descuento','igv','total','estado'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
 

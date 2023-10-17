@@ -7,16 +7,25 @@
     <title>Cotización</title>
 </head>
 <body>
+    <style>
+        .tabla-detalle{
+            width: 100px;
+            border: 1px solid black; 
+            background: rgb(223, 223, 223);
+            padding: 8px 5px;
+            font-size: 13px;
+        }
+    </style>
     @include('helper.headerFooterPdfVertical')
     <table>
         <tr>
-            <td style="width: 490px;">
+            <td style="width: 470px;">
                 <strong>{{$nombreDia}}</strong>
             </td>
-            <td style="width: 120px;"> 
+            <td class="tabla-detalle"> 
                 <strong>Cotización</strong>
             </td>
-            <td class="text-center">
+            <td class="text-center" style="border: 1px solid black; width: 120px;font-size: 13px;">
                 <strong>{{str_pad($cotizacion->id,5,'0',STR_PAD_LEFT)}}</strong>
             </td>
         </tr>
@@ -24,10 +33,10 @@
             <td>
                 <strong>{{$cliente->nombreCliente}}</strong>
             </td>
-            <td>
+            <td class="tabla-detalle">
                 <strong>Mes</strong>
             </td>
-            <td class="text-center">
+            <td class="text-center" style="border: 1px solid black;font-size: 13px;">
                 <strong>{{mb_convert_case($nombreMes, MB_CASE_TITLE, "UTF-8")}}</strong>
             </td>
         </tr>
@@ -35,10 +44,10 @@
             <td>
                 <strong>LIMA - PERU</strong>
             </td>
-            <td>
+            <td class="tabla-detalle">
                 <strong>Año</strong>
             </td>
-            <td class="text-center">
+            <td class="text-center" style="border: 1px solid black;font-size: 13px;">
                 <strong>{{date('Y',strtotime($cotizacion->fechaCotizacion))}}</strong>
             </td>
         </tr>
@@ -65,15 +74,15 @@
         solicitud de la referencia les hacemos llegar nuestra cotización de acuerdo con
         lo solicitado.
     </p>
-    <p class="text-center">
-        <strong>
-            <u>PRECIO</u>
-        </strong>
-    </p>
     @php
         $conbinarCeldaDescuento = !empty($cotizacion->descuentoTotal) && $cotizacion->descuentoTotal > 0 ? 5 : 4;
     @endphp
-    <table border="1" class="tabla-precio">
+    <table class="tabla-precio tabla-moderna">
+        <caption class="text-center">
+            <p style="margin: 0 0 10px 0 !important;">
+                <span style="font-weight: bold; text-decoration: underline;">PRECIO</span>
+            </p>
+        </caption>
         <thead>
             <tr>
                 <th>ITEM</th>
@@ -102,27 +111,29 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
+                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right" style="border: none !important;">
                     <b>SUBTOTAL</b>
                 </td>
                 <td>{{$moneda . ''. number_format($cotizacion->importeTotal,2)}}</td>
             </tr>
             <tr>
                 @if (!empty($cotizacion->descuentoTotal) && $cotizacion->descuentoTotal > 0)
-                    <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
+                    <td colspan="{{$conbinarCeldaDescuento}}" class="text-right" style="border: none !important;">
                         <b>DESCUENTO</b>
                     </td>
-                    <td>{{$moneda . ''. number_format($cotizacion->descuentoTotal,2)}}</td>
+                    <td>- {{$moneda . ''. number_format($cotizacion->descuentoTotal,2)}}</td>
                 @endif
             </tr>
+            @if (intval($cotizacion->incluirIGV) === 1)
+                <tr>
+                    <td colspan="{{$conbinarCeldaDescuento}}" class="text-right" style="border: none !important;">
+                        <b>I.G.V</b>
+                    </td>
+                    <td>{{$moneda . ''. number_format($cotizacion->igvTotal,2)}}</td>
+                </tr>
+            @endif
             <tr>
-                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
-                    <b>I.G.V</b>
-                </td>
-                <td>{{$moneda . ''. number_format($cotizacion->igvTotal,2)}}</td>
-            </tr>
-            <tr>
-                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right">
+                <td colspan="{{$conbinarCeldaDescuento}}" class="text-right" style="border: none !important;">
                     <b>TOTAL</b>
                 </td>
                 <td>{{$moneda . ''. number_format($cotizacion->total,2)}}</td>

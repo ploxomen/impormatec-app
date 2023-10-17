@@ -1,6 +1,6 @@
 function loadPage() {
     let general = new General();
-    const url = window.origin + "/intranet/ordenes-servicio/informe/";
+    const url = window.origin + "/intranet/informe/";
     let ordenServicio = new OrdenServicio();
     let $cbClientes = document.querySelector("#cbClientes");
     let $cbOrdenServicio = document.querySelector("#cbOrdenServicio");

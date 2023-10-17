@@ -139,7 +139,7 @@ class Cotizacion extends Controller
         }
         $cotizacionModel = ModelsCotizacion::find($request->idCotizacion);
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
-        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
+        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente","mesesGarantia","incluirIGV");
         $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
         $cotizacion['fechaFinCotizacion'] = $request->fechaVencimiento;
@@ -195,6 +195,7 @@ class Cotizacion extends Controller
                     ]);
                 }
             }
+            $importes['importeTotal'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] - $importes['igvTotal'] : $importes['importeTotal'];
             $cotizacionModel->update($importes);
             $cotizacionModel->fresh();
             $rutaArchivo = "/cotizacion/reportes/" . $cotizacionModel->documento;
@@ -332,6 +333,13 @@ class Cotizacion extends Controller
             case 'consultar-almacenes':
                 $resultado['productos'] = CotizacionProductos::productosCotizacionAprobar($request->idCotizacion,0);
                 $resultado['servicios'] = ModelsCotizacion::obtenerServiciosProductos($request->idCotizacion);
+                $resultado['aprobar'] = 0;
+            break;
+            case 'aprobar-solo':
+                $cotizacion = ModelsCotizacion::where('id',$request->idCotizacion)->first();
+                $cotizacion->update(['estado' => 2]);
+                CotizacionProductos::where(['id_cotizacion' => $request->idCotizacion])->update(['fecha_fin_garantia' => date('Y-m-d',strtotime(date('Y-m-d') . ' + '. $cotizacion->mesesGarantia . ' month'))]);
+                $resultado['success'] = "Cotizacion aprobada correctamente";
             break;
             case 'consultar-aprobacion':
                 $consulta = ModelsCotizacion::where(['estado' => 1,'id' => $request->idCotizacion])->first();
@@ -340,6 +348,7 @@ class Cotizacion extends Controller
                 }else{
                     $resultado['productos'] = CotizacionProductos::productosCotizacionAprobar($request->idCotizacion,0);
                     $resultado['servicios'] = ModelsCotizacion::obtenerServiciosProductos($request->idCotizacion);
+                    $resultado['aprobar'] = 1;
                 }
             break;
             case 'aprobar-cotizacion':
@@ -366,6 +375,9 @@ class Cotizacion extends Controller
                         if($aprobacion){
                             $almacenProducto->update(['stock' => $almacenProducto->stock - $productoModel->cantidad]);
                         }
+                    }
+                    if($request->calcularGarantia === 'true'){
+                        CotizacionProductos::where(['id_cotizacion' => $request->idCotizacion])->update(['fecha_fin_garantia' => date('Y-m-d',strtotime(date('Y-m-d') . ' + '. $cotizacion->mesesGarantia . ' month'))]);
                     }
                     foreach (json_decode($request->servicios) as $servicioAlmacen) {
                         $cotizacionModel = CotizacionServicio::where(['id' => $servicioAlmacen->idServicio, 'id_cotizacion' => $request->idCotizacion])->first();
@@ -402,7 +414,7 @@ class Cotizacion extends Controller
             return response()->json(['session' => true]);
         }
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
-        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente");
+        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente","mesesGarantia","incluirIGV");
         $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
         $cotizacion['fechaFinCotizacion'] = $request->fechaVencimiento;
@@ -456,6 +468,7 @@ class Cotizacion extends Controller
                     ]);
                 }
             }
+            $importes['importeTotal'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] - $importes['igvTotal'] : $importes['importeTotal'];
             $mCotizacion->update($importes);
             $documentoCotizacion = $this->renderPdf($mCotizacion->id);
             if($request->has("archivoPdf")){

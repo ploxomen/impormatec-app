@@ -1,4 +1,4 @@
-@if (!is_null($ordenServicio))
+@if (!is_null($ordenServicio) && $ordenServicio->servicios->count())
     <div class="col-12 form-group">
         <h4 class="text-primary mb-0">
             <i class="fas fa-caret-right"></i>
@@ -7,7 +7,7 @@
     </div>
     <div class="p-3 bg-white form-row" id="contenidoInformes">
         @foreach ($ordenServicio->servicios as $servicio)
-        <form class="form-group col-12">
+        <form class="form-group col-12" id="formularioInforme{{$servicio->id}}">
             @csrf
             <div class="card form-group">
                 <div class="card-header posicion-visible d-flex justify-content-between align-items-center">
@@ -134,7 +134,7 @@
             <div class="form-group">
                 <img src="/img/modulo/sin-contenido.png" alt="Imagen de sin contenido" width="120px" class="img-fluid d-block m-auto">
             </div>
-            <h5 class="text-center text-primary">No se encontraron resultados para esta busqueda</h5>
+            <h5 class="text-center text-primary">No se encontraron servicios que requieran informe</h5>
         </div>
     </div>
 @endif

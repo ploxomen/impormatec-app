@@ -15,17 +15,35 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\Facades\DataTables;
 
 class Informes extends Controller
 {
     private $usuarioController;
-    private $moduloMisOs = "admin.ordenesServicios.index";
     private $moduloGenerarInforme = "informe.generar";
+    private $moduloMisInformes = "informe.generar";
+
     function __construct()
     {
         $this->usuarioController = new Usuario();
     }
-    public function aprobarCotizacion(Request $request) {
+    public function indexGenerarInforme(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $modulos = $this->usuarioController->obtenerModulos();
+        return view("ordenesServicio.misInformes",compact("modulos"));
+    }
+    public function listarInformes(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $listaDeInformes = OrdenServicioCotizacionServicio::obtenerInformesGenerados();
+        return DataTables::of($listaDeInformes)->toJson();
+    }
+    public function visualizarInforme(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
         if(isset($verif['session'])){
             return redirect()->route("home"); 
@@ -60,7 +78,7 @@ class Informes extends Controller
     }
     public function reportePrevioInforme($idOrdenServicio,$idServicio = null) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
-        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisOs);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
         if(isset($verif['session']) && isset($verif2['session'])){
             return redirect()->route("home"); 
         }
@@ -77,7 +95,8 @@ class Informes extends Controller
     }
     public function actualizarServiciosDescripciones(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
-        if(isset($verif['session'])){        
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){        
             return response()->json(['session' => true]);
         }
         $ordenServicio = $this->verificarDisponibilidadOs($request->os,false);
@@ -121,7 +140,6 @@ class Informes extends Controller
                 }
             }
         }
-        $nuevoHtml = $dom->saveHTML();
         OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'id' => $request->servicio])->update([$columnas[$busqueda] => $request->texto]);
         return response()->json(['success' => 'datos actualizados correctamente']);
     }
@@ -137,7 +155,8 @@ class Informes extends Controller
     }
     public function obtenerInformacionSeccion(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
-        if(isset($verif['session'])){        
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
             return response()->json(['session' => true]);
         }
         $ordenServicio = $this->verificarDisponibilidadOs($request->os,false);
@@ -156,7 +175,8 @@ class Informes extends Controller
     }
     public function agregarNuevaSeccion(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
-        if(isset($verif['session'])){        
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
             return response()->json(['session' => true]);
         }
         $ordenServicio = $this->verificarDisponibilidadOs($request->os,false);
@@ -184,11 +204,16 @@ class Informes extends Controller
         if(empty($ordenServicio)){
             return response()->json(['alerta' => 'No se puede actualizar la orden de servicio debido a que no exite o se haya actualizado de estado']);
         }
-        $ordenServicio->update(['estado' => 2,'usuario_informe' => Auth::id()]);
+        OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'estado' => 1])->update(['estado' => 2,'responsable_usuario' => Auth::id()]);
+        $ordenServicio->update(['estado' => 2]);
         return response()->json(['success' => 'Informe generado correctamente']);
     }
     public function eliminarImagenEnLaSeccion(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
         if(isset($verif['session'])){        
             return response()->json(['session' => true]);
         }
@@ -216,7 +241,7 @@ class Informes extends Controller
 
     }
     public function editarInformeGenerado(OrdenServicio $ordenServicio){
-        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisOs);
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
         if(isset($verif['session'])){        
             return redirect()->route("home"); 
         }
@@ -229,7 +254,8 @@ class Informes extends Controller
     }
     public function actualizarDatos(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
-        if(isset($verif['session'])){        
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
             return response()->json(['session' => true]);
         }
         $ordenServicio = $this->verificarDisponibilidadOs($request->os,false);
@@ -241,7 +267,11 @@ class Informes extends Controller
             return response()->json(['alerta' => 'No se encontró el servicio para esta orden de servicio']);
         }
         if(!$request->has("seccion") && !$request->has("imagen")){
-            $osServicio->update(['fecha_termino' => $request->valor]);
+            $nroMeses = $osServicio->cotizacionServicio->cotizacion->mesesGarantia;
+            if(empty($nroMeses)){
+                $nroMeses = 1;
+            }
+            $osServicio->update(['fecha_termino' => $request->valor,'fecha_fin_garantia' => date('Y-m-d',strtotime($request->valor . ' + '. $nroMeses . ' month'))]);
             return response()->json(['success' => 'fecha actualizada correctamente']);
         }
         $seccion = InformeServicioSecciones::where([

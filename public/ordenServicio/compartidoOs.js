@@ -78,13 +78,14 @@ class OrdenServicio extends General {
             total += parseFloat(cp.total);
         });
         document.querySelector("#txtSubTotal").textContent = this.resetearMoneda(
-            total - total * 0.18,tipoMoneda
+            // total - total * 0.18
+            total,tipoMoneda
         );
         document.querySelector("#txtDescuento").textContent =
             "-" + this.resetearMoneda(descuento,tipoMoneda);
-        document.querySelector("#txtIGV").textContent = this.resetearMoneda(
-            total * 0.18,tipoMoneda
-        );
+        // document.querySelector("#txtIGV").textContent = this.resetearMoneda(
+        //     total * 0.18,tipoMoneda
+        // );
         let totalDetalle = 0;
         for (const tr of tablaServiciosAdicionales.children) {
             const cantidad = tr.querySelector(".cantidad-servicios");

@@ -1,6 +1,8 @@
 class Cotizacion extends General{
     $cbTipoMoneda = document.querySelector("#idModaltipoMoneda");
     $txtConversion = document.querySelector("#idModalconversionMoneda");
+    $cbIncluirIGV = document.querySelector("#idModalincluirIGV");
+
     comboListaAlmacenes(listaAlmacenes,idAlmacen){
         const cb = document.createElement("select");
         cb.className = "form-control form-control-sm";
@@ -24,6 +26,9 @@ class Cotizacion extends General{
         return tr;
     }
     almacenServicios({id,servicio,productos}){
+        if(!productos.length){
+            return null;
+        }
         const div = document.createElement("div");
         div.dataset.servicio = id;
         div.innerHTML = `<i class="fas fa-concierge-bell"></i><span class="ml-1">${servicio}</span>`;
@@ -361,6 +366,7 @@ class Cotizacion extends General{
         let descuento = 0;
         let total = 0;
         const valorTipoDocumento = this.$cbTipoMoneda.value;
+        const incluirIGV = this.$cbIncluirIGV.value;
         serviciosProductos.forEach(cp => {
             let dsubtotal = 0;
             let ddescuento = 0;
@@ -386,10 +392,15 @@ class Cotizacion extends General{
             descuento += cp.descuento;
             total += cp.pTotal;
         });
+        subtotal = +incluirIGV === 0 ? subtotal : subtotal - total * 0.18;
         document.querySelector("#idModalimporteTotal").textContent = this.resetearMoneda(subtotal,valorTipoDocumento);
         document.querySelector("#idModaldescuentoTotal").textContent = "-" + this.resetearMoneda(descuento,valorTipoDocumento);
         document.querySelector("#idModaligvTotal").textContent = this.resetearMoneda(total * 0.18,valorTipoDocumento);
         document.querySelector("#idModaltotal").textContent = this.resetearMoneda(total,valorTipoDocumento);
+    }
+    ocultarMostrarIGV(valor){
+        console.log(valor);
+        document.querySelector("#idModaligvTotal").parentElement.hidden = +valor === 0 ? true : false;
     }
     modificarCantidad(e,serviciosProductos,tablaServicios){
         const tr = e.parentElement.parentElement;
