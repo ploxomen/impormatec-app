@@ -48,17 +48,21 @@
                   <input type="file" hidden name="imagenes[]" multiple accept="image/*" id="imgsOriginal">
                   <input type="submit" id="btnFrom" hidden>
               </div>
-            </form>
-            <div class="d-flex align-items-center mb-3" style="gap: 10px;">
               <h5 class="text-primary">
                 <i class="fas fa-caret-right"></i>
-                Subir formato de visitas
+                Formato de visitas
               </h5>
-              <button class="btn btn-sm btn-danger" type="button" id="btnFormatoVisitas" title="Subir formato de visitas">
-                <i class="fas fa-file-pdf"></i>
-              </button>
-              <input type="file" hidden id="documentoVisitas" accept=".pdf">
-            </div>
+              <div class="d-flex" style="gap: 5px;">
+                <div>
+                  <input type="file" id="documentoVisitas" accept=".pdf" class="form-control">
+                </div>
+                <button class="btn btn-sm btn-danger" type="button" id="btnFormatoVisitas" title="Eliminar documento">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+              
+
+            </form>
         </div>
         <div class="modal-footer">
           <button type="button" id="btnGenerarReporte" class="btn btn-outline-primary">

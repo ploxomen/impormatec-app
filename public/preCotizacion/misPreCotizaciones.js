@@ -176,27 +176,50 @@ function loadPage() {
     });
     const documentoFormatoVisita = document.querySelector("#documentoVisitas");
     const btndocumentoFormatoVisita = document.querySelector("#btnFormatoVisitas");
-    btndocumentoFormatoVisita.onclick = e => documentoFormatoVisita.click();
-    documentoFormatoVisita.addEventListener("change",function(e){
-        const documentos = e.target.files;
-        if(document.querySelector("#documento-mostrar-formato-visita")){
-            document.querySelector("#documento-mostrar-formato-visita").remove();
-        }
-        if(!documentos.length){
-            return alertify.error("documento no seleccionado");
-        }
-        const formatoVisita = documentos[0];
-        if(formatoVisita.type !== "application/pdf"){
-            return alertify.error("el documento debe de ser un pdf");
-        }
-        const documentoSubido = document.createElement("div");
-        documentoSubido.className = "rounded-pill bg-light p-2";
-        documentoSubido.id = "documento-mostrar-formato-visita";
-        documentoSubido.innerHTML = `
-        <span>${formatoVisita.name}</span>`
-        this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
-        return alertify.success("formato de visita seleccionado corretamente");
-    });
+    btndocumentoFormatoVisita.onclick = e => {
+        alertify.confirm("Alerta","¿Desea borrar el documento de visita de manera permanente?",async ()=>{
+            try {
+                general.cargandoPeticion(e.target, general.claseSpinner, true);
+                const response = await general.funcfetch("pdf-visita/" + idReportePreCotizacion,null,"DELETE");
+                if (response.session) {
+                    return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
+                }
+                if (response.alerta) {
+                    return alertify.alert("Alerta", response.alerta);
+                }
+                const txtFormatoVisita = document.querySelector("#modalPrimeraVisita #documento-mostrar-formato-visita");
+                if(txtFormatoVisita){
+                    txtFormatoVisita.remove();
+                }
+                return alertify.success(response.success);
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener el eliminar el formato de visita");
+            }finally{
+                general.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
+            }
+        },()=>{})
+    };
+    // documentoFormatoVisita.addEventListener("change",function(e){
+    //     const documentos = e.target.files;
+    //     if(document.querySelector("#documento-mostrar-formato-visita")){
+    //         document.querySelector("#documento-mostrar-formato-visita").remove();
+    //     }
+    //     if(!documentos.length){
+    //         return alertify.error("documento no seleccionado");
+    //     }
+    //     const formatoVisita = documentos[0];
+    //     if(formatoVisita.type !== "application/pdf"){
+    //         return alertify.error("el documento debe de ser un pdf");
+    //     }
+    //     const documentoSubido = document.createElement("div");
+    //     documentoSubido.className = "rounded-pill bg-light p-2";
+    //     documentoSubido.id = "documento-mostrar-formato-visita";
+    //     documentoSubido.innerHTML = `
+    //     <span>${formatoVisita.name}</span>`
+    //     this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
+    //     return alertify.success("formato de visita seleccionado corretamente");
+    // });
     function deleteImg(nameImg,li){
         const newDataTrnasfer = new DataTransfer();
         const filesParent = imgOriginal;
@@ -246,8 +269,8 @@ function loadPage() {
                     documentoSubido.id = "documento-mostrar-formato-visita";
                     documentoSubido.href = window.origin + "/intranet/storage/formatoVisitas/" + preCotizacionResponse.formato_visita_pdf;
                     documentoSubido.target = "_blank";
-                    documentoSubido.textContent = "FORMATO_UNICO_DE_VISITAS.pdf";
-                    documentoFormatoVisita.insertAdjacentHTML("afterend",documentoSubido.outerHTML);
+                    documentoSubido.textContent = "formato_unicio_visitas.pdf";
+                    documentoFormatoVisita.parentElement.insertAdjacentHTML("afterend",documentoSubido.outerHTML);
                 }
                 $('#modalPrimeraVisita').modal("show");
             } catch (error) {

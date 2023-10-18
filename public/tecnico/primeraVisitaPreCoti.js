@@ -9,28 +9,34 @@ function loadPage() {
         }
     }
     const documentoFormatoVisita = document.querySelector("#documentoVisitas");
-    const btndocumentoFormatoVisita = document.querySelector("#btnFormatoVisitas");
-    btndocumentoFormatoVisita.onclick = e => documentoFormatoVisita.click();
-    documentoFormatoVisita.addEventListener("change",function(e){
-        const documentos = e.target.files;
-        if(document.querySelector("#documento-mostrar-formato-visita")){
-            document.querySelector("#documento-mostrar-formato-visita").remove();
+    const btnEliminarDocumento = document.querySelector("#btnFormatoVisitas");
+    btnEliminarDocumento.onclick = e => {
+        if(documentoFormatoVisita.value == ""){
+            return alertify.error("no cuenta con el documento de visita para ser eliminado");
         }
-        if(!documentos.length){
-            return alertify.error("documento no seleccionado");
-        }
-        const formatoVisita = documentos[0];
-        if(formatoVisita.type !== "application/pdf"){
-            return alertify.error("el documento debe de ser un pdf");
-        }
-        const documentoSubido = document.createElement("div");
-        documentoSubido.className = "rounded-pill bg-light p-2";
-        documentoSubido.id = "documento-mostrar-formato-visita";
-        documentoSubido.innerHTML = `
-        <span>${formatoVisita.name}</span>`
-        this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
-        return alertify.success("formato de visita seleccionado corretamente");
-    });
+        documentoFormatoVisita.value = "";
+        return alertify.success("documento de visita eliminado correctamente");
+    };
+    // documentoFormatoVisita.addEventListener("change",function(e){
+    //     const documentos = e.target.files;
+    //     if(document.querySelector("#documento-mostrar-formato-visita")){
+    //         document.querySelector("#documento-mostrar-formato-visita").remove();
+    //     }
+    //     if(!documentos.length){
+    //         return alertify.error("documento no seleccionado");
+    //     }
+    //     const formatoVisita = documentos[0];
+    //     if(formatoVisita.type !== "application/pdf"){
+    //         return alertify.error("el documento debe de ser un pdf");
+    //     }
+    //     const documentoSubido = document.createElement("div");
+    //     documentoSubido.className = "rounded-pill bg-light p-2";
+    //     documentoSubido.id = "documento-mostrar-formato-visita";
+    //     documentoSubido.innerHTML = `
+    //     <span>${formatoVisita.name}</span>`
+    //     this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
+    //     return alertify.success("formato de visita seleccionado corretamente");
+    // });
     const contenidoFiltro = document.querySelector("#contenidoFiltro");
     async function cargarVisitas() {
         boxNoVisitas.hidden = true;
@@ -304,6 +310,8 @@ function loadPage() {
             });
             input.click();
         },
+    }).then(response => {
+        tinymce.activeEditor.setContent(general.$contenidoPreInforme);
     });
     const frmServicios = document.querySelector("#contenidoServicios");
     const txtNoServicios = document.querySelector("#txtNoServi");
@@ -333,14 +341,16 @@ function loadPage() {
         if(!contenido){
             return alertify.error("por favor redacte el informe");
         }
-        if(!documentoFormatoVisita.value){
-            return alertify.error("por favor carge su formato de visita");
-        }
+        // if(!documentoFormatoVisita.value){
+        //     return alertify.error("por favor carge su formato de visita");
+        // }
         const data = new FormData(this);
         data.append("acciones","generar-reporte");
         data.append("html",contenido);
         data.append("visita",idVisita);
-        data.append("formatoVisitaPdf",documentoFormatoVisita.files[0]);
+        if(documentoFormatoVisita.value != ""){
+            data.append("formatoVisitaPdf",documentoFormatoVisita.files[0]);
+        }
         general.cargandoPeticion(btnSaveModal, general.claseSpinner, true);
         try {
             const response = await general.funcfetch("acciones",data, "POST");
@@ -352,7 +362,7 @@ function loadPage() {
             }
             if(response.success){
                 idVisita = null;
-                tinymce.activeEditor.setContent("");
+                tinymce.activeEditor.setContent(general.$contenidoPreInforme);
                 $('#modalPrimeraVisita').modal("hide");
                 cargarVisitas();
                 return alertify.success(response.success);

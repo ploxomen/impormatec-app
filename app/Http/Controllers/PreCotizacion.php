@@ -42,6 +42,19 @@ class PreCotizacion extends Controller
         $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->groupBy("cp.id")->get();
         return DataTables::of($preCotizaciones)->toJson();
     }
+    public function eliminarFormatoVisita(PreCotizaion $preCotizacion) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $rutaVisataUnica = '\\formatoVisitas\\'.$preCotizacion->formato_visita_pdf;
+        if(!empty($preCotizacion->formato_visita_pdf) && Storage::exists($rutaVisataUnica)){
+            Storage::delete($rutaVisataUnica);
+            $preCotizacion->update(['formato_visita_pdf' => null]);
+            return response()->json(['success' => 'se eliminó el documento de visita de manera correcta']);
+        }
+        return response()->json(['alerta' => 'No se encontró ningún documento de visita para ser eliminado']);
+    }
     public function visualizacionPdfReporte(PreCotizaion $preCotizacion){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
         if(isset($verif['session'])){
@@ -50,7 +63,7 @@ class PreCotizacion extends Controller
         $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
         $preCotizacion->img = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
         $titulo = 'REPORTE_PRECOTIZACION_'.str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT);
-        $rutaVisataUnica = '/formatoVisitas/'.$preCotizacion->formato_visita_pdf;
+        $rutaVisataUnica = '\\formatoVisitas\\'.$preCotizacion->formato_visita_pdf;
         try {
             $pdf = Pdf::loadView('preCotizacion.reporte',compact("configuracion","preCotizacion","titulo"));
             if(!empty($preCotizacion->formato_visita_pdf) && Storage::exists($rutaVisataUnica)){

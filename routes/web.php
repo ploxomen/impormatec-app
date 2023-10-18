@@ -198,6 +198,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('lista-precotizacion', [PreCotizacion::class, 'obtenerPreCotizaciones']);
             Route::get('lista/{precotizacion}', [PreCotizacion::class, 'showPreCotizacion']);
             Route::get('reporte/{preCotizacion}', [PreCotizacion::class, 'visualizacionPdfReporte']);
+            Route::delete('pdf-visita/{preCotizacion}', [PreCotizacion::class, 'eliminarFormatoVisita']);
 
             Route::post('acciones', [PreCotizacion::class, 'accionesPreCotizacion']);
             Route::post('eliminar/imagen', [PreCotizacion::class, 'eliminarImagenPreCotizacion']);

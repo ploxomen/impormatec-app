@@ -36,6 +36,46 @@ class General{
     validarVacio(dato) {
         return !dato ? "Sin Registro" : dato;
     }
+    $contenidoPreInforme = `
+    <ol>
+        <li>
+            <p>
+            <strong>Tipo de sistema</strong>
+            <br><br>
+            </p>
+        </li>
+        <li>
+            <p>
+            <strong>Marca, cantidad y modelo de equipos</strong>
+            <br><br>
+            </p>
+        </li>
+        <li>
+            <p>
+            <strong>Descripción del estado actual</strong>
+            <br><br>
+            </p>
+        </li>
+        <li>
+            <p>
+            <strong>Detalle de accesorios, partes o repuestos por cambio[indicar el tipo de materiales de ser necesario].</strong>
+            <br><br>
+            </p>
+        </li>
+        <li>
+            <p>
+            <strong>Conclusiones</strong>
+            <br><br>
+            </p>
+        </li>
+        <li>
+            <p>
+            <strong>Recomendaciones</strong>
+            <br><br>
+            </p>
+        </li>
+    </ol>
+    `
     banerLoader = document.querySelector("#banerCargando")
     seleccionarCheckbox(claseSeleccionar,$selecionarTodo){
         let cantidadClase = 0;

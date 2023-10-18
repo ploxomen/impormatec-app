@@ -414,7 +414,7 @@ function loadPage() {
                         return alertify.alert("Alerta",response.alerta);
                     }
                     return alertify.alert("Mensaje",response.success,()=>{
-                        window.location.href = "generar";
+                        window.location.href = "nuevo";
                     });
                 } catch (error) {
                     console.error(error);

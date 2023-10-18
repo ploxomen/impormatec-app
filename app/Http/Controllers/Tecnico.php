@@ -82,12 +82,16 @@ class Tecnico extends Controller
                             }
                         }
                     }
-                    $nombreReporteVisita = "reporte_visitas_" . $idPreCotizacion . "_". time() .".pdf";
-                    $reporteVisita = $request->file('formatoVisitaPdf');
-                    $rutaReporteVisita = "formatoVisitas/" . $nombreReporteVisita;
-                    if ($reporteVisita) {
-                        $reporteVisita->storeAs('formatoVisitas', $nombreReporteVisita);
+                    $nombreReporteVisita = null;
+                    if($request->has('formatoVisitaPdf')){
+                        $nombreReporteVisita = "reporte_visitas_" . $idPreCotizacion . "_". time() .".pdf";
+                        $reporteVisita = $request->file('formatoVisitaPdf');
+                        $rutaReporteVisita = "formatoVisitas/" . $nombreReporteVisita;
+                        if ($reporteVisita) {
+                            $reporteVisita->storeAs('formatoVisitas', $nombreReporteVisita);
+                        }
                     }
+                    
                     PreCotizaion::find($idPreCotizacion)->update(['html_primera_visita' => $html,'formato_visita_pdf' => $nombreReporteVisita,'estado' => 2,'usuario_modificado' => $usuario]);
                     DB::commit();
                     return ['success' => 'Reporte generado con éxito'];
