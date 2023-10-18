@@ -14,6 +14,10 @@ class CotizacionProductos extends Model
     public function productos() {
         return $this->belongsTo(Productos::class,'id_producto');
     }
+    public function cotizacion()
+    {
+        return $this->belongsTo(Cotizacion::class,'id_cotizacion');
+    }
     //CASO EXCEPCIONAL YA QUE SE CONVINAN - SE USA EN EL PDF DE COTIZACION PARA EL DETALLE
     public function servicios() {
         return $this->belongsTo(Servicio::class,'id_producto');

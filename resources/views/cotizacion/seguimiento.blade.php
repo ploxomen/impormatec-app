@@ -32,6 +32,10 @@
                     <label for="txtFechaFin">Fecha Fin</label>
                     <input type="date" value="{{$fechaFin}}" class="form-control" required name="fecha_fin" id="txtFechaFin">
                 </div>
+                <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-aprobar">
+                    <label for="txtPorcentaje">Porcentaje</label>
+                    <input type="number" step="0.01" value="0" class="form-control" required name="porcentaje" id="txtPorcentaje">
+                </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-garantia" hidden>
                     <label for="cbYearFinGarantia">Año</label>
                     <select name="year_fin_garantia" required class="select2-simple" id="cbYearFinGarantia">
@@ -43,8 +47,18 @@
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-garantia" hidden>
                     <label for="cbMesFinGarantia">Mes</label>
                     <select name="mes_fin_garantia" required class="select2-simple" id="cbMesFinGarantia">
+                        <option value="0">Todos</option>
                         @foreach ($meses as $keyMes => $mes)
                             <option value="{{$keyMes + 1}}" {{($keyMes + 1 ) == date('n') ? 'selected' : ''}}>{{ucfirst($mes)}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-garantia" hidden>
+                    <label for="cbClientes">Clientes</label>
+                    <select name="id_cliente" id="cbClientes" class="form-control select2-simple" required data-placeholder="Seleccione un cliente">
+                        <option value="0">Todos</option>
+                        @foreach ($clientes as $cliente)
+                            <option value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -56,23 +70,37 @@
             </div>
         </form>
        <div class="bg-white p-3 border">
-        <table class="table table-sm table-bordered" id="tablaSeguimiento">
-            <thead class="text-center">
-                <tr>
-                    <th>N° Cotización</th>
-                    <th>Fecha Emisión</th>
-                    <th>Fecha Vencimiento</th>
-                    <th>Fecha Fin Garantia</th>
-                    <th>Cliente</th>
-                    <th>Cotizador</th>
-                    <th>Importe</th>
-                    <th>Desc.</th>
-                    <th>I.G.V</th>
-                    <th>Total</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-        </table>
+            <table class="table table-sm table-bordered" id="tablaSeguimiento">
+                <thead class="text-center">
+                    <tr>
+                        <th>N° Cotización</th>
+                        <th>Fecha Emisión</th>
+                        <th>Fecha Vencimiento</th>
+                        <th>Porcentaje</th>
+                        <th>Cliente</th>
+                        <th>Cotizador</th>
+                        <th>Importe</th>
+                        <th>Desc.</th>
+                        <th>I.G.V</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+            </table>
+            <table class="table table-sm table-bordered" id="tablaFinGarantia">
+                <thead class="text-center">
+                    <tr>
+                        <th>N° Cotización</th>
+                        <th>N° OS</th>
+                        <th>Fecha Fin Garantia</th>
+                        <th>Cliente</th>
+                        <th>Tipo</th>
+                        <th>Descripcion</th>
+                        <th>Cantidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+            </table>
        </div>
     </section>
     @include('cotizacion.modales.agregarSeguimiento')

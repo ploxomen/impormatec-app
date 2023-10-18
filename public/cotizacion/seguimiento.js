@@ -1,6 +1,7 @@
 function loadPage(){
     let general = new General();
     const tablaSeguimiento = document.querySelector("#tablaSeguimiento");
+    const tablaSeguimientoGarantia = document.querySelector("#tablaFinGarantia");
     const radioCotizacionAprobar = document.querySelector("#radioCotizacionesPendientes");
     const radioCotizacionFinGarantia = document.querySelector("#radioGarantia");
     const tablaDataSeguimiento = $(tablaSeguimiento).DataTable({
@@ -9,11 +10,9 @@ function loadPage(){
             method: 'GET',
             headers: general.requestJson,
             data: function (d) {
-                d.tipo = radioCotizacionAprobar.checked ? 'pendientes' : 'finalizados';
                 d.fechaFin = $("#txtFechaFin").val();
                 d.fechaInicio = $("#txtFechaInicio").val();
-                d.year = $("#cbYearFinGarantia").val();
-                d.mes = $("#cbMesFinGarantia").val();
+                d.porcentaje = isNaN(Number.parseFloat($("#txtPorcentaje").val())) ? 0 : $("#txtPorcentaje").val();
             }
         },
         columns: [
@@ -27,7 +26,10 @@ function loadPage(){
             data: 'fechaFinCotizada'
         },
         {
-            data: 'fechaFinGarantia'
+            data: 'porcentaje_actual',
+            render : function(data){
+                return !data ? "0 %" : Number.parseFloat(data).toFixed(2).toString() + " %";
+            }
         },
         {
             data: 'nombreCliente'
@@ -91,6 +93,62 @@ function loadPage(){
         },
         ]
     });
+    const tablaDataSeguimientoGarantia = $(tablaSeguimientoGarantia).DataTable({
+        ajax: {
+            url: 'seguimiento/listar-garantia',
+            method: 'GET',
+            headers: general.requestJson,
+            data: function (d) {
+                d.year = $("#cbYearFinGarantia").val();
+                d.mes = $("#cbMesFinGarantia").val();
+                d.cliente = $("#cbClientes").val();
+            }
+        },
+        visible : true,
+        columns: [
+        {
+            data: 'nroCotizacion'
+        },
+        {
+            data: 'nroOs'
+        },
+        {
+            data: 'fechaFinGarantia'
+        },
+        {
+            data: 'nombreCliente'
+        },
+        {
+            data: 'tipo'
+        },
+        {
+            data: 'servicio'
+        },
+        {
+            data: 'cantidad'
+        },
+        {
+            data: 'id',
+            render : function(data,type,row){
+                return `
+                <button class="btn btn-sm btn-outline-success p-1" data-id="${data}" data-tipo="${row.tipo}">
+                    <small>
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Notificar</span>
+                    </small>
+                </button>
+                `
+            }
+        },
+        ]
+    });
+    if(document.querySelector("#tablaFinGarantia_wrapper")){
+        document.querySelector("#tablaFinGarantia_wrapper").hidden = true;
+    }
+    document.querySelector("#filtrosSeguimiento").addEventListener("submit",function(e){
+        e.preventDefault();
+        aplicarFiltros();
+    })
     function renderizarFiltros(e) {
         const filtroOcultar = document.querySelectorAll(`#filtrosSeguimiento .${e.target.dataset.filtrosOcultar}`);
         const filtroMostrar = document.querySelectorAll(`#filtrosSeguimiento .${e.target.dataset.filtrosMostrar}`);
@@ -102,7 +160,15 @@ function loadPage(){
             filtro.hidden = false;
             filtro.querySelector("input, select").setAttribute("required","required");
         }
-        tablaDataSeguimiento.draw();
+        if(e.target.getAttribute("id") === "radioCotizacionesPendientes"){
+            document.querySelector("#tablaFinGarantia_wrapper").hidden = true;
+            document.querySelector("#tablaSeguimiento_wrapper").hidden = false;
+            tablaDataSeguimiento.draw();
+        }else{
+            document.querySelector("#tablaSeguimiento_wrapper").hidden = true;
+            document.querySelector("#tablaFinGarantia_wrapper").hidden = false;
+            tablaDataSeguimientoGarantia.draw();
+        }
     }
     radioCotizacionAprobar.onchange = renderizarFiltros;
     radioCotizacionFinGarantia.onchange = renderizarFiltros;
@@ -159,29 +225,29 @@ function loadPage(){
                 general.cargandoPeticion(e.target, 'fas fa-eye', false);
             }
         }
+    });
+    tablaSeguimientoGarantia.addEventListener("click",async function(e){
         if(e.target.classList.contains("btn-outline-success")){
             try {
                 general.cargandoPeticion(e.target, general.claseSpinner, true);
-                const response = await general.funcfetch("seguimiento/notificar/" + e.target.dataset.cotizacion,null,"GET");
+                const response = await general.funcfetch(`seguimiento/notificar/${e.target.dataset.tipo}/${e.target.dataset.id}`,null,"GET");
                 if(response.session){
                     return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
                 }
                 if(!response.celular){
                     return alertify.alert("Mensaje","Por favor establesca un numero de celular válido al cliente para proceder a la notificación por whatsapp");
                 }
-                let templateSms = `Estimado cliente *${response.cliente}* le informamos que la cotización *N° - ${response.nroCotizacion}* vence el día *${response.fechaFinGarantia}*\nDescripción de los servicios\n`;
-                response.servicios.forEach((servicio,key) => {
-                    templateSms += `${key + 1}. ${servicio.servicio}\n`
-                });
+                let templateSms = `Estimado cliente *${response.cliente}* le informamos que el ${e.target.dataset.tipo.toLowerCase()} *${response.servicios}* perteneciente al N° de cotización ° - ${response.nroCotizacion}* vence el día *${response.fechaFinGarantia}*\n`;
                 templateSms += `Atentamente ${response.usuario} - IMPORMATEC`;
                 general.enviarNotificacionWhatsApp(response.celular,templateSms);
             } catch (error) {
+                console.error(error);
                 alertify.error("error al visualizar los seguimientos");
             }finally{
                 general.cargandoPeticion(e.target, 'fas fa-eye', false);
             }
         }
-    });
+    })
     const btnFrmAgregarSeguimiento = document.querySelector("#btnGuardarFrm");
     const btnFrmEditarSeguimiento = document.querySelector("#btnEditarFrm");
 
@@ -215,7 +281,14 @@ function loadPage(){
             general.cargandoPeticion(btnFrmAgregarSeguimiento, 'fas fa-save', false);
         }
     });
-    document.querySelector("#btnAplicarFiltros").onclick = e => tablaDataSeguimiento.draw();
+    function aplicarFiltros(){
+        if(radioCotizacionAprobar.checked){
+            tablaDataSeguimiento.draw();
+        }else{
+            tablaDataSeguimientoGarantia.draw();
+        }
+    }
+    document.querySelector("#btnAplicarFiltros").onclick = aplicarFiltros;
     frmEditarSeguimiento.addEventListener("submit",async function(e){
         e.preventDefault();
         let datos = new FormData(this);

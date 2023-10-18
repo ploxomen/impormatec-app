@@ -215,10 +215,11 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::prefix('seguimiento')->group(function () {
             Route::get('/', [Seguimiento::class, 'index'])->name('admin.cotizacion.seguimiento');
             Route::get('listar', [Seguimiento::class, 'all']);
+            Route::get('listar-garantia', [Seguimiento::class, 'allGarantia']);
             Route::get('historial/{cotizacion}', [Seguimiento::class, 'showHistorialSeguimiento']);
             Route::post('agregar', [Seguimiento::class, 'store']);
             Route::put('editar/{cotizacion}', [Seguimiento::class, 'update']);
-            Route::get('notificar/{cotizacion}', [Seguimiento::class, 'notificacion']);
+            Route::get('notificar/{tipo}/{id}', [Seguimiento::class, 'notificacion']);
             Route::delete('eliminar/{seguimiento}/{cotizacion}', [Seguimiento::class, 'destroy']);
 
         });

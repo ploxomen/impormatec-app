@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Clientes;
 use App\Models\Cotizacion;
+use App\Models\CotizacionProductos;
 use App\Models\CotizacionSeguimiento;
 use App\Models\CotizacionServicio;
+use App\Models\OrdenServicioCotizacionServicio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,22 +29,27 @@ class Seguimiento extends Controller
             return redirect()->route("home"); 
         }
         $fechaFin = date('Y-m-d');
+        $clientes = Clientes::obenerClientesActivos();
         $fechaInicio = date('Y-m-d',strtotime($fechaFin . ' - 90 days'));
         $meses = (new Utilitarios)->obtenerNombresMeses();
         $modulos = $this->usuarioController->obtenerModulos();
-        return view("cotizacion.seguimiento",compact("modulos","fechaFin","fechaInicio","meses"));
+        return view("cotizacion.seguimiento",compact("modulos","fechaFin","fechaInicio","meses","clientes"));
     }
     public function all(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
         if(isset($verif['session'])){
             return response()->json($verif);
         }
-        if($request->tipo === 'pendientes'){
-            $seguimientos = Cotizacion::obtenerCotizacion()->where('fechaCotizacion','>=',$request->fechaInicio)->where('fechaCotizacion','<=',$request->fechaFin)->where('cotizacion.estado',1)->get();
-        }else{
-            $seguimientos = Cotizacion::obtenerCotizacion()->whereRaw('MONTH(fecha_fin_garantia) = ? AND YEAR(fecha_fin_garantia) = ?',[$request->mes,$request->year])->get();
-        }
+        $seguimientos = Cotizacion::obtenerCotizacion()->where('fechaCotizacion','>=',$request->fechaInicio)->where('fechaCotizacion','<=',$request->fechaFin)->where('cotizacion.porcentaje_actual','>=',$request->porcentaje)->where('cotizacion.estado',1)->get();
         return DataTables::of($seguimientos)->toJson();
+    }
+    public function allGarantia(Request $request){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
+        if(isset($verif['session'])){
+            return response()->json($verif);
+        }
+        $seguimientosGarantia = Cotizacion::obtenerGarantiasFechas($request->mes,$request->year,$request->cliente);
+        return DataTables::of($seguimientosGarantia)->toJson();
     }
     public function showHistorialSeguimiento(Cotizacion $cotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
@@ -59,6 +67,7 @@ class Seguimiento extends Controller
         try {
             $datos = $request->all();
             $datos['id_usuario'] = Auth::id();
+            Cotizacion::find($request->id_cotizacion)->update(['porcentaje_actual' => $request->porcentaje]);
             CotizacionSeguimiento::create($datos);
             DB::commit();
             return response()->json(['success' => 'seguimiento agregado correctamente']);
@@ -74,7 +83,10 @@ class Seguimiento extends Controller
         }
         DB::beginTransaction();
         try {
-            for ($i=0; $i < count($request->seguimiento); $i++) { 
+            if($request->has("seguimiento") && isset($request->porcentaje[0])){
+                Cotizacion::find($cotizacion)->update(['porcentaje_actual' => $request->porcentaje[0]]);
+            }
+            for ($i=0; $i < count($request->seguimiento); $i++) {
                 CotizacionSeguimiento::where(['id_cotizacion' => $cotizacion,'id' => $request->seguimiento[$i]])->update([
                     'descripcion' => $request->descripcion[$i],
                     'porcentaje' => $request->porcentaje[$i],
@@ -93,21 +105,36 @@ class Seguimiento extends Controller
             return response()->json($verif);
         }
         CotizacionSeguimiento::where(['id_cotizacion' => $cotizacion,'id' => $seguimiento])->delete();
+        $cotizacionSeguimientoPrimero = CotizacionSeguimiento::where(['id_cotizacion' => $cotizacion])->first();
+        Cotizacion::find($cotizacion)->update(['porcentaje_actual' => empty($cotizacionSeguimientoPrimero) ? 0 : $cotizacionSeguimientoPrimero->porcentaje]);
         return response()->json(['success' => 'seguimiento eliminado correctamente']);
     }
-    public function notificacion(Cotizacion $cotizacion) {
+    public function notificacion($tipo,$id) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
         if(isset($verif['session'])){
             return response()->json($verif);
         }
-        $response = [
-            'nroCotizacion' => str_pad($cotizacion->id,5,'0',STR_PAD_LEFT),
-            'fechaFinGarantia' => date('d/m/Y',strtotime($cotizacion->fecha_fin_garantia)),
-            'cliente' => $cotizacion->cliente->nombreCliente,
-            'celular' => $cotizacion->cliente->usuario->celular,
-            'servicios' => CotizacionServicio::mostrarServiciosConProductos($cotizacion->id)->select("servicios.servicio")->get(),
-            'usuario' => Auth::user()->nombres
-        ];
+        if($tipo === 'Servicio'){
+            $servicio = OrdenServicioCotizacionServicio::find($id);
+            $response = [
+                'nroCotizacion' => str_pad($servicio->cotizacionServicio->id_cotizacion,5,'0',STR_PAD_LEFT),
+                'fechaFinGarantia' => date('d/m/Y',strtotime($servicio->fecha_fin_garantia)),
+                'cliente' => $servicio->cotizacionServicio->cotizacion->cliente->nombreCliente,
+                'celular' => $servicio->cotizacionServicio->cotizacion->cliente->usuario->celular,
+                'servicios' => $servicio->cotizacionServicio->servicios->servicio,
+                'usuario' => Auth::user()->nombres
+            ];
+        }else{
+            $productos = CotizacionProductos::find($id);
+            $response = [
+                'nroCotizacion' => str_pad($productos->id_cotizacion,5,'0',STR_PAD_LEFT),
+                'fechaFinGarantia' => date('d/m/Y',strtotime($productos->fecha_fin_garantia)),
+                'cliente' => $productos->cotizacion->cliente->nombreCliente,
+                'celular' => $productos->cotizacion->cliente->usuario->celular,
+                'servicios' => $productos->productos->nombreProducto,
+                'usuario' => Auth::user()->nombres
+            ];
+        }
         return response()->json($response);
     }
 }
