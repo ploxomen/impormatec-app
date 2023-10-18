@@ -42,27 +42,27 @@
                 </div>
             </div>
         </form>
-       <div class="bg-white p-3 border">
-        <div class="form-group text-right">
-            <button class="btn btn-outline-primary" data-toggle="modal" data-target="#agregarProgramacion">
-                <i class="fas fa-plus"></i>
-                <span>Agregar</span>
-            </button>
+        <div class="bg-white p-3 border">
+            <div class="form-group text-right">
+                <button class="btn btn-outline-primary" data-toggle="modal" data-target="#agregarProgramacion">
+                    <i class="fas fa-plus"></i>
+                    <span>Agregar</span>
+                </button>
+            </div>
+            <table class="table table-sm table-bordered" id="tablaProgramacion">
+                <thead class="text-center">
+                    <tr>
+                        <th>N°</th>
+                        <th>Responsable</th>
+                        <th>Fecha Hr. Inicio</th>
+                        <th>Fecha Hr. Fin</th>
+                        <th>Tipo</th>
+                        <th>Actividad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
-        <table class="table table-sm table-bordered" id="tablaProgramacion">
-            <thead class="text-center">
-                <tr>
-                    <th>N°</th>
-                    <th>Responsable</th>
-                    <th>Fecha Hr. Inicio</th>
-                    <th>Fecha Hr. Fin</th>
-                    <th>Tipo</th>
-                    <th>Actividad</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-        </table>
-       </div>
     </section>
     @include('administracion.modales.agregarProgramacion')
     @include('administracion.modales.editarProgramacion')

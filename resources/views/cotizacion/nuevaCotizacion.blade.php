@@ -213,7 +213,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="d-flex" id="contenedorArchivoPdf" style="gap:10px; font-size: 0.8rem;"></div>
+                    <div class="d-flex flex-wrap" id="contenedorArchivoPdf" style="gap:10px; font-size: 0.8rem;"></div>
                 </fieldset>
             </div>
             <div class="col-12 form-group text-center">

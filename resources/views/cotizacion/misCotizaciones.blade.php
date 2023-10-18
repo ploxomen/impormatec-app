@@ -39,5 +39,4 @@
     </section>
     @include('cotizacion.modales.editarCotizacion')
     @include('cotizacion.modales.cotizacionAlmacen')
-
 @endsection

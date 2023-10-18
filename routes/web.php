@@ -20,6 +20,7 @@ use App\Http\Controllers\Informes;
 use App\Http\Controllers\OrdenServicio;
 use App\Http\Controllers\PreCotizacion;
 use App\Http\Controllers\Programacion;
+use App\Http\Controllers\Publicidades;
 use App\Http\Controllers\Seguimiento;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
@@ -139,7 +140,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('actualizar', [Configuracion::class, 'actualizarInformacionNegocio']);
         });
     });
-
     Route::prefix('ventas')->group(function () {
         Route::prefix('programacion')->group(function () {
             Route::get('/', [Programacion::class, 'index'])->name("admin.programacion.index");
@@ -150,24 +150,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::delete('{programacion}', [Programacion::class, 'destroy']);
             Route::get('reporte/pdf', [Programacion::class, 'reporteProgramacion'])->name('reporte.programacion');
         });
-//         Route::prefix('general')->group(function () {
-//             Route::get('/', [Ventas::class, 'verMisVentas'])->name("admin.ventas.index");
-//             Route::post('listar', [Ventas::class, 'listaMisVentas']);
-//             Route::get('listar/{venta}', [Ventas::class, 'verVentasParaEditar']);
-//             Route::post('listar/producto/{producto}', [Ventas::class, 'verProductoMisVentas']);
-//             Route::delete('eliminar/{venta}', [Ventas::class, 'eliminarVenta']);
-//         });
-//         Route::get('registrar', [Ventas::class, 'indexRegistroVentas'])->name('ventas.registrar.index');
-//         Route::get('comprobante/{venta}', [Ventas::class, 'verComprobanteVenta']);
-//         Route::post('registrar', [Ventas::class, 'registrarVenta']);
-//         Route::prefix('comprobantes')->group(function () {
-//             Route::get('/', [Comprobantes::class, 'index'])->name('admin.ventas.comprobantes.index');
-//             Route::post('listar', [Comprobantes::class, 'listar']);
-//             Route::get('listar/{comprobante}', [Comprobantes::class, 'show']);
-//             Route::post('crear', [Comprobantes::class, 'store']);
-//             Route::post('editar/{comprobante}', [Comprobantes::class, 'update']);
-//             Route::delete('eliminar/{comprobante}', [Comprobantes::class, 'destroy']);
-//         });
         Route::prefix('clientes')->group(function () {
             Route::get('/', [Clientes::class, 'index'])->name('admin.ventas.clientes.index');
             Route::post('listar', [Clientes::class, 'listar']);
@@ -177,6 +159,22 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::delete('eliminar/{cliente}', [Clientes::class, 'destroy']);
             Route::get('contacto/eliminar/{contacto}', [Clientes::class, 'eliminarContacto']);
         });
+    });
+    Route::prefix('advertising')->group(function () {
+        Route::post('guardar', [Publicidades::class, 'store']);
+        Route::get('listar', [Publicidades::class, 'index'])->name("admin.publicidad.index");
+        Route::get('obtener', [Publicidades::class, 'all']);
+        Route::get('reenviar/{publicidad}', [Publicidades::class, 'reenviar']);
+        Route::get('obtener/{publicidad}', [Publicidades::class, 'show']);
+        Route::put('actualizar/{publicidad}', [Publicidades::class, 'update']);
+        Route::delete('eliminar/{publicidad}', [Publicidades::class, 'destroy']);
+        Route::delete('documento/{publicidad}/{documento}', [Publicidades::class, 'eliminarDocumentoPublicidad']);
+
+        // Route::get('listar', [Programacion::class, 'all']);
+        // Route::get('{programacion}', [Programacion::class, 'show']);
+        // Route::put('{programacion}', [Programacion::class, 'update']);
+        // Route::delete('{programacion}', [Programacion::class, 'destroy']);
+        // Route::get('reporte/pdf', [Programacion::class, 'reporteProgramacion'])->name('reporte.programacion');
     });
     Route::prefix('cotizaciones')->group(function () {
         Route::get('ver/pdf/{idCotizacion}', [Cotizacion::class, 'verPdfCotizacion'])->name("ver.cotizacion.pdf");
