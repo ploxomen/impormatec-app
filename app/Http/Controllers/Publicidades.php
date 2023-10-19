@@ -44,8 +44,8 @@ class Publicidades extends Controller
             PublicidadClientes::where(['id_publicidad' => $publicidad->id])->delete();
             $documentos = PublicidadDocumentos::where(['id_publicidad' => $publicidad->id])->get();
             foreach ($documentos as $documento) {
-                if(Storage::exists('\\publicidad\\' . $documento->nombre_sistema_documento)){
-                    Storage::delete('\\publicidad\\' . $documento->nombre_sistema_documento);
+                if(Storage::exists('/publicidad/' . $documento->nombre_sistema_documento)){
+                    Storage::delete('/publicidad/' . $documento->nombre_sistema_documento);
                 }
                 $documento->delete();
             }
@@ -119,8 +119,8 @@ class Publicidades extends Controller
         if(empty($documento)){
             return response()->json(['error' => 'No se encontro el documento para ser eliminado']);
         }
-        if(Storage::exists('\\publicidad\\' . $documento->nombre_sistema_documento)){
-            Storage::delete('\\publicidad\\' . $documento->nombre_sistema_documento);
+        if(Storage::exists('/publicidad/' . $documento->nombre_sistema_documento)){
+            Storage::delete('/publicidad/' . $documento->nombre_sistema_documento);
         }
         $documento->delete();
         return response()->json(['success' => 'documento eliminado correctamente']);
@@ -189,7 +189,7 @@ class Publicidades extends Controller
         }
         $documentosEnvio = [];
         foreach ($documentos as $documento) {
-            if(Storage::exists('\\publicidad\\' . $documento['nombre_sistema_documento'])){
+            if(Storage::exists('/publicidad/' . $documento['nombre_sistema_documento'])){
                 $documentosEnvio[] = ['url' => storage_path('app/publicidad/' . $documento['nombre_sistema_documento']), 'name' => $documento['nombre_real_documento']];
             }
         }

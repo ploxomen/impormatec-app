@@ -39,7 +39,7 @@
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-garantia" hidden>
                     <label for="cbYearFinGarantia">Año</label>
                     <select name="year_fin_garantia" required class="select2-simple" id="cbYearFinGarantia">
-                        @for ($i = 2023; $i <= date('Y'); $i++)
+                        @for ($i = 2023; $i <= date('Y') + 25; $i++)
                             <option value="{{$i}}" {{$i == date('Y') ? 'selected' : ''}}>{{$i}}</option>
                         @endfor
                     </select>
