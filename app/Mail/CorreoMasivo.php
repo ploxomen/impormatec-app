@@ -5,6 +5,7 @@ namespace App\Mail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -18,33 +19,35 @@ class CorreoMasivo extends Mailable
      *
      * @return void
      */
-    private $htmlText;
-    private $documentos;
+    public $htmlText;
+    public $documentos;
 
     public function __construct($html,$documentos)
     {
         $this->htmlText = $html;
         $this->documentos = $documentos;
     }
-    public function build()
-    {
-        $envio = $this->html($this->htmlText);
-        foreach ($this->documentos as $documento) {
-            $envio = $envio->attach($documento['url'],['as' => $documento['name']]);
-        }
-        return $envio;
-    }
+    // public function build()
+    // {
+    //     // return $this->view("administracion.correoPublicidad");
+    //     // dd($envio);
+    //     // foreach ($this->documentos as $documento) {
+    //     //     $envio = $envio->attach($documento['url'],['as' => $documento['name']]);
+    //     // }
+    //     // dd($envio);
+    //     // return $envio;
+    // }
     /**
      * Get the message envelope.
      *
      * @return \Illuminate\Mail\Mailables\Envelope
      */
-    public function envelope()
-    {
-        return new Envelope(
-            subject: 'Correo Masivo',
-        );
-    }
+    // public function envelope()
+    // {
+    //     return new Envelope(
+    //         subject: 'Correo Masivo',
+    //     );
+    // }
 
     /**
      * Get the message content definition.
@@ -54,7 +57,7 @@ class CorreoMasivo extends Mailable
     public function content()
     {
         return new Content(
-            view: 'view.name',
+            view: 'administracion.correoPublicidad',
         );
     }
 
@@ -65,6 +68,7 @@ class CorreoMasivo extends Mailable
      */
     public function attachments()
     {
+        // dd(Attachment::fromPath('/path/to/file'),$this->documentos);
         return [];
     }
 }

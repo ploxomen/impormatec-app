@@ -173,7 +173,7 @@ class Publicidades extends Controller
             return response()->json(['success' => 'publicidad enviada correctamente']);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['error' => $th->getMessage()]);
+            return response()->json(['error' => $th->getMessage(),'l' => $th->getLine()]);
         }
     }
     public function enviarCorreo($idPublicidad){
@@ -196,6 +196,7 @@ class Publicidades extends Controller
         if(count($correoClientes) === 0){
             throw new Exception('No se encontraron correos para ser enviados');
         }
+        // dd($publicidad->cuerpo_publicidad);
         Mail::to($correoClientes)->send(new CorreoMasivo($publicidad->cuerpo_publicidad,$documentosEnvio));
         return ['success' => 'publicidad enviada correctamente'];
     }
