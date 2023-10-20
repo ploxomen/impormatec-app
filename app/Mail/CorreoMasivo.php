@@ -9,6 +9,8 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Address;
+
 
 class CorreoMasivo extends Mailable
 {
@@ -21,11 +23,14 @@ class CorreoMasivo extends Mailable
      */
     public $htmlText;
     public $documentos;
+    public $asunto;
 
-    public function __construct($html,$documentos)
+    public function __construct($html,$documentos,$asunto)
     {
         $this->htmlText = $html;
         $this->documentos = $documentos;
+        $this->asunto = $asunto;
+
     }
     // public function build()
     // {
@@ -42,12 +47,13 @@ class CorreoMasivo extends Mailable
      *
      * @return \Illuminate\Mail\Mailables\Envelope
      */
-    // public function envelope()
-    // {
-    //     return new Envelope(
-    //         subject: 'Correo Masivo',
-    //     );
-    // }
+    public function envelope()
+    {
+        return new Envelope(
+            from: new Address('pruebasintelectalab@gmail.com', 'IMPORMATEC'),
+            subject: $this->asunto,
+        );
+    }
 
     /**
      * Get the message content definition.
@@ -68,7 +74,10 @@ class CorreoMasivo extends Mailable
      */
     public function attachments()
     {
-        // dd(Attachment::fromPath('/path/to/file'),$this->documentos);
-        return [];
+        $archivos = [];
+        foreach ($this->documentos as $documento) {
+            $archivos[] = Attachment::fromPath($documento['url'])->as($documento['name']);
+        }
+        return $archivos;
     }
 }

@@ -197,7 +197,7 @@ class Publicidades extends Controller
             throw new Exception('No se encontraron correos para ser enviados');
         }
         // dd($publicidad->cuerpo_publicidad);
-        Mail::to($correoClientes)->send(new CorreoMasivo($publicidad->cuerpo_publicidad,$documentosEnvio));
+        Mail::to($correoClientes)->send(new CorreoMasivo($publicidad->cuerpo_publicidad,$documentosEnvio,$publicidad->asunto));
         return ['success' => 'publicidad enviada correctamente'];
     }
     public function all() {
