@@ -10,6 +10,7 @@ use App\Http\Controllers\Marca;
 use App\Http\Controllers\MisProductos;
 // use App\Http\Controllers\Producto\Perecedero;
 use App\Http\Controllers\Almacenes;
+use App\Http\Controllers\CajaChica;
 use App\Http\Controllers\Usuario;
 use App\Http\Controllers\Rol;
 use Illuminate\Support\Facades\File;
@@ -50,6 +51,22 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('administrador', [Usuario::class, 'inicioAdministrador']);
     });
     Route::prefix('almacen')->group(function () {
+        Route::prefix('caja-chica')->group(function () {
+            Route::get('administrar', [CajaChica::class, 'index'])->name('admin.caja.chica.index');
+            Route::post('editar/{cajaChica}', [CajaChica::class, 'update']);
+            Route::post('crear', [CajaChica::class, 'store']);
+            Route::get('listar', [CajaChica::class, 'all']);
+            Route::delete('eliminar/{cajaChica}', [CajaChica::class, 'destroy']);
+            Route::get('listar/{cajaChica}', [CajaChica::class, 'show']);
+            Route::prefix('gastos')->group(function () {
+                Route::get('/', [CajaChica::class, 'indexGastos'])->name('trabajador.caja.chica.index');
+                Route::post('agregar', [CajaChica::class, 'agregarGastos']);
+            });
+            // Route::post('crear', [Servicio::class, 'store']);
+            // Route::post('producto/eliminar', [Servicio::class, 'eliminarProducto']);
+            // Route::post('editar/{servicio}', [Servicio::class, 'update']);
+            // Route::delete('eliminar/{servicio}', [Servicio::class, 'destroy']);
+        });
         Route::prefix('servicio')->group(function () {
             Route::get('/', [Servicio::class, 'index'])->name('admin.servicios');
             Route::post('listar', [Servicio::class, 'listar']);
