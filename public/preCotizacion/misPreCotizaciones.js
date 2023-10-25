@@ -66,8 +66,8 @@ function loadPage() {
                             <i class="fas fa-pencil-alt text-primary mr-1"></i>
                             <span class="text-secondary">Editar informe</span>
                         </a>
-                        ${pdfInforme === false ? '' : pdfInforme}
-                        ${pdfInformeVisita === false ? '' : pdfInformeVisita}
+                        ${!pdfInforme ? '' : pdfInforme}
+                        ${!pdfInformeVisita ? '' : pdfInformeVisita}
                         <a class="dropdown-item eliminar-cotizacion" href="javascript:void(0)">
                             <i class="fas fa-trash-alt text-danger mr-1"></i>
                             <span class="text-secondary">Eliminar precotización</span>

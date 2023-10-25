@@ -25,5 +25,25 @@ class Utilitarios extends Controller
         $imageUrl = asset('imagenesEditor/' . $imageName);
         return response()->json(['location' => $imageUrl]);
     }
-    
+    public function guardarImagenesEditorTextoCotizacion(Request $request) {
+        $image = $request->file('file');
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move(public_path('imagenesEditorCotizacion'), $imageName);
+        $imageUrl = asset('imagenesEditorCotizacion/' . $imageName);
+        return response()->json(['location' => $imageUrl]);
+    }
+    public function guardarImagenesEditorTextoOs(Request $request) {
+        $image = $request->file('file');
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move(public_path('imagenesEditorOs'), $imageName);
+        $imageUrl = asset('imagenesEditorOs/' . $imageName);
+        return response()->json(['location' => $imageUrl]);
+    }
+    public function guardarImagenesEditorTextoConfiguracion(Request $request) {
+        $image = $request->file('file');
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move(public_path('imagenesEditorConfiguracion'), $imageName);
+        $imageUrl = asset('imagenesEditorConfiguracion/' . $imageName);
+        return response()->json(['location' => $imageUrl]);
+    }
 }

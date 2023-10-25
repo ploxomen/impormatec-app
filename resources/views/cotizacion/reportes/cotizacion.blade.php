@@ -141,6 +141,9 @@
         </tfoot>
     </table>
     @if ($cotizacion->reporteDetallado === 1 && $productosServicios->where('tipo','servicio')->count() > 0)
+    @if ($productosServicios->count() > 5)
+    <div class="saltopagina"></div>
+    @endif
     <p>
         <strong><u>DESCRIPCIÓN DEL SERVICIO</u></strong>
     </p>
@@ -150,11 +153,9 @@
         @foreach ($productosServicios->where('tipo','servicio') as $servicio)
             @php
                 $index++;
-            @endphp    
-            <p>
-                <span>{{$index. '. ' . $servicio->servicios->servicio}}</span>
-            </p>
+            @endphp
             <table border="1" class="tabla-precio">
+                <caption style="text-align: left; margin-bottom: 10px;">{{$index. '. ' . $servicio->servicios->servicio}}</caption>
                 <thead>
                     <tr>
                         <th>ITEM</th>
@@ -193,9 +194,9 @@
         @endforeach
     @endif
     @if (!empty($cotizacion->textoNota))
-        {!! $cotizacion->textoNota !!}
+        {!! str_replace(['../../imagenesEditorCotizacion/'],'imagenesEditorCotizacion/',$cotizacion->textoNota) !!}
     @endif
-    {!! $configuracion->where('descripcion','texto_datos_bancarios')->first()->valor !!}
+    {!! str_replace(['../../imagenesEditorConfiguracion/'],'imagenesEditorConfiguracion/',$configuracion->where('descripcion','texto_datos_bancarios')->first()->valor) !!}
     @if ($cotizacion->reportePreCotizacion === 1)
         <div class="saltopagina"></div>
         @include('preCotizacion.reporteCompartido',['reportePreCotizacionHtml' => $reportePreCotizacion['html'], 'reportePreCotizacionImagenes' => $reportePreCotizacion['imagenes']])

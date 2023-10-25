@@ -287,6 +287,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('rol/accion', [Rol::class, 'accionesRoles']);
     });
     Route::post('storage/editor/img/save',[Utilitarios::class,'guardarImagenesEditorTexto']);
+    Route::post('storage/editor/img-cotizacion/save',[Utilitarios::class,'guardarImagenesEditorTextoCotizacion']);
+    Route::post('storage/editor/img-os/save',[Utilitarios::class,'guardarImagenesEditorTextoOs']);
+    Route::post('storage/editor/img-configuracion/save',[Utilitarios::class,'guardarImagenesEditorTextoConfiguracion']);
+
     Route::get('storage/{tipo}/{filename}', function ($tipo,$filename){
         $path = storage_path('app/'.$tipo . '/' . $filename);
         if (!File::exists($path)) {

@@ -129,7 +129,7 @@
     </table>
     <strong>OBSERVACIONES:</strong>
     <div>
-        {!! $ordenServicio->observaciones !!}
+        {!! str_replace(['../../imagenesEditorOs/'],'imagenesEditorOs/',$ordenServicio->observaciones)  !!}
     </div>
 </body>
 </html>

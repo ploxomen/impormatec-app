@@ -5,6 +5,7 @@
     {!! $reportePreCotizacionHtml !!}
 </div>
 @if (count($reportePreCotizacionImagenes))
+    <div class="saltopagina"></div>
     <p>
         <strong>
             <u>IMAGENES DETALLADAS:</u>

@@ -69,15 +69,17 @@
                     <span>informe técnico de {{$ordenServicioDetalle->cliente->nombreCliente}}</span>
                 </td>
                 <td style="width: 270px; font-size: 13px; line-height: 1.5;">
-                    <p>
-                        <span>fecha: {{$fechaNormal}}</span><br>
+                    <p style="margin: 0;">
+                        <span>fecha: {{empty($fechaNormal) ? date('d/m/y') : $fechaNormal}}</span><br>
                         <span>cod. proy. inf.:{{$nroInforme}}</span><br>
                         <span>cod. os.: {{$nroOrdenServicio}}</span><br>
                         <span>{{$ordenServicioDetalle->cliente->usuario->direccion}}</span><br>
-                        <span>tel.: {{$ordenServicioDetalle->cliente->usuario->telefono}}</span><br>
+                        <span>tel. cli.: {{$ordenServicioDetalle->cliente->usuario->telefono}}</span><br>
                         @if (!empty($ordenServicioDetalle->cliente->usuario->celular))
-                            <span>cel.: {{$ordenServicioDetalle->cliente->usuario->celular}}</span>
+                            <span>cel. cli.: {{$ordenServicioDetalle->cliente->usuario->celular}}</span><br>
                         @endif
+                        <span>nom. contac.: {{$servicio->cotizacionServicio->cotizacion->representantes->nombreContacto}}</span><br>
+                        <span>num. contac.: {{$servicio->cotizacionServicio->cotizacion->representantes->numeroContacto}}</span><br>
                     </p>
                 </td>
             </tr>
@@ -102,8 +104,8 @@
             <div>
                 {!!str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->descripcion)!!}
             </div>
+            <div class="saltopagina"></div>
             <div>
-        
                 @foreach ($servicio->secciones as $ks => $seccion)
                     <div>
                         <h3 class="text-center titulo-seccion">
@@ -138,8 +140,6 @@
                                     if (!\File::exists($path) || empty($imagen->url_imagen)) {
                                         $path = storage_path('app/productos/sin-imagen.png');
                                     }
-                                    // dd($path);
-
                                 @endphp
                                 @if ($inicioContador === 1)
                                     <tr>

@@ -78,6 +78,10 @@ class Cotizacion extends Model
         }
         return $cotizaciones;
     }
+    public function representantes()
+    {
+        return $this->belongsTo(ClientesContactos::class,'representanteCliente');
+    }
     public function cliente()
     {
         return $this->belongsTo(Clientes::class,'id_cliente');
