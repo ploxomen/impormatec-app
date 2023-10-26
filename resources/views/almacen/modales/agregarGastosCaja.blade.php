@@ -10,8 +10,8 @@
         <div class="modal-body">
             <form class="form-row" id="formCajaChica">
                 <div class="col-12 form-group col-md-6">
-                    <label for="idModalbanco">N° OS</label>
-                    <select name="id_os" required id="idModalbanco" class="select2-simple" data-placeholder="Seleccionar una orden de servicio">
+                    <label for="idModalid_os">N° OS</label>
+                    <select name="id_os" required id="idModalid_os" class="select2-simple" data-placeholder="Seleccionar una orden de servicio">
                         <option value="NINGUNO" selected>NINGUNO</option>
                         @foreach ($ordenesServicios as $os)
                             <option value="{{$os->id}}">{{str_pad($os->id,5,'0',STR_PAD_LEFT)}}</option>

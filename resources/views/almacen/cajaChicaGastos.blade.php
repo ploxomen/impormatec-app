@@ -1,6 +1,7 @@
 @extends('helper.index')
 @section('head')
     @if (!empty($cajaChica) && strtotime($cajaChica->fecha_inicio) <= strtotime(now()) && strtotime($cajaChica->fecha_fin) >= strtotime(now()))
+        @include('helper.headDatatable')
         <script src="/almacen/cajaChicaGastos.js"></script>
     @endif
     <title>Gastos caja chica</title>
@@ -50,21 +51,21 @@
                         <h6>Monto abonado</h6>
                         <strong>
                             <i class="fas fa-money-bill text-success"></i>
-                            <span>{{$monedaTipo .' '. number_format($cajaChica->monto_abonado,2)}}</span>
+                            <span id="idGeneralmontoAbonado">{{$monedaTipo .' '. number_format($cajaChica->monto_abonado,2)}}</span>
                         </strong>
                     </div>
                     <div class="informacion">
                         <h6>Monto gastado</h6>
                         <strong>
                             <i class="fas fa-cash-register text-danger"></i>
-                            <span>{{$monedaTipo .' '. number_format($cajaChica->monto_gastado,2)}}</span>
+                            <span id="idGeneralmontoGastado">{{$monedaTipo .' '. number_format($cajaChica->monto_gastado,2)}}</span>
                         </strong>
                     </div>
                     <div class="informacion">
                         <h6>Monto restante</h6>
                         <strong>
                             <i class="fas fa-coins text-info"></i>
-                            <span>{{$monedaTipo .' '. number_format($cajaChica->monto_abonado - $cajaChica->monto_gastado,2)}}</span>
+                            <span id="idGeneralmontoRestante">{{$monedaTipo .' '. number_format($cajaChica->monto_abonado - $cajaChica->monto_gastado,2)}}</span>
                         </strong>
                     </div>
                 </div>
@@ -74,6 +75,26 @@
             @endif
         </div>
     </div>
+    @if(!empty($cajaChica) && strtotime($cajaChica->fecha_inicio) <= strtotime(now()) && strtotime($cajaChica->fecha_fin) >= strtotime(now()))
+    <div class="bg-white p-3">
+        <h3 class="text-primary my-2">Gastos acumulados</h3>
+        <table id="tablaGastos" class="table table-sm table-bordered">
+            <thead>
+                <tr>
+                    <th>N° Gasto</th>
+                    <th>Fecha</th>
+                    <th>OS</th>
+                    <th>Proveedor</th>
+                    <th>Área costo</th>
+                    <th>Descripción</th>
+                    <th>Monto Total</th>
+                    <th>I.G.V</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    @endif
 </section>
     @if(!empty($cajaChica))
         @include('almacen.modales.agregarGastosCaja')

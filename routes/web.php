@@ -62,9 +62,18 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::put('modificar-aumentos/{cajaChica}', [CajaChica::class, 'modificarAumento']);
             Route::delete('eliminar-aumento/{aumento}/{cajaChica}', [CajaChica::class, 'eliminarAumento']);
             Route::get('listar/{cajaChica}', [CajaChica::class, 'show']);
+            Route::get('listar-gastos', [CajaChica::class, 'listarGastosTrabajadores']);
+            Route::get('listar-gasto/{gasto}/{cajaChica}', [CajaChica::class, 'listarGasto']);
             Route::prefix('gastos')->group(function () {
                 Route::get('/', [CajaChica::class, 'indexGastos'])->name('trabajador.caja.chica.index');
+                Route::get('modificar/{cajaChica}', [CajaChica::class, 'indexGastosAdministrador']);
+                Route::get('modificar/listar-gastos/{cajaChica}', [CajaChica::class, 'listarGastosTrabajadoresAdmin']);
+                Route::post('modificar/actualizar-gasto/{cajaChica}/{gasto}', [CajaChica::class, 'editarGasto']);
+                Route::post('modificar/agregar-gasto/{cajaChica}', [CajaChica::class, 'agregarGastos']);
+
+                Route::post('editar/{gasto}', [CajaChica::class, 'editarGasto']);
                 Route::post('agregar', [CajaChica::class, 'agregarGastos']);
+                Route::delete('eliminar/{gasto}/{cajaChica}', [CajaChica::class, 'eliminarGasto']);
             });
             // Route::post('crear', [Servicio::class, 'store']);
             // Route::post('producto/eliminar', [Servicio::class, 'eliminarProducto']);
@@ -88,14 +97,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('editar/{marca}', [Marca::class, 'update']);
             Route::delete('eliminar/{marca}', [Marca::class, 'destroy']);
         });
-//         Route::prefix('perecederos')->group(function () {
-//             Route::get('/', [Perecedero::class, 'index'])->name('admin.perecedero.index');
-//             Route::post('listar', [Perecedero::class, 'listar']);
-//             Route::get('listar/{perecedero}', [Perecedero::class, 'show']);
-//             Route::post('crear', [Perecedero::class, 'store']);
-//             Route::post('editar/{perecedero}', [Perecedero::class, 'update']);
-//             Route::delete('eliminar/{perecedero}', [Perecedero::class, 'destroy']);
-//         });
         Route::prefix('categoria')->group(function () {
             Route::get('/', [Categoria::class, 'index'])->name('admin.categoria.index');
             Route::post('listar', [Categoria::class, 'listar']);

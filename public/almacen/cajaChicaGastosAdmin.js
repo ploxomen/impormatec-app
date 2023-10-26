@@ -1,4 +1,6 @@
 function loadPage(){
+    let partes = window.location.href.split('/');
+    let cajaChicaId = partes[partes.length - 1];
     let gen = new General();
     const btnModalSave = document.querySelector("#btnGuardarFrm");
     btnModalSave.onclick = e => document.querySelector("#btnFrmEnviar").click();
@@ -6,7 +8,7 @@ function loadPage(){
     const tablaGastos = document.querySelector("#tablaGastos");
     const tablaGastosDataTable = $(tablaGastos).DataTable({
         ajax: {
-            url: 'listar-gastos',
+            url: `listar-gastos/${cajaChicaId}`,
             method: 'GET',
             headers: gen.requestJson
         },
@@ -67,7 +69,7 @@ function loadPage(){
         let datos = new FormData(this);
         try {
             gen.cargandoPeticion(btnModalSave, gen.claseSpinner, true);
-            const response = await gen.funcfetch(idDetalleGasto ? `gastos/editar/${idDetalleGasto}` : "gastos/agregar",datos);
+            const response = await gen.funcfetch(idDetalleGasto ? `actualizar-gasto/${cajaChicaId}/${idDetalleGasto}` : `agregar-gasto/${cajaChicaId}`,datos);
             if(response.session){
                 return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
             }
