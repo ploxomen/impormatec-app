@@ -36,4 +36,5 @@
        </div>
     </section>
     @include('almacen.modales.agregarCajaChica')
+    @include('almacen.modales.aumentoCajaChica')
 @endsection

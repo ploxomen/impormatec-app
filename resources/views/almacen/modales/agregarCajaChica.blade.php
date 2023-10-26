@@ -17,20 +17,32 @@
                     <label for="idModalfecha_fin">Fecha Fin</label>
                     <input type="date" value="{{date('Y-m-d',strtotime(date('Y-m-d') . ' + 15 days'))}}" id="idModalfecha_fin" class="form-control" required name="fecha_fin">
                 </div>
-                <div class="col-12 form-group col-md-6">
+                <div class="form-group col-12 col-md-6 ocultar-costo">
+                    <label for="idModalfecha_deposito">Fecha Depósito</label>
+                    <input type="date" value="{{date('Y-m-d')}}" id="idModalfecha_deposito" class="form-control" required name="fecha_deposito">
+                </div>
+                <div class="col-12 form-group col-md-6 ocultar-costo">
                     <label for="idModalbanco">Banco</label>
-                    <select name="banco" id="idModalbanco" class="select2-simple" data-placeholder="Seleccionar un banco">
-                        <option value=""></option>
-                        <option value="BCP">Banco de Crido del Perú</option>
+                    <select name="banco" id="idModalbanco" class="form-control" required>
+                        <option value="BCP">BCP</option>
                         <option value="BBVA">BBVA</option>
                         <option value="INTERBANK">INTERBANK</option>
                         <option value="SCOTIABANK">SCOTIABANK</option>
                         <option value="OTRO">OTRO</option>
                     </select>
                 </div>
-                <div class="col-12 form-group col-md-6">
+                <div class="col-12 form-group col-md-6 ocultar-costo">
                     <label for="idModalnro_operacion">N° Operación</label>
                     <input type="text" id="idModalnro_operacion" class="form-control" name="nro_operacion">
+                </div>
+                <div class="col-12 form-group col-md-6">
+                    <label for="idModalresponsable_caja">Responsable</label>
+                    <select name="responsable_caja" required id="idModalresponsable_caja" class="select2-simple" data-placeholder="Seleccionar un responsable">
+                        <option value=""></option>
+                        @foreach ($usuarios as $usuario)
+                            <option value="{{$usuario->id}}">{{$usuario->nombres . ' ' . $usuario->apellidos}}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-12 form-group col-12 col-md-6">
                     <label for="idModaltipo_moneda">Tipo moneda</label>

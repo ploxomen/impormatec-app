@@ -37,15 +37,6 @@
                     <input type="text" id="idModalnro_comprobante" class="form-control" name="nro_comprobante">
                 </div>
                 <div class="col-12 form-group col-md-6">
-                    <label for="idModalresponsable_pago">Encargado Pago</label>
-                    <select name="responsable_pago" required id="idModalresponsable_pago" class="select2-simple" data-placeholder="Seleccionar un responsable">
-                        <option value=""></option>
-                        @foreach ($usuarios as $usuario)
-                            <option value="{{$usuario->id}}">{{$usuario->nombres . ' ' . $usuario->apellidos}}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 form-group col-md-6">
                     <label for="idModalproveedor">Proveedor</label>
                     <input type="text" id="idModalproveedor" class="form-control" name="proveedor">
                 </div>

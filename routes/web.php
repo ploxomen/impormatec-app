@@ -56,7 +56,11 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('editar/{cajaChica}', [CajaChica::class, 'update']);
             Route::post('crear', [CajaChica::class, 'store']);
             Route::get('listar', [CajaChica::class, 'all']);
+            Route::get('listar-aumentos/{cajaChica}', [CajaChica::class, 'aumentosCajaChica']);
             Route::delete('eliminar/{cajaChica}', [CajaChica::class, 'destroy']);
+            Route::post('agregar-aumento', [CajaChica::class, 'agregarAumento']);
+            Route::put('modificar-aumentos/{cajaChica}', [CajaChica::class, 'modificarAumento']);
+            Route::delete('eliminar-aumento/{aumento}/{cajaChica}', [CajaChica::class, 'eliminarAumento']);
             Route::get('listar/{cajaChica}', [CajaChica::class, 'show']);
             Route::prefix('gastos')->group(function () {
                 Route::get('/', [CajaChica::class, 'indexGastos'])->name('trabajador.caja.chica.index');

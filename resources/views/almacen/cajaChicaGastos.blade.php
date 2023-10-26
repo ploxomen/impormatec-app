@@ -36,9 +36,9 @@
         </div>
         <div class="form-group text-center">
             @if(empty($cajaChica))
-                <h5 class="text-center text-danger">Actualmente no se encuentra habilitada ninguna caja chica</h5>
-            @endif
-            @if (!empty($cajaChica) && strtotime($cajaChica->fecha_inicio) <= strtotime(now()) && strtotime($cajaChica->fecha_fin) >= strtotime(now()))
+                <h5 class="text-center text-danger">Actualmente no se encuentra habilitada ninguna caja chica para usted</h5>
+            @else
+                @if (strtotime($cajaChica->fecha_inicio) <= strtotime(now()) && strtotime($cajaChica->fecha_fin) >= strtotime(now()))
                 <div class="form-group">
                     <button class="btn btn-primary" id="btnCerrarCaja" data-toggle="modal" data-target="#agragarGastos">
                         <i class="fas fa-door-closed"></i>
@@ -68,8 +68,9 @@
                         </strong>
                     </div>
                 </div>
-            @else
-                <h5 class="text-center text-danger">No se puede registrar los gastos de la caja chica, fechas limite desde <strong>{{date('d/m/Y',strtotime($cajaChica->fecha_inicio))}}</strong> hasta <strong>{{date('d/m/Y',strtotime($cajaChica->fecha_fin))}}</strong></h5>
+                @else
+                    <h5 class="text-center text-danger">No se puede registrar los gastos de la caja chica, fechas limite desde <strong>{{date('d/m/Y',strtotime($cajaChica->fecha_inicio))}}</strong> hasta <strong>{{date('d/m/Y',strtotime($cajaChica->fecha_fin))}}</strong></h5>
+                @endif
             @endif
         </div>
     </div>
