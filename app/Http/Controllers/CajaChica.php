@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CajaChica as ModelsCajaChica;
 use App\Models\CajaChicaAumento;
 use App\Models\CajaChicaDetalle;
+use App\Models\Configuracion;
 use App\Models\OrdenServicio;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -51,6 +53,24 @@ class CajaChica extends Controller
         $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
         $ordenesServicios = OrdenServicio::select("id")->get();
         return view("almacen.cajaChicaGastosAdmin",compact("modulos","cajaChica","fechaLarga","monedaTipo","ordenesServicios"));
+    }
+    public function indexGastosReporte(ModelsCajaChica $cajaChica)
+    {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $detalleGastos = CajaChicaDetalle::where(['id_caja_chica' => $cajaChica->id])->get();
+        $tituloPdf = 'REPORTE_GASTOS_'.str_pad($cajaChica->id,5,'0',STR_PAD_LEFT).'.pdf';
+        $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
+        return Pdf::loadView('almacen.reportes.cajaChicaGastos',compact("detalleGastos","cajaChica","configuracion","tituloPdf","monedaTipo"))->setPaper('a4', 'landscape')->stream($tituloPdf);
+
+        // $modulos = $this->usuarioController->obtenerModulos();
+        // $fechaLarga = (new Utilitarios)->obtenerFechaLarga(strtotime(date('Y-m-d')));
+        // $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
+        // $ordenesServicios = OrdenServicio::select("id")->get();
+        // return view("almacen.cajaChicaGastosAdmin",compact("modulos","cajaChica","fechaLarga","monedaTipo","ordenesServicios"));
     }
     public function index()
     {
@@ -231,6 +251,28 @@ class CajaChica extends Controller
         }
         return response()->json(['gasto' => $detalle]);
     }
+    public function listarGastoAdmin($gasto,ModelsCajaChica $cajaChica){
+        $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
+        if(isset($accessModulo['session'])){
+            return response()->json($accessModulo);
+        }
+        $detalle = CajaChicaDetalle::select('id','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv')->where(['id_caja_chica'=>$cajaChica->id,'id' => $gasto])->first();
+        if(empty($detalle)){
+            return response()->json(['alerta' => 'No se encontró el gasto seleccionado, por favor intentelo nuevamente']);
+        }
+        return response()->json(['gasto' => $detalle]);
+    }
+    public function eliminarGastoAdmin($gasto,ModelsCajaChica $cajaChica) {
+        $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
+        if(isset($accessModulo['session'])){
+            return response()->json($accessModulo);
+        }
+        CajaChicaDetalle::where(['id_caja_chica'=>$cajaChica->id,'id'=>$gasto])->delete();
+        $totalDetalle = CajaChicaDetalle::where('id_caja_chica',$cajaChica->id)->sum('monto_total_cambio');
+        $cajaChica->update(['monto_gastado' => $totalDetalle]);
+        $cajaChica->refresh();
+        return response()->json(['success' => 'Gasto eliminado correctamente','tipoMoneda' => $cajaChica->tipo_moneda, 'montoGastado' => $cajaChica->monto_gastado,'montoAbonado' => $cajaChica->monto_abonado,'montoRestante' => $cajaChica->monto_abonado - $cajaChica->monto_gastado]);
+    }
     public function eliminarGasto($gasto,$cajaChica) {
         $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChicaGasto);
         if(isset($accessModulo['session'])){
@@ -252,6 +294,40 @@ class CajaChica extends Controller
             return response()->json($accessModulo);
         }
         $cajaChica = ModelsCajaChica::find($gasto->id_caja_chica);
+        $datos = $request->all();
+        if($request->id_os === 'NINGUNO'){
+            $datos['id_os'] = null;
+        }
+        $montoConvertido = $request->monto_total;
+        if($cajaChica->tipo_moneda !== $request->tipo_moneda){
+            if(empty($request->tipo_cambio)){
+                return response()->json(['alerta' => 'El tipo de cambio debe ser mayor a cero']);
+            }
+            $montoConvertido = $cajaChica->tipo_moneda === 'USD' ? $request->monto_total / $request->tipo_cambio : $request->monto_total * $request->tipo_cambio;
+        }
+        $datos['monto_total_cambio'] = $montoConvertido;
+        DB::beginTransaction();
+        try {
+            $gasto->update($datos);
+            $totalDetalle = CajaChicaDetalle::where('id_caja_chica',$cajaChica->id)->sum('monto_total_cambio');
+            if($totalDetalle > $cajaChica->monto_abonado){
+                DB::rollBack();
+                return response()->json(['alerta' => 'El monto gastano supera al monto abonado, por favor verificar los montos']);
+            }
+            $cajaChica->update(['monto_gastado' => $totalDetalle]);
+            $cajaChica->refresh();
+            DB::commit();
+            return response()->json(['success' => 'Gasto actualizado correctamente','tipoMoneda' => $cajaChica->tipo_moneda, 'montoGastado' => $cajaChica->monto_gastado,'montoAbonado' => $cajaChica->monto_abonado,'montoRestante' => $cajaChica->monto_abonado - $cajaChica->monto_gastado]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json(['error' => $th->getMessage()]);
+        }
+    }
+    public function editarGastoAdmin(ModelsCajaChica $cajaChica,CajaChicaDetalle $gasto,Request $request){
+        $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
+        if(isset($accessModulo['session'])){
+            return response()->json($accessModulo);
+        }
         $datos = $request->all();
         if($request->id_os === 'NINGUNO'){
             $datos['id_os'] = null;
@@ -324,7 +400,7 @@ class CajaChica extends Controller
         }
     }
     public function agregarGastosAdmin(ModelsCajaChica $cajaChica,Request $request){
-        $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChicaGasto);
+        $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
         if(isset($accessModulo['session'])){
             return response()->json($accessModulo);
         }

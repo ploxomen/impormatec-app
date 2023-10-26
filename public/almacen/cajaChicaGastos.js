@@ -101,7 +101,7 @@ function loadPage(){
         if(e.target.classList.contains("btn-outline-info")){
             try {
                 gen.cargandoPeticion(e.target, gen.claseSpinner, true);
-                const response = await gen.funcfetch(`listar-gasto/ ${e.target.dataset.detalle}/${e.target.dataset.caja}`,null,"GET");
+                const response = await gen.funcfetch(`listar-gasto/${e.target.dataset.detalle}/${e.target.dataset.caja}`,null,"GET");
                 if(response.session){
                     return alertify.error(response.session);
                 }
@@ -134,7 +134,7 @@ function loadPage(){
         if(e.target.classList.contains("btn-outline-danger")){
             alertify.confirm("Alerta","¿Deseas eliminar este gasto?",async ()=>{
                 try {
-                    const response = await gen.funcfetch(`gastos/eliminar/ ${e.target.dataset.detalle}/${e.target.dataset.caja}`,null,"DELETE");
+                    const response = await gen.funcfetch(`gastos/eliminar/${e.target.dataset.detalle}/${e.target.dataset.caja}`,null,"DELETE");
                     if(response.session){
                         return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
                     }

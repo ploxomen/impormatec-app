@@ -59,7 +59,7 @@ function loadPage(){
                         <span>Editar</span>
                         </small>
                     </button>
-                    <a target="_blank" class="btn btn-sm btn-outline-warning p-1" href="gastos/modificar/${data}">
+                    <a class="btn btn-sm btn-outline-warning p-1" href="gastos/modificar/${data}">
                         <small>
                         <i class="fas fa-pencil-alt"></i>
                         <span>Editar gastos</span>
@@ -71,7 +71,12 @@ function loadPage(){
                         <span>Aumentar</span>
                         </small>
                     </button>
-
+                    <a class="btn btn-sm btn-outline-warning p-1" href="gastos/reporte/${data}">
+                        <small>
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Reporte de gastos</span>
+                        </small>
+                    </a>
                     <button class="btn btn-sm btn-outline-danger p-1" data-caja="${data}">
                         <small>    
                             <i class="fas fa-trash-alt"></i>

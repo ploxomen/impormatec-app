@@ -2,7 +2,7 @@
 @section('head')
     @if (!empty($cajaChica) && strtotime($cajaChica->fecha_inicio) <= strtotime(now()) && strtotime($cajaChica->fecha_fin) >= strtotime(now()))
         @include('helper.headDatatable')
-        <script src="/almacen/cajaChicaGastos.js"></script>
+        <script src="/almacen/cajaChicaGastos.js?1.8"></script>
     @endif
     <title>Gastos caja chica</title>
 @endsection

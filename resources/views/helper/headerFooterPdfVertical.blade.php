@@ -61,8 +61,8 @@
         padding: 3px;
     }
 </style>
-<header>
-    <table>
+<header style="width: 100%">
+    <table style="width: 100%;">
         <tr>
             <td>
                 <p class="text-center">
@@ -75,16 +75,13 @@
                     <small>{{Auth::user()->correo}}</small>
                 </p>
             </td>
-            <td style="width: 150px;">
-
-            </td>
-            <td>
+            <td  style="width: 70%; text-align: right;">
                 <img src="{{public_path("img/logo.png")}}" alt="logo de impormatec" width="300px">
             </td>
         </tr>
     </table>
 </header>
-<footer style="width: 700px">
+<footer style="width: 100%">
     <table style="width: 100%;">
         <tr>
             <td>
