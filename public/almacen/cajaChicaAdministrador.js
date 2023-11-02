@@ -71,7 +71,7 @@ function loadPage(){
                         <span>Aumentar</span>
                         </small>
                     </button>
-                    <a class="btn btn-sm btn-outline-warning p-1" href="gastos/reporte/${data}">
+                    <a class="btn btn-sm btn-outline-primary p-1" href="gastos/reporte/${data}">
                         <small>
                         <i class="fas fa-file-pdf"></i>
                         <span>Reporte de gastos</span>
