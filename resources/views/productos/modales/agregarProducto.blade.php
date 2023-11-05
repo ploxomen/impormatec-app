@@ -29,13 +29,13 @@
                 </div>
                 <div class="form-group col-12 col-md-6">
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="tipoMonedaSoles" required name="tipoMoneda" value="PEN" class="custom-control-input">
+                        <input type="radio" id="tipoMonedaSoles" checked required name="tipoMoneda" value="PEN" class="custom-control-input">
                         <label class="custom-control-label" for="tipoMonedaSoles">PEN (Soles)</label>
                     </div>
                 </div>
                 <div class="form-group col-12 col-md-6">
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="tipoMonedaDolares" checked value="USD" required name="tipoMoneda" class="custom-control-input">
+                        <input type="radio" id="tipoMonedaDolares" value="USD" required name="tipoMoneda" class="custom-control-input">
                         <label class="custom-control-label" for="tipoMonedaDolares">USD (Dólares)</label>
                     </div>
                 </div>

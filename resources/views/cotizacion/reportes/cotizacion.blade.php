@@ -199,7 +199,7 @@
     {!! str_replace(['../../imagenesEditorConfiguracion/'],'imagenesEditorConfiguracion/',$configuracion->where('descripcion','texto_datos_bancarios')->first()->valor) !!}
     @if ($cotizacion->reportePreCotizacion === 1)
         <div class="saltopagina"></div>
-        @include('preCotizacion.reporteCompartido',['reportePreCotizacionHtml' => $reportePreCotizacion['html'], 'reportePreCotizacionImagenes' => $reportePreCotizacion['imagenes']])
+        @include('preCotizacion.reporteCompartido',['preCotizacion' => $preCotizacion,'reportePreCotizacionHtml' => $reportePreCotizacion['html'], 'reportePreCotizacionImagenes' => $reportePreCotizacion['imagenes']])
     @endif
 </body>
 </html>

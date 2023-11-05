@@ -105,69 +105,66 @@
                 {!!str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->descripcion)!!}
             </div>
             <div class="saltopagina"></div>
-            <div>
-                @foreach ($servicio->secciones as $ks => $seccion)
-                    <div>
-                        <h3 class="text-center titulo-seccion">
-                        {{$seccion->titulo}}
-                        </h3>
-                        @if ($seccion->imagenes->count() === 0)
-                            <h4 class="text-center">NO SE ASIGNARON FOTOS A ESTA SECCION</h4>
+            <h2 style="font-size:14px;">Álbum de imágenes</h2>
+            @foreach ($servicio->secciones as $ks => $seccion)
+                <h3 class="text-center titulo-seccion">
+                {{$seccion->titulo}}
+                </h3>
+                @if ($seccion->imagenes->count() === 0)
+                    <h4 class="text-center">NO SE ASIGNARON FOTOS A ESTA SECCION</h4>
+                    @php
+                        continue;
+                    @endphp
+                @endif
+                @php
+                    $columna = $seccion->columnas;
+                    $ancho = 100;
+                    switch ($columna) {
+                        case 2:
+                            $ancho = 350;
+                        break;
+                        case 3:
+                            $ancho = 235;
+                        break;
+                        case 4:
+                            $ancho = 175;
+                        break;
+                    }
+                    $inicioContador = 1;
+                @endphp
+                <table>
+                    @foreach ($seccion->imagenes as $keyImagen => $imagen)
+                        @php
+                            $path = storage_path('app/informeImgSeccion/' . $imagen->url_imagen);
+                            if (!\File::exists($path) || empty($imagen->url_imagen)) {
+                                $path = storage_path('app/productos/sin-imagen.png');
+                            }
+                        @endphp
+                        @if ($inicioContador === 1)
+                            <tr>
+                        @endif
+                        <td style="width:{{$ancho}}px;vertical-align: top !important;" class="text-center">
+                            <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
+                            <h4 class="descripcion-img">
+                                {{$imagen->descripcion}}
+                            </h4>
+                        </td>
+                        @if ($inicioContador === $columna || ($columna !== $inicioContador && ($keyImagen + 1) === count($seccion->imagenes)))
+                            </tr>
                             @php
-                                continue;
+                                $inicioContador = 1;
+                            @endphp
+                        @else
+                            @php
+                                $inicioContador++;
                             @endphp
                         @endif
-                        @php
-                            $columna = $seccion->columnas;
-                            $ancho = 100;
-                            switch ($columna) {
-                                case 2:
-                                    $ancho = 350;
-                                break;
-                                case 3:
-                                    $ancho = 235;
-                                break;
-                                case 4:
-                                    $ancho = 175;
-                                break;
-                            }
-                            $inicioContador = 1;
-                        @endphp
-                        <table>
-                            @foreach ($seccion->imagenes as $keyImagen => $imagen)
-                                @php
-                                    $path = storage_path('app/informeImgSeccion/' . $imagen->url_imagen);
-                                    if (!\File::exists($path) || empty($imagen->url_imagen)) {
-                                        $path = storage_path('app/productos/sin-imagen.png');
-                                    }
-                                @endphp
-                                @if ($inicioContador === 1)
-                                    <tr>
-                                @endif
-                                <td style="width:{{$ancho}}px;vertical-align: top !important;" class="text-center">
-                                    <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
-                                    <h4 class="descripcion-img">
-                                        {{$imagen->descripcion}}
-                                    </h4>
-                                </td>
-                                @if ($inicioContador === $columna || ($columna !== $inicioContador && ($keyImagen + 1) === count($seccion->imagenes)))
-                                    </tr>
-                                    @php
-                                        $inicioContador = 1;
-                                    @endphp
-                                @else
-                                    @php
-                                        $inicioContador++;
-                                    @endphp
-                                @endif
-                            @endforeach
-                        </table>
-                    </div>
-                    @if (($ks + 1) !== count($servicio->secciones))
-                        <div class="saltopagina"></div>
-                    @endif
-                @endforeach
-            </div>
+                    @endforeach
+                </table>
+                @if (($ks + 1) !== count($servicio->secciones))
+                    <div class="saltopagina"></div>
+                @endif
+            @endforeach
             <div style="page-break-inside:avoid;">
                 {!! str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->conclusiones_recomendaciones)  !!}
             </div>

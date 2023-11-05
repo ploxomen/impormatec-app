@@ -283,6 +283,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('cambio/rol/{rol}', [Usuario::class, 'cambioRol'])->name('cambiarRol');
         Route::get('miperfil', [Usuario::class, 'miPerfil'])->name('miPerfil');
         Route::post('miperfil/actualizar', [Usuario::class, 'actualizarPerfil']);
+        Route::post('miperfil/eliminar-firma', [Usuario::class, 'eliminarFirmaUsuarios']);
         Route::get('/',[Usuario::class,'listarUsuarios'])->name('admin.usuario.index');
         Route::get('cerrar/sesion', [Usuario::class, 'logoauth'])->name('cerrarSesion');
         Route::get('rol',[Rol::class,'viewRol'])->name('admin.rol.index');

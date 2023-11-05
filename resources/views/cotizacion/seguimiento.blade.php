@@ -21,7 +21,7 @@
                     </div>
                     <div class="custom-control custom-radio custom-control-inline">
                         <input type="radio" id="radioGarantia" data-filtros-ocultar="filtro-aprobar" data-filtros-mostrar="filtro-garantia" name="tipo_consulta" class="custom-control-input">
-                        <label class="custom-control-label" for="radioGarantia">Cotizaciones por vencer la garantía</label>
+                        <label class="custom-control-label" for="radioGarantia">Servicios y/o productos por vencer garantias</label>
                     </div>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-aprobar">

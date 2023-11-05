@@ -92,13 +92,14 @@ class Cotizacion extends Controller
         $moneda = $cotizacion->tipoMoneda === "USD" ? '$' : 'S/';
         $reportePreCotizacion = [];
         $documentoVisitaUnicoPrecotizacion = "";
+        $preCotizacion = [];
         if($cotizacion->reportePreCotizacion === 1){
             $preCotizacion = PreCotizaion::where('id',$cotizacion->id_pre_cotizacion)->first();
             $reportePreCotizacion['html'] = $preCotizacion->html_primera_visita;
             $reportePreCotizacion['imagenes'] = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
             $documentoVisitaUnicoPrecotizacion = $preCotizacion->formato_visita_pdf;
         }
-        $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("moneda","configuracion","cotizacion","cliente","nombreDia","nombreMes","representante","productosServicios","reportePreCotizacion"));
+        $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("moneda","configuracion","cotizacion","cliente","nombreDia","nombreMes","representante","productosServicios","reportePreCotizacion","preCotizacion"));
         $nombreDocumento = "cotizacion_" . time() . "_" . $cotizacion->id . ".pdf";
         $pdf->save(storage_path("app/cotizacion/reportes/".$nombreDocumento));
         if(!empty($documentoVisitaUnicoPrecotizacion)){

@@ -126,6 +126,19 @@
                         <option value="F" {{auth()->user()->sexo == "F" ? "selected" : ""}}>Femenino</option>
                     </select>
                 </div>
+                <div class="form-group col-12">
+                    <div class="text-center form-group">
+                        <span>Mi firma</span>
+                        <input type="file" hidden name="firma" class="form-control form-control-sm" id="fileFirma" accept="image/*">
+                        <button class="btn btn-sm btn-primary" type="button" id="btnSubirImagen" title="Subir firma">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </button>
+                        <button class="btn btn-sm btn-light" type="button" id="btnEliminarImagen" title="Eliminar firma">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    <img src="{{empty(auth()->user()->firma) ? '/img/imgprevproduc.png' : '/'.auth()->user()->firma}}" class="img-fluid d-block m-auto" id="imgPrevioFirma" alt="Firma del usuario" width="120px" height="100px">
+                </div>
                 <div class="form-group col-12 text-center">
                     <button class="btn btn-outline-primary" id="btnActualizar">
                         <i class="far fa-save"></i>
@@ -135,7 +148,6 @@
                     </button>
                 </div>
             </form>
-
         </section>
     </main>
 @endsection

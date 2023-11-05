@@ -11,6 +11,7 @@ use App\Models\UsuarioRol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
@@ -144,6 +145,11 @@ class Usuario extends Controller
             return response()->json(['error' => 'error en la petición']);
         }
         $datos = $request->only("tipoDocumento","nroDocumento","direccion","telefono","celular","fechaCumple","sexo");
+        $urlFirma = null;
+        if($request->has('firma')){
+            $imagen = $request->file('firma');
+            $urlFirma = $this->guardarFirmasUsuarios($imagen,Auth::id());
+        }
         DB::beginTransaction();
         try {
             if($request->has("avatar")){
@@ -155,7 +161,7 @@ class Usuario extends Controller
             }
             User::find(Auth::id())->update($datos);
             DB::commit();
-            return response()->json(['success' => 'datos actualizados correctamente']);
+            return response()->json(['success' => 'datos actualizados correctamente','urlFirma' => $urlFirma]);
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json(['error' => $th->getMessage()]);
@@ -289,5 +295,25 @@ class Usuario extends Controller
         if(isset($resultado['session'])){
             return redirect(route('login'));
         }
+    }
+    public function eliminarFirmaUsuarios() {
+        $usuario = User::find(Auth::id());
+        if (!empty($usuario->firma) && File::exists($usuario->firma)) {
+            File::delete($usuario->firma);
+        }
+        $usuario->update(['firma' => null]);
+        return response()->json(['success' => 'firma eliminada correctamente']);
+    }
+    public function guardarFirmasUsuarios($image,$usuario) {
+        $usuarioDb = User::find($usuario);
+        if (!empty($usuarioDb->firma) && File::exists($usuarioDb->firma)) {
+            File::delete($usuarioDb->firma);
+        }
+        $rutaFirmas = public_path('firmas');
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move($rutaFirmas, $imageName);
+        $imageUrl = 'firmas/' . $imageName;
+        $usuarioDb->update(['firma' => $imageUrl]);
+        return $imageUrl;
     }
 }

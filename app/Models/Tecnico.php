@@ -15,4 +15,8 @@ class Tecnico extends Model
     {
         return $query->select("usuarios.nombres","usuarios.apellidos","tecnicos.id")->join("usuarios","usuarios.id","=","tecnicos.idUsuario")->where('tecnicos.estado',1)->get();
     }
+    public function usuario()
+    {
+        return $this->belongsTo(User::class,'idUsuario');
+    }
 }

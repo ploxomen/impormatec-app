@@ -66,7 +66,7 @@ class Informes extends Controller
                         $servicio->update(['acciones' => '<h2 style="font-size:14px;">2. Actuaciones realizadas</h2>' . trim($data->acciones)]);
                     }
                     if(is_null($servicio->descripcion) && !is_null($data)){
-                        $servicio->update(['descripcion' => '<h2 style="font-size:14px;">3. Descripción clara y precisa de la forma técnica e instrumentos utilizados</h2>' . trim($data->descripcion) . '<h2 style="font-size:14px; ">4. Álbum de imágenes</h2>']);
+                        $servicio->update(['descripcion' => '<h2 style="font-size:14px;">3. Descripción clara y precisa de la forma técnica e instrumentos utilizados</h2>' . trim($data->descripcion)]);
                     }
                     if(is_null($servicio->conclusiones_recomendaciones)){
                         $servicio->update(['conclusiones_recomendaciones' => '<h2 style="font-size:14px;">5. Conclusiones y Recomendaciones</h2>']);

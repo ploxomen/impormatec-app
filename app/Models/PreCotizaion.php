@@ -92,4 +92,16 @@ class PreCotizaion extends Model
         }
         return $visitas;
     }
+    public function cliente()
+    {
+        return $this->belongsTo(Clientes::class,'id_cliente');
+    }
+    public function contactos()
+    {
+        return $this->hasMany(ContactoCotizacionPre::class,'id_cotizacion_pre');
+    }
+    public function tecnicoResponsable()
+    {
+        return $this->belongsToMany(Tecnico::class,'cotizacion_pre_tecnicos','id_pre_cotizacion','id_tecnico')->wherePivot('responsable',1);
+    }
 }

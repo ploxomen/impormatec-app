@@ -8,6 +8,6 @@
 </head>
 <body>
     @include('helper.headerFooterPdfVertical')
-    @include('preCotizacion.reporteCompartido',['reportePreCotizacionHtml' => $preCotizacion->html_primera_visita, 'reportePreCotizacionImagenes' => $preCotizacion->img])
+    @include('preCotizacion.reporteCompartido',['preCotizacion'=>$preCotizacion,'reportePreCotizacionHtml' => $preCotizacion->html_primera_visita, 'reportePreCotizacionImagenes' => $preCotizacion->img])
 </body>
 </html>
