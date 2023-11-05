@@ -26,11 +26,23 @@
             <u>IMAGENES DETALLADAS:</u>
         </strong>
     </p>
-    <table class="tabla-precio">
-        <tbody>
-            @php
-                $columna = 0;
-            @endphp
+    <table>
+        @php
+            $columna = $preCotizacion->columnas;
+            $ancho = 100;
+            switch ($columna) {
+                case 2:
+                    $ancho = 350;
+                break;
+                case 3:
+                    $ancho = 235;
+                break;
+                case 4:
+                    $ancho = 175;
+                break;
+            }
+            $inicioContador = 1;
+        @endphp
             @foreach ($reportePreCotizacionImagenes as $keyImagen => $imagen)
                 @php
                     $pathReporte = storage_path('app/imgCotizacionPre/' . $imagen->url_imagen);
@@ -38,32 +50,34 @@
                     if (!\File::exists($pathReporte) || empty($imagen->url_imagen)) {
                         $pathReporte = storage_path('app/productos/sin-imagen.png');
                     }
-                    $columna++;
                 @endphp
-                @if ($columna === 1)
+                @if ($inicioContador === 1)
                     <tr>
                 @endif
-                    <td style="padding: 5px; text-align: center; vertical-align: top !important;">
-                        <img src="{{$pathReporte}}" alt="Imagen del informe" width="{{$pixelReporte}}px" height="{{$pixelReporte}}px">
-                        <p>
-                            {{$imagen->descripcion}}
-                        </p>
-                    </td>
-                @if ($columna === 4 || ($columna !== 4 && ($keyImagen + 1) === count($reportePreCotizacionImagenes)))
+                <td style="width:{{$ancho}}px;vertical-align: top !important;" class="text-center">
+                    <img src="{{$pathReporte}}" alt="Imagen del informe" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
+                    <p>
+                        {{$imagen->descripcion}}
+                    </p>
+                </td>
+                @if ($inicioContador === $columna || ($columna !== $inicioContador && ($keyImagen + 1) === count($reportePreCotizacionImagenes)))
                     </tr>
                     @php
-                        $columna = 0;
+                        $inicioContador = 1;
+                    @endphp
+                @else
+                    @php
+                        $inicioContador++;
                     @endphp
                 @endif
             @endforeach
-        </tbody>
     </table>
-    @php
+@endif
+@php
         $firmaTecnico = $preCotizacion->tecnicoResponsable;
         $firma = null;
         if(!$firmaTecnico->isEmpty()){
             $firma = $firmaTecnico->first()->usuario->firma;
         }
-    @endphp
-    <img src="{{!empty($firma) ? $firma : 'img/imgprevproduc.png'}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="150px" height="120px">
-@endif
+@endphp
+<img src="{{!empty($firma) ? $firma : 'img/imgprevproduc.png'}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="150px" height="120px">

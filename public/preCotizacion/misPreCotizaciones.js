@@ -240,6 +240,7 @@ function loadPage() {
             txtSinImagenes.hidden = false;
         }
     }
+    const cbColumnas = document.querySelector("#idModalSeccioncolumnas");
     tablaPreCotizacion.addEventListener("click",async function(e){
         if (e.target.classList.contains("editar-informe")){
             btnModalSave.querySelector("span").textContent = "Editar reporte";
@@ -263,6 +264,7 @@ function loadPage() {
                 preCotizacionResponse.listaServicios.forEach(ser => {
                     cbServicios.val(ser.id_servicios).trigger("change");
                 });
+                cbColumnas.value = preCotizacionResponse.columnas;
                 if(preCotizacionResponse.formato_visita_pdf){
                     const documentoSubido = document.createElement("a");
                     documentoSubido.className = "rounded-pill bg-light p-2";
@@ -433,6 +435,7 @@ function loadPage() {
         tinymce.activeEditor.setContent("");
         txtNoServicios.hidden = false;
         txtSinImagenes.hidden = false;
+        cbColumnas.value = 3;
         documentoFormatoVisita.value = "";
         if(document.querySelector("#documento-mostrar-formato-visita")){
             document.querySelector("#documento-mostrar-formato-visita").remove();

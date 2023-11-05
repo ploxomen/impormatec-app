@@ -124,7 +124,8 @@ class PreCotizacion extends Controller
             $datos = [
                 'html_primera_visita' => $request->html,
                 'usuario_modificado' => Auth::id(),
-                'fechaActualizada' => $fechaHrModificada
+                'fechaActualizada' => $fechaHrModificada,
+                'columnas' => $request->columnas
             ];
             
             $preCotizacionModel = PreCotizaion::find($request->preCotizacion);
@@ -267,7 +268,6 @@ class PreCotizacion extends Controller
             $preCotizacion = $request->only("fecha_hr_visita","detalle","estado");
             $preCotizacion['id_cliente'] = $clienteId;
             $preCotizacion['usuario_modificado'] = $idUsuario;
-            // $preCotizacion['estado'] = 1;
             PreCotizaion::where('id',$request->idPreCotizacion)->update($preCotizacion);
             PreCotizaionContacto::where('id_cotizacion_pre',$request->idPreCotizacion)->delete();
             foreach ($listaContactos as $vListaCont) {
@@ -341,7 +341,6 @@ class PreCotizacion extends Controller
                         $usuario = User::create($cliente);
                         UsuarioRol::create(['rolFk' => $rolCliente->id,'usuarioFk' => $usuario->id]);
                         $clienteModel = Clientes::create(['id_usuario' => $usuario->id,'nombreCliente' => $clienteId,'id_pais' => 165,'estado' => 1]);
-
                         if($request->has("id_cliente_contacto")){
                             for ($i=0; $i < count($request->id_cliente_contacto); $i++) {
                                 $txtNombreContacto = explode("-",trim($request->id_cliente_contacto[$i]));

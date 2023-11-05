@@ -92,7 +92,7 @@ class Tecnico extends Controller
                         }
                     }
                     
-                    PreCotizaion::find($idPreCotizacion)->update(['html_primera_visita' => $html,'formato_visita_pdf' => $nombreReporteVisita,'estado' => 2,'usuario_modificado' => $usuario]);
+                    PreCotizaion::find($idPreCotizacion)->update(['html_primera_visita' => $html,'columnas' => $request->columnas,'formato_visita_pdf' => $nombreReporteVisita,'estado' => 2,'usuario_modificado' => $usuario]);
                     DB::commit();
                     return ['success' => 'Reporte generado con éxito'];
                 } catch (\Throwable $th) {

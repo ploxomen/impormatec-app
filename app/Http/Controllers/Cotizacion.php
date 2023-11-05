@@ -159,10 +159,9 @@ class Cotizacion extends Controller
         try {
             $cotizacionModel->update($cotizacion);
             foreach ($detalleCotizacion as $key => $coti) {
-                $importes['importeTotal'] += $coti->pImporte;
                 $importes['descuentoTotal'] += $coti->descuento;
                 $importes['igvTotal'] += $coti->pTotal * 0.18;
-                $importes['total'] += $coti->pTotal;
+                $importes['importeTotal'] += $coti->pTotal;
                 $coleccionDatos = [
                     'precio' => $coti->pUni,
                     'orden' => $key + 1,
@@ -196,7 +195,8 @@ class Cotizacion extends Controller
                     ]);
                 }
             }
-            $importes['importeTotal'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] - $importes['igvTotal'] : $importes['importeTotal'];
+            $importes['total'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
+            $importes['importeTotal'] = $importes['importeTotal'] + $importes['descuentoTotal'];
             $cotizacionModel->update($importes);
             $cotizacionModel->fresh();
             $rutaArchivo = "/cotizacion/reportes/" . $cotizacionModel->documento;
@@ -435,10 +435,9 @@ class Cotizacion extends Controller
         try {
             $mCotizacion = ModelsCotizacion::create($cotizacion);
             foreach ($detalleCotizacion as $key => $coti) {
-                $importes['importeTotal'] += $coti->pImporte;
                 $importes['descuentoTotal'] += $coti->descuento;
                 $importes['igvTotal'] += $coti->pTotal * 0.18;
-                $importes['total'] += $coti->pTotal;
+                $importes['importeTotal'] += $coti->pTotal;
                 $coleccionDatos = [
                     'id_cotizacion' => $mCotizacion->id,
                     'precio' => $coti->pUni,
@@ -469,7 +468,8 @@ class Cotizacion extends Controller
                     ]);
                 }
             }
-            $importes['importeTotal'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] - $importes['igvTotal'] : $importes['importeTotal'];
+            $importes['total'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
+            $importes['importeTotal'] = $importes['importeTotal'] + $importes['descuentoTotal'];
             $mCotizacion->update($importes);
             $documentoCotizacion = $this->renderPdf($mCotizacion->id);
             if($request->has("archivoPdf")){

@@ -392,11 +392,11 @@ class Cotizacion extends General{
             descuento += cp.descuento;
             total += cp.pTotal;
         });
-        subtotal = +incluirIGV === 0 ? subtotal : subtotal - total * 0.18;
+        const igv = total * 0.18;
         document.querySelector("#idModalimporteTotal").textContent = this.resetearMoneda(subtotal,valorTipoDocumento);
-        document.querySelector("#idModaldescuentoTotal").textContent = "-" + this.resetearMoneda(descuento,valorTipoDocumento);
-        document.querySelector("#idModaligvTotal").textContent = this.resetearMoneda(total * 0.18,valorTipoDocumento);
-        document.querySelector("#idModaltotal").textContent = this.resetearMoneda(total,valorTipoDocumento);
+        document.querySelector("#idModaldescuentoTotal").textContent = "- " + this.resetearMoneda(descuento,valorTipoDocumento);
+        document.querySelector("#idModaligvTotal").textContent = this.resetearMoneda(igv,valorTipoDocumento);
+        document.querySelector("#idModaltotal").textContent = this.resetearMoneda(+incluirIGV === 0 ? total : total + igv,valorTipoDocumento);
     }
     ocultarMostrarIGV(valor){
         console.log(valor);

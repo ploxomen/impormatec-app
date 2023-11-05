@@ -66,7 +66,11 @@
     <p>
         <strong>
             Referencia: {{$cotizacion->referencia}}
-        </strong>
+        </strong><br>
+        <strong>Garantía:</strong>
+        <span>{{$cotizacion->mesesGarantia}} meses</span><br>
+        <strong>Tipo moneda:</strong>
+        <span>{{$cotizacion->tipoMoneda == 'PEN' ? 'Soles' : 'Dólares'}}</span>
     </p>
     <p class="text-justify">
         Estimados señores,<br>
@@ -197,6 +201,10 @@
         {!! str_replace(['../../imagenesEditorCotizacion/'],'imagenesEditorCotizacion/',$cotizacion->textoNota) !!}
     @endif
     {!! str_replace(['../../imagenesEditorConfiguracion/'],'imagenesEditorConfiguracion/',$configuracion->where('descripcion','texto_datos_bancarios')->first()->valor) !!}
+    @php
+        $firma = auth()->user()->firma;
+    @endphp
+    <img src="{{!empty($firma) ? $firma : 'img/imgprevproduc.png'}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="150px" height="120px">
     @if ($cotizacion->reportePreCotizacion === 1)
         <div class="saltopagina"></div>
         @include('preCotizacion.reporteCompartido',['preCotizacion' => $preCotizacion,'reportePreCotizacionHtml' => $reportePreCotizacion['html'], 'reportePreCotizacionImagenes' => $reportePreCotizacion['imagenes']])

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class PreCotizaion extends Model
 {
     public $table = "cotizacion_pre";
-    protected $fillable = ['id_cliente','fecha_hr_visita','formato_visita_pdf','detalle','estado','usuario_creado','usuario_modificado','html_primera_visita'];
+    protected $fillable = ['id_cliente','fecha_hr_visita','columnas','formato_visita_pdf','detalle','estado','usuario_creado','usuario_modificado','html_primera_visita'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
 

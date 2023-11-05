@@ -181,13 +181,11 @@
                         </strong>
                         <ul>
                             <li><strong>Forma pago:</strong> 50% con la confirmación, resto contra entrega.</li>
-                            <li><strong>Garantía:</strong> 6 meses.</li>
                             <li><strong>Validez Oferta:</strong> 15 día(s).</li>
-                            <li><strong>Moneda:</strong> Sóles.</li>
                             <li><strong>Nota 1:</strong> Los costos incluyen IGV -Todos nuestros servicios se formalizan con boleta de venta o factura
                                 de venta.</li>
                             <li><strong>Nota 2:</strong> Todo trabajo adicional que se pudiera encontrar se comunicará anticipadamente.</li>
-                            <li><strong>Nota 3:</strong> Nuestro personal cuenta con EPP ́S (casco, uniforme completo, guantes, lentes, zapatos de seguridad, etc). Así mismo, cuenta con SCTR (salud y pensión).</li>
+                            <li><strong>Nota 3:</strong> Nuestro personal cuenta con EPPS (casco, uniforme completo, guantes, lentes, zapatos de seguridad, etc). Así mismo, cuenta con SCTR (salud y pensión).</li>
                             <li><strong>Nota 4:</strong> Nuestro personal cumple con el protocolo COVID19</li>
                         </ul>
                     </textarea>

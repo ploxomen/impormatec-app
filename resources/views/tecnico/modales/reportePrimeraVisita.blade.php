@@ -27,6 +27,16 @@
                   <span>No se subieron imagenes</span>
                 </div>
               </div>
+              <div class="form-group">
+                <div style="max-width: 250px;">
+                  <label for="idModalSeccioncolumnas">Columna de imágenes</label>
+                  <select name="columnas" required id="idModalSeccioncolumnas" class="form-control">
+                    <option value="2">2 columnas</option>
+                      <option value="3" selected>3 columnas</option>
+                      <option value="4">4 columnas</option>
+                  </select>
+                </div>
+              </div>
               <h5 class="text-primary">
                   <i class="fas fa-caret-right"></i>
                   Seleccionar servicios
@@ -60,8 +70,6 @@
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
-              
-
             </form>
         </div>
         <div class="modal-footer">
