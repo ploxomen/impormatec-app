@@ -288,7 +288,8 @@ function loadPage() {
             console.error(error);
             alertify.error("error al generar una nueva seccion")
         }
-    })
+    });
+    $('.firmas-informes').on('select2:select',cambioValorUnico)
     document.querySelector("#btnGuardarFrmSeccion").onclick = e => document.querySelector("#btnSeccionAgregar").click();
     $('#agregarSeccion').on("hidden.bs.modal",function(e){
         datosSecciones.os = null;
@@ -304,6 +305,9 @@ function loadPage() {
         datos.append("valor",valor);
         datos.append("os",e.target.dataset.os);
         datos.append("servicio",e.target.dataset.servicio);
+        if(e.target.dataset.firma){
+            datos.append("firma",e.target.dataset.firma);
+        }
         if(e.target.dataset.seccion){
             datos.append("seccion",e.target.dataset.seccion);
         }

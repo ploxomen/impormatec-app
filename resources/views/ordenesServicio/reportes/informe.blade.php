@@ -169,6 +169,9 @@
                 {!! str_replace(['../../../../imagenesEditor/','../../../imagenesEditor/'],'imagenesEditor/',$servicio->conclusiones_recomendaciones)  !!}
             </div>
         </div>
+        @if (!empty($servicio->id_firma_profesional))
+            <img src="{{$servicio->usuario->firma}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="200px" height="150px">
+        @endif
         @if (($keyServicio + 1) !== $ordenServicio->count())
         <div class="saltopagina"></div>
         @endif

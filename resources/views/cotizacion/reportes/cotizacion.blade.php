@@ -204,7 +204,9 @@
     @php
         $firma = auth()->user()->firma;
     @endphp
-    <img src="{{!empty($firma) ? $firma : 'img/imgprevproduc.png'}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="150px" height="120px">
+    @if (!empty($firma))
+        <img src="{{$firma}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="150px" height="120px">
+    @endif
     @if ($cotizacion->reportePreCotizacion === 1)
         <div class="saltopagina"></div>
         @include('preCotizacion.reporteCompartido',['preCotizacion' => $preCotizacion,'reportePreCotizacionHtml' => $reportePreCotizacion['html'], 'reportePreCotizacionImagenes' => $reportePreCotizacion['imagenes']])

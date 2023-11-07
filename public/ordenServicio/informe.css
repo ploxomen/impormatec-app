@@ -1,0 +1,34 @@
+.posicion-visible{
+    position: sticky;
+    top: -20px;
+    background: var(--color-principal);
+    z-index: 100;
+    color: #ffffff;
+}
+.img-guias {
+    display: block;
+    width: 200px;
+    min-width: 200px;
+    object-fit: contain;
+    height: 100px;
+    margin: auto;
+}
+.contenido-img{
+    position: relative;
+}
+.contenido-img button{
+    position: absolute;
+    top: 0;
+    right: 15px;
+}
+.pagination .page-link{
+    border-color: var(--activo-li-navegacion) !important;
+    color: var(--activo-li-navegacion) !important;
+}
+.pagination .page-link:focus{
+    box-shadow: 0 0 0 0.2rem rgba(29, 87, 2, 0.25);
+}
+.pagination .active .page-link{
+    background-color: var(--activo-li-navegacion) !important;
+    color: #ffffff !important;
+}

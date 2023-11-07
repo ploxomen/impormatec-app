@@ -2,7 +2,7 @@
     <div class="col-12 form-group">
         <h4 class="text-primary mb-0">
             <i class="fas fa-caret-right"></i>
-            Lista de servicios               
+            Lista de servicios
         </h4>
     </div>
     <div class="p-3 bg-white form-row" id="contenidoInformes">
@@ -21,6 +21,15 @@
                         <div class="form-group col-12 col-md-6 col-lg-4">
                             <label for="fechaTermino{{$servicio->id}}">Fecha termino</label>
                             <input required id="fechaTermino{{$servicio->id}}" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" value="{{$servicio->fecha_termino}}" type="date" class="form-control form-control-sm">
+                        </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4">
+                            <label for="firmaInforme{{$servicio->id}}">Firma profesional</label>
+                            <select name="firma_profesional" required id="firmaInforme{{$servicio->id}}" data-servicio="{{$servicio->id}}" data-os="{{$ordenServicio->id}}" class="select2-simple firmas-informes" data-firma="true" data-placeholder="Seleccione una firma">
+                                <option value=""></option>
+                                @foreach ($firmasUsuarios as $firmaUsuario)
+                                    <option value="{{$firmaUsuario->id}}" {{$servicio->id_firma_profesional === $firmaUsuario->id ? 'selected' : ''}}>{{$firmaUsuario->nombres . ' ' . $firmaUsuario->apellidos}}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="form-group col-12">
                             <label for="objetivos{{$servicio->id}}">Objetivos</label>

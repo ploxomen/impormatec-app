@@ -3,47 +3,11 @@
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
     <script src="/ordenServicio/compartidoOs.js?v1.1"></script>
+    <link rel="stylesheet" href="/ordenServicio/informe.css?v1.1">
     <script src="/ordenServicio/generarInforme.js?v1.5"></script>
     <title>Modificar Informe</title>
 @endsection
 @section('body')
-    <style>
-        .posicion-visible{
-            position: sticky;
-            top: -20px;
-            background: var(--color-principal);
-            z-index: 100;
-            color: #ffffff;
-        }
-        .img-guias {
-            display: block;
-            width: 200px;
-            min-width: 200px;
-            object-fit: contain;
-            height: 100px;
-            margin: auto;
-        }
-        .contenido-img{
-            position: relative;
-        }
-        .contenido-img button{
-            position: absolute;
-            top: 0;
-            right: 15px;
-        }
-        .pagination .page-link{
-            border-color: var(--activo-li-navegacion) !important;
-            color: var(--activo-li-navegacion) !important;
-        }
-        .pagination .page-link:focus{
-            box-shadow: 0 0 0 0.2rem rgba(29, 87, 2, 0.25);
-        }
-        .pagination .active .page-link{
-            background-color: var(--activo-li-navegacion) !important;
-            color: #ffffff !important;
-
-        }
-    </style>
     <section class="p-3">
         <div class="mb-4">
             <div class="m-auto" style="max-width: 400px;">
@@ -65,7 +29,7 @@
                 <span>{{empty($ordenServicio->usuario_informe) ? 'No definido' :  $ordenServicio->usuario->nombres . ' ' . $ordenServicio->usuario->apellidos}}</span>
             </div>
         </div>
-        @include('ordenesServicio.compartidoInforme',['botonGenerar' => false])
+        @include('ordenesServicio.compartidoInforme',['botonGenerar' => false,'firmas' => $firmasUsuarios])
     </section>
     @if (!is_null($ordenServicio))
         @include('ordenesServicio.modales.agregarSeccion')

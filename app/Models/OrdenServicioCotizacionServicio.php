@@ -9,12 +9,16 @@ class OrdenServicioCotizacionServicio extends Model
     public $table = "orden_servicio_cotizacion_servicio";
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-    protected $fillable = ['id_orden_servicio','id_cotizacion_servicio','orden','fecha_termino','objetivos','acciones','descripcion','conclusiones_recomendaciones','estado','fecha_fin_garantia','responsable_usuario'];
+    protected $fillable = ['id_orden_servicio','id_firma_profesional','id_cotizacion_servicio','orden','fecha_termino','objetivos','acciones','descripcion','conclusiones_recomendaciones','estado','fecha_fin_garantia','responsable_usuario'];
     public function secciones() {
         return $this->hasMany(InformeServicioSecciones::class,'id_os_servicio');
     }
     public static function obtenerServicio($idOSservicio,$idServicio) {
        return self::mostrarServiciosOrdenServicio($idOSservicio)->where('orden_servicio_cotizacion_servicio.id',$idServicio)->select("servicios.acciones","servicios.descripcion","servicios.servicio","servicios.objetivos")->first();
+    }
+    public function usuario()
+    {
+        return $this->belongsTo(User::class,'id_firma_profesional');
     }
     public function cotizacionServicio()
     {

@@ -74,10 +74,12 @@
     </table>
 @endif
 @php
-        $firmaTecnico = $preCotizacion->tecnicoResponsable;
-        $firma = null;
-        if(!$firmaTecnico->isEmpty()){
-            $firma = $firmaTecnico->first()->usuario->firma;
-        }
+    $firmaTecnico = $preCotizacion->tecnicoResponsable;
+    $firma = null;
+    if(!$firmaTecnico->isEmpty()){
+        $firma = $firmaTecnico->first()->usuario->firma;
+    }
 @endphp
-<img src="{{!empty($firma) ? $firma : 'img/imgprevproduc.png'}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="150px" height="120px">
+@if (!empty($firma))
+    <img src="{{$firma}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del técnico" width="150px" height="120px">
+@endif

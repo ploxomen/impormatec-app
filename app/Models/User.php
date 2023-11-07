@@ -71,9 +71,9 @@ class User extends Authenticatable
     {
         return DB::table("rol")->where('nombreRol','tecnico')->whereIn('id',$idRoles)->count();
     }
-    // public function cotizador()
-    // {
-    //     return $this->hasOne(Cotizacion::class, 'cotizadorUsuario');
-    // }
+    public static function firmasHabilitadas()
+    {
+        return User::select("id","nombres","apellidos","firma")->whereNotNull("firma")->where('estado','>',0)->get();
+    }
     
 }

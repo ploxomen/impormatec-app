@@ -8,6 +8,7 @@ use App\Models\InformeServicioSecciones;
 use App\Models\InformeServicioSeccionesImg;
 use App\Models\OrdenServicio;
 use App\Models\OrdenServicioCotizacionServicio;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DOMDocument;
 use Illuminate\Http\Request;
@@ -50,13 +51,14 @@ class Informes extends Controller
         }
         $clientes = Clientes::obenerClientesActivos();
         $modulos = $this->usuarioController->obtenerModulos();
-        $ordenServicio = null;
+        list($ordenServicio,$firmasUsuarios) = [null,[]];
         list($idCliente,$idOs) = [$request->cliente,$request->ordenServicio];
         $listaOs = [];
         if($request->has("cliente") && $request->has("ordenServicio")){
             $ordenServicio = OrdenServicio::where(['id' => $request->ordenServicio, 'id_cliente' => $request->cliente, 'estado' => 1])->first();
             if(!empty($ordenServicio)){
                 $listaOs = OrdenServicio::ordenServiciosCliente($idCliente);
+                $firmasUsuarios = User::firmasHabilitadas();
                 foreach ($ordenServicio->servicios as $servicio) {
                     $data = is_null($servicio->objetivos) || is_null($servicio->acciones) || is_null($servicio->descripcion) ? OrdenServicioCotizacionServicio::obtenerServicio($ordenServicio->id,$servicio->id) : null;
                     if(is_null($servicio->objetivos) && !is_null($data)){
@@ -74,7 +76,7 @@ class Informes extends Controller
                 }
             }
         }
-        return view("ordenesServicio.generarReporte",compact("modulos","clientes","ordenServicio","idCliente","idOs","listaOs"));
+        return view("ordenesServicio.generarReporte",compact("modulos","clientes","ordenServicio","idCliente","idOs","listaOs","firmasUsuarios"));
     }
     public function reportePrevioInforme($idOrdenServicio,$idServicio = null) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
@@ -267,6 +269,10 @@ class Informes extends Controller
             return response()->json(['alerta' => 'No se encontró el servicio para esta orden de servicio']);
         }
         if(!$request->has("seccion") && !$request->has("imagen")){
+            if($request->has('firma')){
+                $osServicio->update(['id_firma_profesional' => $request->valor]);
+                return response()->json(['success' => 'firma actualizada correctamente']);
+            }
             $nroMeses = $osServicio->cotizacionServicio->cotizacion->mesesGarantia;
             if(empty($nroMeses)){
                 $nroMeses = 1;
