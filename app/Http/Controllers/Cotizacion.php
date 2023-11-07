@@ -512,8 +512,6 @@ class Cotizacion extends Controller
             return response()->json(['error' => $th->getMessage(), 'line' => $th->getLine()]);
         }
     }
-    
-    
     public function indexMisCotizaciones() {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
         if(isset($verif['session'])){
@@ -527,12 +525,12 @@ class Cotizacion extends Controller
         $productos =  Productos::where('estado',1)->get();
         return view("cotizacion.misCotizaciones",compact("modulos","clientes","tiposDocumentos","preCotizaciones","servicios","productos"));
     }
-    public function datatableCotizaciones(){
+    public function datatableCotizaciones(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $cotizaciones = ModelsCotizacion::obtenerCotizacion()->get();
-        return DataTables::of($cotizaciones)->toJson();
+        $cotizaciones = ModelsCotizacion::obtenerCotizacion();
+        return DataTables::of($request->estado !== 'TODOS' ? $cotizaciones->where('cotizacion.estado','=',$request->estado)->get()  : $cotizaciones->get())->toJson();
     }
 }

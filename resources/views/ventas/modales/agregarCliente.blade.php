@@ -51,15 +51,15 @@
                 </div>
                 <div class="form-group col-6">
                     <label for="idModaldepartamento">Departamento</label>
-                    <input type="tel" name="departamento" class="form-control" id="idModaldepartamento">
+                    <input type="text" name="departamento" class="form-control" id="idModaldepartamento">
                 </div>
                 <div class="form-group col-6">
                     <label for="idModalprovincia">Provincia</label>
-                    <input type="tel" name="provincia" class="form-control" id="idModalprovincia">
+                    <input type="text" name="provincia" class="form-control" id="idModalprovincia">
                 </div>
                 <div class="form-group col-6">
                     <label for="idModaldistrito">Distrito</label>
-                    <input type="tel" name="distrito" class="form-control" id="idModaldistrito">
+                    <input type="text" name="distrito" class="form-control" id="idModaldistrito">
                 </div>
                 <div class="form-group col-12">
                     <label for="idModaldireccion">Dirección</label>

@@ -3,6 +3,10 @@ function loadPage() {
     let cotizacionGeneral = new Cotizacion();
     let estadoCotizacion = [
         {
+            class:"badge badge-danger",
+            value: "Anulado"
+        },
+        {
             class:"badge badge-warning",
             value: "Generado"
         },
@@ -26,9 +30,7 @@ function loadPage() {
             method: 'POST',
             headers: general.requestJson,
             data: function (d) {
-                // d.acciones = 'obtener';
-                // d.area = $("#cbArea").val();
-                // d.rol = $("#cbRol").val();
+                d.estado = $('#cbEstados').val();
             }
         },
         columns: [
@@ -77,7 +79,7 @@ function loadPage() {
         {
             data : 'estado',
             render : function(data,type,row){
-                return `<span class="${estadoCotizacion[+data-1].class}">${estadoCotizacion[+data-1].value}</span>`;
+                return `<span class="${estadoCotizacion[+data].class}">${estadoCotizacion[+data].value}</span>`;
             }
         },
         {
@@ -114,6 +116,9 @@ function loadPage() {
             }
         },
         ]
+    });
+    $('#cbEstados').on("select2:select",function(e){
+        tablatablaCotizacionDatatable.draw();
     });
     tinymce.init({
         selector: '#idModalNotaCotizacion',
