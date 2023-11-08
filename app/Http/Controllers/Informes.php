@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CertificadosServicios;
 use App\Models\Clientes;
 use App\Models\Configuracion;
 use App\Models\InformeServicioSecciones;
@@ -36,7 +37,7 @@ class Informes extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         return view("ordenesServicio.misInformes",compact("modulos"));
     }
-    public function listarInformes(Request $request) {
+    public function listarInformes() {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
         if(isset($verif['session'])){
             return redirect()->route("home"); 
@@ -77,6 +78,48 @@ class Informes extends Controller
             }
         }
         return view("ordenesServicio.generarReporte",compact("modulos","clientes","ordenServicio","idCliente","idOs","listaOs","firmasUsuarios"));
+    }
+    public function actualizarCertificado(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $datos = $request->except('certificado');
+        $datos['usuario_generado'] = Auth::id();
+        CertificadosServicios::find($request->certificado)->update($datos);
+        return response()->json(['success' => 'Datos del certificado guardados correctamente']);
+    }
+    public function certificadoInforme(OrdenServicioCotizacionServicio $OsCotizacionServicio) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return redirect()->route("home");
+        }
+        $cetificadoOperativo = CertificadosServicios::where('id_os_cotizacion_servicio',$OsCotizacionServicio->id);
+        if(!$cetificadoOperativo->count()){
+            $cetificadoOperativo = CertificadosServicios::create(['estado' => 1,'id_os_cotizacion_servicio' => $OsCotizacionServicio->id]);
+            $OsCotizacionServicio->update(['estado' => 3]);
+        }else{
+            $cetificadoOperativo = $cetificadoOperativo->first();
+        }
+        $modulos = $this->usuarioController->obtenerModulos();
+        return view('ordenesServicio.generarCertificado',compact("cetificadoOperativo","modulos"));
+    }
+    public function visualizarCertificado(OrdenServicioCotizacionServicio $OsCotizacionServicio) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return redirect()->route("home");
+        }
+        $utilitarios = new Utilitarios();
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter','ruc'])->get();
+        $certificado = $OsCotizacionServicio->certificado;
+        $certificado->fechaLarga = $utilitarios->obtenerFechaLargaSinDia(strtotime($certificado->fecha));
+        $cliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->cliente;
+        $direccionCliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->direccionCliente;
+        $tituloPdf = 'CERTIFICADO DE OPERATIVIDAD '. str_pad($certificado->id,5,"0",STR_PAD_LEFT) .'.pdf';
+        return Pdf::loadView('ordenesServicio.reportes.certificado',compact("cliente","tituloPdf","configuracion","certificado","direccionCliente"))->stream($tituloPdf);
     }
     public function reportePrevioInforme($idOrdenServicio,$idServicio = null) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
@@ -251,8 +294,8 @@ class Informes extends Controller
             return abort(404,'No se encontró el informe');
         }
         $modulos = $this->usuarioController->obtenerModulos();
-        return view("ordenesServicio.editarReporte",compact("modulos","ordenServicio"));
-
+        $firmasUsuarios = User::firmasHabilitadas();
+        return view("ordenesServicio.editarReporte",compact("modulos","ordenServicio","firmasUsuarios"));
     }
     public function actualizarDatos(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);

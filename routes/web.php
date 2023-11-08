@@ -255,6 +255,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('seccion/editar', [Informes::class, 'editarSeccion']);
         Route::post('seccion/obtener', [Informes::class, 'obtenerInformacionSeccion']);
         Route::post('seccion/eliminar', [Informes::class, 'eliminarSeccion']);
+        Route::get('certificado/{OsCotizacionServicio}', [Informes::class, 'certificadoInforme'])->name("certificado.informe");
+        Route::post('certificado/actualizar', [Informes::class, 'actualizarCertificado']);
+        Route::get('certificado/reporte/{OsCotizacionServicio}', [Informes::class, 'visualizarCertificado']);
+
         Route::get('reporte/previa/{idOrdenServicio}/{idServicio?}', [Informes::class, 'reportePrevioInforme'])->name("reporte.previo.informe");
         Route::post('seccion/imagen/agregar', [Informes::class, 'agregarImagenEnLaSeccion']);
         Route::post('actualizar/datos', [Informes::class, 'actualizarDatos']);
@@ -264,7 +268,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('generar/nuevo', [Informes::class, 'visualizarInforme'])->name("informe.generar");
         Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.index");
         Route::get('obtener', [Informes::class, 'listarInformes']);
-
     });
     Route::prefix('ordenes-servicio')->group(function () {
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
@@ -290,6 +293,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('modulo/accion', [Modulos::class, 'accionesModulos']);
         Route::post('rol/accion', [Rol::class, 'accionesRoles']);
     });
+    Route::post('storage/editor/img-certificado/save',[Utilitarios::class,'guardarImagenesEditorTextoCertificado']);
     Route::post('storage/editor/img/save',[Utilitarios::class,'guardarImagenesEditorTexto']);
     Route::post('storage/editor/img-cotizacion/save',[Utilitarios::class,'guardarImagenesEditorTextoCotizacion']);
     Route::post('storage/editor/img-os/save',[Utilitarios::class,'guardarImagenesEditorTextoOs']);

@@ -20,7 +20,7 @@
             <form class="row">
                 <div class="form-group col-12 col-md-3 col-lg-2">
                     <label for="cbEstados">Estados</label>
-                    <select name="cbEstados" id="cbEstados" class="select2-simple">
+                    <select name="cbEstados" id="cbEstados" class="select2-simple" required>
                         <option value="TODOS" selected>TODOS</option>
                         <option value="1">GENERADO</option>
                         <option value="2">APROBADO</option>

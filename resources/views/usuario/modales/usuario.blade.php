@@ -39,19 +39,24 @@
                 <div class="form-group col-12">
                     <label for="idValorModalcorreo">Correo</label> 
                     <input type="email" required class="form-control" name="correo" id="idValorModalcorreo">
-                    <small class="form-text text-muted">Con este correo se inicia sesión en el sistema</small>
+                    <small class="form-text text-muted"><b class="text-danger">*</b> Con este correo se inicia sesión en el sistema</small>
+                    <small class="form-text text-muted"><b class="text-danger">*</b> El CIP se visualiza en los certificados de operatividad</small>
                 </div>
-                <div class="form-group col-12 col-md-6">
+                <div class="form-group col-12 col-md-6 col-lg-4">
                     <label for="idValorModalcelular">Celular</label> 
                     <input type="tel" class="form-control" name="celular" id="idValorModalcelular">
                 </div>
-                <div class="form-group col-12 col-md-6">
+                <div class="form-group col-12 col-md-6 col-lg-4">
                     <label for="idValorModaltelefono">Telefono</label>
-                    <input type="tel"  name="telefono" id="idValorModaltelefono" class="form-control">
+                    <input type="tel" name="telefono" id="idValorModaltelefono" class="form-control">
+                </div>
+                <div class="form-group col-12 col-md-6 col-lg-4">
+                    <label for="idValorModalcip">N° CIP</label>
+                    <input type="text" name="cip" id="idValorModalcip" class="form-control">
                 </div>
                 <div class="form-group col-12">
                     <label for="idValorModaldireccion">Direccion</label>
-                    <input type="text"  name="direccion" id="idValorModaldireccion" class="form-control">
+                    <input type="text" name="direccion" id="idValorModaldireccion" class="form-control">
                 </div>
                 <div class="form-group col-12 col-md-6">
                     <label for="idValorModalfechaNacimiento">Fecha Nacimiento</label> 

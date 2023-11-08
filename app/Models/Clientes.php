@@ -11,18 +11,13 @@ class   Clientes extends Model
     protected $fillable = ['nombreCliente','id_pais','departamento','provincia','distrito','id_usuario','estado'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-
-    // public function tipoDocumento()
-    // {
-    //     return $this->belongsTo(TipoDocumento::class,'tipoDocumento');
-    // }
-    // public function ventas()
-    // {
-    //     return $this->hasMany(Ventas::class, 'clienteFk');
-    // }
     public function ordenServicio()
     {
         return $this->hasMany(OrdenServicio::class,'id_cliente');
+    }
+    public function pais()
+    {
+        return $this->belongsTo(Pais::class,'id_pais');
     }
     public function usuario()
     {

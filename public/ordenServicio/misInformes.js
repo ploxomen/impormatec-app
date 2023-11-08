@@ -9,6 +9,10 @@ function loadPage() {
         {
             class:"badge badge-success",
             value: "Generado"
+        },
+        {
+            class:"badge badge-primary",
+            value: "Con Certificado"
         }
     ];
     const dataTablaMisInformes = $(tablaMisInformes).DataTable({
@@ -60,6 +64,10 @@ function loadPage() {
                         <i class="fas fa-pencil-alt text-info"></i>
                         <span>Editar Informe</span>
                     </a>
+                    <a href="certificado/${data}" class="dropdown-item">
+                        <i class="fas fa-share-square"></i>
+                        <span>Realizar Certificado</span>
+                    </a>
                     <a href="reporte/previa/${row.id_orden_servicio}/${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <span>Ver Informe PDF</span>
@@ -70,6 +78,14 @@ function loadPage() {
                     <a href="generar/nuevo?cliente=${row.idCliente}&ordenServicio=${row.id_orden_servicio}#formularioInforme${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-pencil-alt text-info"></i>
                         <span>Generar Informe</span>
+                    </a>
+                    `
+                }
+                if(row.idCertificado){
+                    opcionesInforme += `
+                    <a href="certificado/reporte/${row.idCertificado}" target="_blank" class="dropdown-item">
+                        <i class="fas fa-file-pdf text-danger"></i> 
+                        <span>Ver Certificado PDF</span>
                     </a>
                     `
                 }

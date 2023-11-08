@@ -18,6 +18,10 @@ class Utilitarios extends Controller
         $dias = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sábado"];
         return $dias[date("w",$fechaTime)] . ', ' . date("d",$fechaTime) . ' de ' . $meses[date('n',$fechaTime) - 1] . ' del ' . date('Y',$fechaTime);
     }
+    public function obtenerFechaLargaSinDia($fechaTime) {
+        $meses = $this->obtenerNombresMeses();
+        return date("d",$fechaTime) . ' de ' . $meses[date('n',$fechaTime) - 1] . ' del ' . date('Y',$fechaTime);
+    }
     public function guardarImagenesEditorTexto(Request $request) {
         $image = $request->file('file');
         $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
@@ -44,6 +48,13 @@ class Utilitarios extends Controller
         $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
         $image->move(public_path('imagenesEditorConfiguracion'), $imageName);
         $imageUrl = asset('imagenesEditorConfiguracion/' . $imageName);
+        return response()->json(['location' => $imageUrl]);
+    }
+    public function guardarImagenesEditorTextoCertificado(Request $request) {
+        $image = $request->file('file');
+        $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
+        $image->move(public_path('imagenesEditorCertificado'), $imageName);
+        $imageUrl = asset('imagenesEditorCertificado/' . $imageName);
         return response()->json(['location' => $imageUrl]);
     }
 }

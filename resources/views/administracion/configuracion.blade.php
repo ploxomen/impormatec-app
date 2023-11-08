@@ -18,7 +18,11 @@
                 <fieldset class="bg-white col-12 px-3 border form-row">
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Datos del Negocio</legend>
                         <div class="col-12 form-group">
-                            <label for="razon_social_id" class="col-form-label col-form-label-sm">Razón social</label>
+                            <label for="razon_social_id" class="col-form-label col-form-label-sm">Razón social larga</label>
+                            <input type="text" value="{{$configuracion[16]->valor}}" class="form-control form-control-sm" id="razon_social_id" name="razon_social" maxlength="255" required>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label for="razon_social_id" class="col-form-label col-form-label-sm">Razón social corta</label>
                             <input type="text" value="{{$configuracion[0]->valor}}" class="form-control form-control-sm" id="razon_social_id" name="razon_social" maxlength="255" required>
                         </div>
                         <div class="col-12 col-md-6 col-lg-4 form-group">

@@ -20,14 +20,19 @@ class OrdenServicioCotizacionServicio extends Model
     {
         return $this->belongsTo(User::class,'id_firma_profesional');
     }
+    public function certificado()
+    {
+        return $this->hasOne(CertificadosServicios::class,'id_os_cotizacion_servicio');
+    }
     public function cotizacionServicio()
     {
         return $this->belongsTo(CotizacionServicio::class,'id_cotizacion_servicio');
     }
     public static function obtenerInformesGenerados(){
-        return OrdenServicioCotizacionServicio::select("clientes.nombreCliente","orden_servicio_cotizacion_servicio.estado","orden_servicio_cotizacion_servicio.id","orden_servicio_cotizacion_servicio.id_orden_servicio","clientes.id AS idCliente")
+        return OrdenServicioCotizacionServicio::select("clientes.nombreCliente","certificados_servicios.id AS idCertificado","orden_servicio_cotizacion_servicio.estado","orden_servicio_cotizacion_servicio.id","orden_servicio_cotizacion_servicio.id_orden_servicio","clientes.id AS idCliente")
         ->selectRaw("LPAD(id_orden_servicio,5,'0') AS nroOrdenServicio,LPAD(orden_servicio_cotizacion_servicio.id,5,'0') AS nroInforme,DATE_FORMAT(orden_servicio_cotizacion_servicio.fechaCreada,'%d/%m/%Y') AS fechaEmision,DATE_FORMAT(fecha_termino,'%d/%m/%Y') AS fechaTermino,DATE_FORMAT(fecha_fin_garantia,'%d/%m/%Y') AS fechaFinGarantia,CONCAT(usuarios.nombres,' ',usuarios.apellidos) AS responsable")
         ->join("orden_servicio","orden_servicio.id","=","orden_servicio_cotizacion_servicio.id_orden_servicio")
+        ->leftJoin("certificados_servicios","certificados_servicios.id_os_cotizacion_servicio","=","orden_servicio_cotizacion_servicio.id")
         ->join("clientes","clientes.id","=","orden_servicio.id_cliente")
         ->leftJoin("usuarios","usuarios.id","=","orden_servicio_cotizacion_servicio.responsable_usuario")
         ->get();
