@@ -35,6 +35,22 @@ class PreCotizaion extends Model
         return $preCotizacion;
 
     }
+    public static function obtenerPreCotizacion($idPreCotizacion,$idTecnico){
+        $preCotizacion = PreCotizaionTecnico::select("cotizacion_pre.id","formato_visita_pdf","html_primera_visita")->join("cotizacion_pre","cotizacion_pre.id","=","cotizacion_pre_tecnicos.id_pre_cotizacion")->where(['id_pre_cotizacion' => $idPreCotizacion]);
+        if(!is_null($idTecnico)){
+            $preCotizacion = $preCotizacion->where(['id_tecnico' => $idTecnico,'responsable' => 1,'cotizacion_pre.estado' => 1]);
+        }
+        $preCotizacion = $preCotizacion->first();
+        if(empty($preCotizacion)){
+            return ['alerta' => 'No se encontró la pre-cotización'];
+        }
+        $preCotizacion->secciones = CotizacionPreSecciones::select("id AS idSeccion","titulo","columnas")->where('id_pre_cotizacion',$preCotizacion->id)->get();
+        foreach ($preCotizacion->secciones as $key => $seccion) {
+            $seccion->listaImagenes = PreCotizacionSeccionImagen::select("id AS idImagen","id_pre_cotizacion_seccion AS idSeccion","url_imagen","descripcion")->where('id_pre_cotizacion_seccion',$seccion->id)->get();
+        }
+        $preCotizacion->servicios = PreCotizacionServicios::select("id_servicios")->where('id_pre_cotizacion',$preCotizacion->id)->get();
+        return ['success' => $preCotizacion];
+    }
     public static function obtenerPreCotizaciones()
     {
         return DB::table("cotizacion_pre AS cp")

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Clientes;
 use App\Models\ClientesContactos;
 use App\Models\Configuracion;
-use App\Models\CotizacionImagenes;
+use App\Models\CotizacionPreSecciones;
 use App\Models\PreCotizacionServicios;
 use App\Models\PreCotizaion;
 use App\Models\PreCotizaionContacto;
@@ -61,7 +61,7 @@ class PreCotizacion extends Controller
             return redirect()->route("home"); 
         }
         $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
-        $preCotizacion->img = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
+        $preCotizacion->img = CotizacionPreSecciones::where('id_pre_cotizacion',$preCotizacion->id)->get();
         $titulo = 'REPORTE_PRECOTIZACION_'.str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT);
         $rutaVisataUnica = '/formatoVisitas/'.$preCotizacion->formato_visita_pdf;
         try {
@@ -85,7 +85,7 @@ class PreCotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $precotizacion->listaImagenes = CotizacionImagenes::where('id_pre_cotizacion',$precotizacion->id)->get();
+        $precotizacion->listaImagenes = CotizacionPreSecciones::where('id_pre_cotizacion',$precotizacion->id)->get();
         $precotizacion->listaServicios = PreCotizacionServicios::where('id_pre_cotizacion',$precotizacion->id)->get();
         return response()->json(['precotizacion' => $precotizacion->makeHidden("fechaCreada","fechaActualizada")]);
     }
@@ -98,7 +98,7 @@ class PreCotizacion extends Controller
         $listaResponse = [];
         $listaImgs = $guardarImgs->guardarArhivoMasivo($request,"imagenes","imgCotizacionPre");
         for ($i=0; $i < count($request->file("imagenes")) ; $i++) { 
-            $img = CotizacionImagenes::create([
+            $img = CotizacionPreSecciones::create([
                 'id_pre_cotizacion' => $request->idPreCotizacion,
                 'url_imagen' => $listaImgs[$i]['url_imagen'],
                 'nombre_original_imagen' => $listaImgs[$i]['nombre_real'],
@@ -152,7 +152,7 @@ class PreCotizacion extends Controller
             }
             if($request->has('idImagenDetalle')){
                 for ($i=0; $i < count($request->idImagenDetalle) ; $i++) { 
-                    CotizacionImagenes::where(['id_pre_cotizacion' => $request->preCotizacion, 'id' => $request->idImagenDetalle[$i]])->update([
+                    CotizacionPreSecciones::where(['id_pre_cotizacion' => $request->preCotizacion, 'id' => $request->idImagenDetalle[$i]])->update([
                         'descripcion' => isset($request->descripcionImagen[$i]) ? $request->descripcionImagen[$i] : null
                     ]);
                 }
@@ -184,7 +184,7 @@ class PreCotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $imagen = CotizacionImagenes::where(['id' => $request->idImagen,'id_pre_cotizacion' => $request->idPreCotizacion]);
+        $imagen = CotizacionPreSecciones::where(['id' => $request->idImagen,'id_pre_cotizacion' => $request->idPreCotizacion]);
         $consultaImagen = $imagen->first();
         if(!empty($consultaImagen->url_imagen) && Storage::disk('imgCotizacionPre')->exists($consultaImagen->url_imagen)){
             Storage::disk('imgCotizacionPre')->delete($consultaImagen->url_imagen);

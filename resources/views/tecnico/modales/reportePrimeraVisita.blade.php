@@ -11,32 +11,17 @@
             <div class="mb-4">
                 <textarea id="sumernotePreCotizacion"></textarea>
             </div>
-            <div class="d-flex align-items-center mb-3" style="gap: 10px;">
-              <h5 class="text-primary">
-                <i class="fas fa-caret-right"></i>
-                Seleccionar imagenes
-              </h5>
-              <button class="btn btn-sm btn-primary" type="button" id="btnImagen" title="Añadir imagenes">
-                <i class="fas fa-images"></i>
-              </button>
-              <input type="file" hidden id="imgCopia" multiple accept="image/*">
-            </div>
             <form id="contenidoServicios" enctype="multipart/form-data">
-              <div class="mb-4 row" id="renderImg" style="overflow-y: auto;">
-                <div class="form-grop col-12 text-center" id="txtSinImagenes">
-                  <span>No se subieron imagenes</span>
-                </div>
+              <div class="form-group d-flex justify-content-between flex-wrap" style="gap:5px;">
+                  <h5 class="text-primary mb-0">
+                      <i class="fas fa-caret-right"></i>
+                      Lista de secciones
+                  </h5>
+                  <button data-toggle="tooltip" id="btnAgregarSeccion" data-placement="top" title="Agregar una sección" class="btn btn-sm btn-light agregar-seccion" type="button">
+                      <i class="fas fa-plus"></i>
+                  </button>
               </div>
-              <div class="form-group">
-                <div style="max-width: 250px;">
-                  <label for="idModalSeccioncolumnas">Columna de imágenes</label>
-                  <select name="columnas" required id="idModalSeccioncolumnas" class="form-control">
-                    <option value="2">2 columnas</option>
-                      <option value="3" selected>3 columnas</option>
-                      <option value="4">4 columnas</option>
-                  </select>
-                </div>
-              </div>
+              <div class="form-group" id="contenidoSecciones"></div>
               <h5 class="text-primary">
                   <i class="fas fa-caret-right"></i>
                   Seleccionar servicios
@@ -55,7 +40,6 @@
                   <div id="txtNoServi">
                     <span>Sin servicios seleccionados</span>
                   </div>
-                  <input type="file" hidden name="imagenes[]" multiple accept="image/*" id="imgsOriginal">
                   <input type="submit" id="btnFrom" hidden>
               </div>
               <h5 class="text-primary">
