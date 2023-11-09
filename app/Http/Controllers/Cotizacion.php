@@ -6,7 +6,7 @@ use App\Models\Clientes;
 use App\Models\ClientesContactos;
 use App\Models\Configuracion;
 use App\Models\Cotizacion as ModelsCotizacion;
-use App\Models\CotizacionImagenes;
+use App\Models\CotizacionPreSecciones;
 use App\Models\CotizacionPdf;
 use App\Models\CotizacionProductos;
 use App\Models\CotizacionServicio;
@@ -96,7 +96,7 @@ class Cotizacion extends Controller
         if($cotizacion->reportePreCotizacion === 1){
             $preCotizacion = PreCotizaion::where('id',$cotizacion->id_pre_cotizacion)->first();
             $reportePreCotizacion['html'] = $preCotizacion->html_primera_visita;
-            $reportePreCotizacion['imagenes'] = CotizacionImagenes::where('id_pre_cotizacion',$preCotizacion->id)->get();
+            $reportePreCotizacion['imagenes'] = CotizacionPreSecciones::where('id_pre_cotizacion',$preCotizacion->id)->get();
             $documentoVisitaUnicoPrecotizacion = $preCotizacion->formato_visita_pdf;
         }
         $pdf = Pdf::loadView('cotizacion.reportes.cotizacion',compact("moneda","configuracion","cotizacion","cliente","nombreDia","nombreMes","representante","productosServicios","reportePreCotizacion","preCotizacion"));

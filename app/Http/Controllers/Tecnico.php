@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CotizacionImagenes;
+use App\Models\CotizacionPreSecciones;
 use App\Models\PreCotizacionServicios;
 use App\Models\PreCotizaion;
 use App\Models\Servicio;
@@ -29,6 +29,16 @@ class Tecnico extends Controller
         $idTecnico = empty(Auth::user()->tecnico) ? null : Auth::user()->tecnico->id;
         $servicios = Servicio::where('estado',1)->get();
         return view("tecnico.primeraVisita",compact("modulos","servicios"));
+    }
+    public function obtenerInformePreCotizacion($idPreCotizacion) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloPrimVisiPreCoti);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        return response()->json(PreCotizaion::obtenerPreCotizacion($idPreCotizacion,auth()->user()->tecnico->id));
+    }
+    function FunctionName() {
+        
     }
     public function accionesPreCotizacion(Request $request)
     {
@@ -60,9 +70,9 @@ class Tecnico extends Controller
                     if($request->has('imagenes')){
                         $guardarImgs = new MisProductos();
                         $listaImgs = $guardarImgs->guardarArhivoMasivo($request,"imagenes","imgCotizacionPre");
-                        CotizacionImagenes::where('id_pre_cotizacion',$idPreCotizacion)->delete();
+                        CotizacionPreSecciones::where('id_pre_cotizacion',$idPreCotizacion)->delete();
                         for ($i=0; $i < count($request->file("imagenes")) ; $i++) { 
-                            CotizacionImagenes::create([
+                            CotizacionPreSecciones::create([
                                 'id_pre_cotizacion' => $idPreCotizacion,
                                 'url_imagen' => $listaImgs[$i]['url_imagen'],
                                 'nombre_original_imagen' => $listaImgs[$i]['nombre_real'],

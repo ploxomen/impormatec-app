@@ -2,6 +2,7 @@
 @section('head')
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
+    <script src="/preCotizacion/compartido.js"></script>
     <script src="/tecnico/primeraVisitaPreCoti.js?v1.5"></script>
     <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.5">
     <title>Visitas Pre - Cotización</title>
@@ -45,4 +46,5 @@
         </div>
     </section>
     @include('tecnico.modales.reportePrimeraVisita')
+    @include('ordenesServicio.modales.agregarSeccion')
 @endsection

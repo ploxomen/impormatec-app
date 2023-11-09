@@ -1,5 +1,6 @@
 function loadPage() {
     const general = new General();
+    const preCotizacion = new PreCotizacion();
     const txtFechaVisita = document.querySelector("#txtFecha");
     const contenidoVisitas = document.querySelector("#contenidoVisitas");
     const boxNoVisitas = document.querySelector("#contenidoNoVisitas");
@@ -182,12 +183,30 @@ function loadPage() {
         }
     }
     let idVisita = null;
-    contenidoVisitas.onclick = function(e){
+    contenidoVisitas.onclick = async function(e){
         if(e.target.dataset.reporte){
             idVisita = e.target.dataset.reporte;
-            $('#modalPrimeraVisita').modal("show");
+            try {
+                const response = await general.funcfetch(`informe/${idVisita}`,null, "GET");
+                if(response.session){
+                    return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                }
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
+                }
+                const informePreCotizacion = response.success;
+                informePreCotizacion.secciones.forEach((seccion,key) => {
+                    seccion.index = key + 1;
+                    $contenidoNuevo = preCotizacion.generarSecciones(seccion);
+                    preCotizacion.$contenidoSecciones.append($contenidoNuevo);
+                });
+                $('#modalPrimeraVisita').modal("show");
+            } catch (error) {
+                alertify.error("error al obtener los datos de la pre - cotizacion")
+            }
         }
     }
+    document.querySelector("#btnAgregarSeccion").onclick = e => $('#agregarSeccion').modal('show');
     const btnImg = document.querySelector("#btnImagen");
     const imgCopia = document.querySelector("#imgCopia");
     const imgOriginal = document.querySelector("#imgsOriginal");

@@ -229,6 +229,8 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::prefix('tecnico')->group(function () {
             Route::get('pre-cotizacion', [Tecnico::class, 'indexPrimeraVisitaPreCotizacion'])->name('cotizacion.tecnico.visita.pre');
             Route::post('acciones', [Tecnico::class, 'accionesPreCotizacion']);
+            Route::get('informe/{idPreCotizacion}', [Tecnico::class, 'obtenerInformePreCotizacion']);
+
         });
         Route::prefix('seguimiento')->group(function () {
             Route::get('/', [Seguimiento::class, 'index'])->name('admin.cotizacion.seguimiento');
