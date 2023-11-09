@@ -22,7 +22,7 @@
                 </button>
             </div>
         </section>
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-2" style="gap: 5px;">
             <h5 class="text-primary">
                 <i class="fas fa-caret-right"></i>
                 <span>Todas las visitas por fechas<span>

@@ -96,7 +96,7 @@
                             <input type="text" value="{{$configuracion[9]->valor}}" name="propietario_apellidos_nombre" id="id_propietario_apellidos_nombre" maxlength="255" class="form-control form-control-sm">
                         </div>
                 </fieldset>
-                <fieldset class="bg-white col-12 px-3 border form-row">
+                <fieldset class="bg-white col-12 px-3 mb-3 border form-row">
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cuentas Bancarias</legend>
                     <div class="col-12">
                         <textarea id="sumernoteNumeroCuenta">
@@ -104,9 +104,25 @@
                         </textarea>
                     </div>
                 </fieldset>
+                <fieldset class="bg-white col-12 px-3 border form-row align-items-center">
+                    <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Otros</legend>
+                    <input type="file" class="form-control" hidden>
+                    <div class="form-group col-12 col-md-6 co-lg-8">
+                        <button class="btn btn-sm btn-primary" type="button" title="Cambiar formato único de visitas">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Formato único de visitas</span>
+                        </button>
+                    </div>
+                    <div class="form-group col-12 col-md-6 co-lg-4">
+                        <a href="{{route('descargarArchivo',[$configuracion[17]->valor])}}.pdf" download="{{$configuracion[17]->valor}}">
+                            <i class="fas fa-download"></i>
+                            <span>{{$configuracion[17]->valor}}.pdf</span>
+                        </a>
+                    </div>
+                </fieldset>
             </div>
             <div class="col-12 form-group text-center">
-                <button type="submit" class="btn btn-success btn-sm" id="btnSubmitNegocio">
+                <button type="submit" class="btn btn-success" id="btnSubmitNegocio">
                     <i class="fas fa-pencil-alt"></i>
                     <span>Actualizar Datos</span>
                 </button>
