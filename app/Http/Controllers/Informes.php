@@ -283,7 +283,6 @@ class Informes extends Controller
         }
         $imagen->delete();
         return response()->json(['success' => 'imagen eliminada correctamente']);
-
     }
     public function editarInformeGenerado(OrdenServicio $ordenServicio){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);

@@ -10,34 +10,27 @@ function loadPage() {
         }
     }
     const documentoFormatoVisita = document.querySelector("#documentoVisitas");
-    const btnEliminarDocumento = document.querySelector("#btnFormatoVisitas");
+    const btnEliminarDocumento = document.querySelector("#btnFormatoVisitasEliminar");
     btnEliminarDocumento.onclick = e => {
-        if(documentoFormatoVisita.value == ""){
-            return alertify.error("no cuenta con el documento de visita para ser eliminado");
-        }
-        documentoFormatoVisita.value = "";
-        return alertify.success("documento de visita eliminado correctamente");
+        alertify.confirm("Alerta","¿Deseas eliminar el reporte de visita?",async () => {
+            try {
+                const response = await general.funcfetch(preCotizacion.url + `/eliminar/formato-visita/${idVisita}`,null, "DELETE");
+                if(response.session){
+                    return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                }
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
+                }
+                documentoFormatoVisita.value = "";
+                if(document.querySelector("#documento-mostrar-formato-visita")){
+                    document.querySelector("#documento-mostrar-formato-visita").remove();
+                }
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al eliminar el formato de visita");
+            }
+        },() => {});
     };
-    // documentoFormatoVisita.addEventListener("change",function(e){
-    //     const documentos = e.target.files;
-    //     if(document.querySelector("#documento-mostrar-formato-visita")){
-    //         document.querySelector("#documento-mostrar-formato-visita").remove();
-    //     }
-    //     if(!documentos.length){
-    //         return alertify.error("documento no seleccionado");
-    //     }
-    //     const formatoVisita = documentos[0];
-    //     if(formatoVisita.type !== "application/pdf"){
-    //         return alertify.error("el documento debe de ser un pdf");
-    //     }
-    //     const documentoSubido = document.createElement("div");
-    //     documentoSubido.className = "rounded-pill bg-light p-2";
-    //     documentoSubido.id = "documento-mostrar-formato-visita";
-    //     documentoSubido.innerHTML = `
-    //     <span>${formatoVisita.name}</span>`
-    //     this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
-    //     return alertify.success("formato de visita seleccionado corretamente");
-    // });
     const contenidoFiltro = document.querySelector("#contenidoFiltro");
     async function cargarVisitas() {
         boxNoVisitas.hidden = true;
@@ -183,122 +176,134 @@ function loadPage() {
         }
     }
     let idVisita = null;
+    let borrarDatosInformeModal = true;
     contenidoVisitas.onclick = async function(e){
         if(e.target.dataset.reporte){
             idVisita = e.target.dataset.reporte;
+            preCotizacion.cargarPreInformeEditar({idVisita,cbServicios,listaServicios,txtNoServicios,btnEliminarDocumento,documentoFormatoVisita});
+        }
+    }
+    preCotizacion.$contenidoSecciones.addEventListener("click",async function(e){
+        $dom = e.target;
+        if($dom.classList.contains("agregar-imagen")){
+            document.querySelector($dom.dataset.file).click();
+        }
+        if($dom.classList.contains("editar-seccion")){
             try {
-                const response = await general.funcfetch(`informe/${idVisita}`,null, "GET");
+                let datos = new FormData();
+                datos.append("preCotizacion",idVisita);
+                datos.append("seccion",$dom.dataset.seccion);
+                const response = await general.funcfetch(preCotizacion.url + "/seccion/obtener",datos,"POST");
                 if(response.session){
                     return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
                 }
                 if(response.alerta){
                     return alertify.alert("Alerta",response.alerta);
                 }
-                const informePreCotizacion = response.success;
-                informePreCotizacion.secciones.forEach((seccion,key) => {
-                    seccion.index = key + 1;
-                    $contenidoNuevo = preCotizacion.generarSecciones(seccion);
-                    preCotizacion.$contenidoSecciones.append($contenidoNuevo);
-                });
-                $('#modalPrimeraVisita').modal("show");
+                for (const key in response.success) {
+                    if (Object.hasOwnProperty.call(response.success, key)) {
+                        const element = response.success[key];
+                        const $domValor = document.querySelector("#agregarSeccion #idModalSeccion" + key);
+                        if(!$domValor){
+                            continue;
+                        }
+                        $domValor.value = element;
+                    }
+                }
+                idSeccion = response.success.id;
+                borrarDatosInformeModal = false;
+                $('#modalPrimeraVisita').modal("hide");
+                setTimeout(e => {
+                    $('#agregarSeccion').modal('show');
+                },500);
             } catch (error) {
-                alertify.error("error al obtener los datos de la pre - cotizacion")
+                console.error(error);
+                alertify.error("error al obtener la seccion")
             }
         }
+        if($dom.classList.contains("eliminar-img")){
+            alertify.confirm("Mensaje","Al continuar se eliminará la imagen. <br> ¿Desea continuar de todas formas?",async () => {
+                let datos = new FormData();
+                datos.append("preCotizacion",idVisita);
+                datos.append("seccion", $dom.dataset.seccion);
+                datos.append("img",$dom.dataset.img);
+                try {
+                    const response = await general.funcfetch(preCotizacion.url + "/seccion/imagen/eliminar",datos,"POST");
+                    if(response.session){
+                        return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    $contenedor = $dom.parentElement;
+                    $contenedor.remove();
+                    $contenedorSecciones = document.querySelector(`#idModalContenidoImagenes${$dom.dataset.seccion}`);
+                    if($contenedorSecciones.children.length === 0){
+                        $contenedorSecciones.innerHTML = `
+                        <div class="text-center contenido-vacio-img col-12">
+                            <span>No se agregaron imágenes para esta sección</span>
+                        </div>
+                        `
+                    }
+                    return alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al eliminar la imagen")
+                }
+            },()=>{})
+        }
+        if($dom.classList.contains("eliminar-seccion")){
+            alertify.confirm("Mensaje","Al continuar se eliminará la sección y las imágenes relacionadas a ella. <br> ¿Desea continuar de todas formas?",async () => {
+                let datos = new FormData();
+                datos.append("preCotizacion",idVisita);
+                datos.append("seccion",$dom.dataset.seccion);
+                try {
+                    const response = await general.funcfetch(preCotizacion.url + "/seccion/eliminar",datos,"POST");
+                    if(response.session){
+                        return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    $contenedor = $dom.parentElement.parentElement.parentElement;
+                    $contenedor.remove();
+                    $contenedorSecciones = Array.from((preCotizacion.$contenidoSecciones).children);
+                    if($contenedorSecciones.length === 0){
+                        preCotizacion.$contenidoSecciones.innerHTML = `
+                        <div class="text-center contenido-vacio">
+                            <span>No se agregaron secciones</span>
+                        </div>
+                        `
+                    }else{
+                        $contenedorSecciones.forEach((seccion,kseccion) => {
+                            if(seccion.querySelector(".nombre-seccion")){
+                                seccion.querySelector(".nombre-seccion").textContent = `Sección N° ${kseccion + 1}`
+                            }
+                        })
+                    }
+                    return alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al eliminar la seccion")
+                }
+            },()=>{})
+        }
+    });
+    document.querySelector("#btnAgregarSeccion").onclick = e => {
+        borrarDatosInformeModal = false;
+        idSeccion = null;
+        $('#modalPrimeraVisita').modal("hide");
+        setTimeout(e => {
+            $('#agregarSeccion').modal('show');
+        },500);
     }
-    document.querySelector("#btnAgregarSeccion").onclick = e => $('#agregarSeccion').modal('show');
-    const btnImg = document.querySelector("#btnImagen");
-    const imgCopia = document.querySelector("#imgCopia");
-    const imgOriginal = document.querySelector("#imgsOriginal");
-    const renderImg = document.querySelector("#renderImg");
-    btnImg.onclick = e => imgCopia.click();
-    function coinsidenciaImg(files,name){
-        for (let i = 0; i < files.length; i++) {
-            if(files[i].name == name){
-                return 1;
-            }
-        }
-        return 0;
-    }
-    
-    function renderImagen(file){
-        const render = new FileReader();
-        render.onload = function(){
-            const contenido = document.createElement("div");
-            contenido.className = "form-group col-12 col-xl-6 d-flex align-items-center";
-            contenido.style = "gap:5px;"
-            let img = new Image();
-            img.src = this.result;
-            img.classList.add('img-guias');
-            img.title = file.name;
-            let txtDescripcion = document.createElement("textarea");
-            txtDescripcion.name = "descripcionImagen[]";
-            txtDescripcion.className = "form-control form-control-sm txtdescripcion";
-            txtDescripcion.placeholder = "Añadir descripción";
-            const btnDelete = document.createElement('button');
-            btnDelete.classList.add('img-btn-delete','btn','btn-sm','btn-light');
-            btnDelete.dataset.file = file.name;
-            btnDelete.innerHTML = `<i class="fas fa-trash-alt"></i>`;
-            btnDelete.addEventListener('click',deleteImg);
-            contenido.append(img,txtDescripcion,btnDelete);
-            renderImg.append(contenido);
-        }
-        render.readAsDataURL(file);
-    }
-    function deleteImg(){
-        const nameImg = this.dataset.file;
-        const newDataTrnasfer = new DataTransfer();
-        const filesParent = imgOriginal;
-        let deleteDom = false;
-        for (let i = 0; i < filesParent.files.length; i++) {
-            if(filesParent.files[i].name != nameImg){
-                newDataTrnasfer.items.add(filesParent.files[i]);
-            }else{
-                deleteDom = true;
-            }
-        }
-        filesParent.files = newDataTrnasfer.files;
-        if(deleteDom){
-            this.parentElement.remove();
-            alertify.success('imagen eliminada');
-        }
-        if(!imgOriginal.files.length){
-            renderImg.innerHTML = `
-            <div class="form-grop col-12 text-center">
-                <span>No se subieron imagenes</span>
-            </div>
-            `;
-        }
-    }
-    imgCopia.addEventListener("change",function(e){
-        if(!this.files.length){
-            return
-        }
-        if(!imgOriginal.files.length){
-            renderImg.innerHTML = "";
-        }
-        let countImgRepetidas = 0;
-        const pattern = /image-*/;
-        const transfer = new DataTransfer();
-        for (let ed = 0; ed < imgOriginal.files.length; ed++) {
-            transfer.items.add(imgOriginal.files[ed]);             
-        }
-        for (let i = 0; i < this.files.length; i++) {
-            if(!this.files[i].type.match(pattern)){
-                return alertify.alert("Mensaje", "El archivo " + this.files[i].name +" no es una imagen");
-            }
-            if(coinsidenciaImg(imgOriginal.files,this.files[i].name)){
-                countImgRepetidas++;
-                continue;
-            }
-            renderImagen(this.files[i]);
-            transfer.items.add(this.files[i]);
-        }
-        if(countImgRepetidas){
-            alertify.alert('Mensaje','Se detectaron ' + countImgRepetidas + ' imagen(es) que ya se cargaron, recuerda que no se perminte imágenes duplicadas.');
-        }
-        imgOriginal.files = transfer.files;
-    })
+    let idSeccion = null;
+    const $frmSeccion = document.querySelector("#frmSeccionNueva");
+    $frmSeccion.addEventListener("submit",function(e){
+        e.preventDefault();
+        preCotizacion.agregarEditarSeccion(this,idSeccion,idVisita);
+    });
+    document.querySelector("#btnGuardarFrmSeccion").onclick = e => document.querySelector("#btnSeccionAgregar").click();
     tinymce.init({
         selector: '#sumernotePreCotizacion',
         language: 'es',
@@ -337,7 +342,7 @@ function loadPage() {
     const listaServicios = document.querySelector("#contenidoListaServicios");
     const cbServicios = $('#cbServicio');
     cbServicios.on("select2:select",function(e){
-        general.seleccionarServicios(cbServicios,listaServicios,txtNoServicios)
+        general.seleccionarServicios(cbServicios,listaServicios,txtNoServicios);
     });
     listaServicios.onclick = function(e){
         if(e.target.classList.contains("btn-sm")){
@@ -360,14 +365,11 @@ function loadPage() {
         if(!contenido){
             return alertify.error("por favor redacte el informe");
         }
-        // if(!documentoFormatoVisita.value){
-        //     return alertify.error("por favor carge su formato de visita");
-        // }
         const data = new FormData(this);
         data.append("acciones","generar-reporte");
         data.append("html",contenido);
         data.append("visita",idVisita);
-        if(documentoFormatoVisita.value != ""){
+        if(documentoFormatoVisita.value){
             data.append("formatoVisitaPdf",documentoFormatoVisita.files[0]);
         }
         general.cargandoPeticion(btnSaveModal, general.claseSpinner, true);
@@ -393,7 +395,21 @@ function loadPage() {
             general.cargandoPeticion(btnSaveModal, 'far fa-save', false);
         }
     })
+    $('#agregarSeccion').on('hidden.bs.modal', function (event) {
+        borrarDatosInformeModal = true;
+        setTimeout(e => {
+            $('#modalPrimeraVisita').modal('show');
+        },500);
+    });
     $('#modalPrimeraVisita').on('hidden.bs.modal', function (event) {
+        if(!borrarDatosInformeModal){
+            return false;
+        }
+        if(document.querySelector("#documento-mostrar-formato-visita")){
+            document.querySelector("#documento-mostrar-formato-visita").remove();
+        }
+        btnEliminarDocumento.hidden = true;
+        preCotizacion.$contenidoSecciones.innerHTML = "";
         txtNoServicios.hidden = false;
         documentoFormatoVisita.value = "";
         if(document.querySelector("#documento-mostrar-formato-visita")){

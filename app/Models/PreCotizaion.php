@@ -9,10 +9,9 @@ use Illuminate\Support\Facades\DB;
 class PreCotizaion extends Model
 {
     public $table = "cotizacion_pre";
-    protected $fillable = ['id_cliente','fecha_hr_visita','columnas','formato_visita_pdf','detalle','estado','usuario_creado','usuario_modificado','html_primera_visita'];
+    protected $fillable = ['id_cliente','fecha_hr_visita','columnas','formato_visita_pdf','formato_visita_nombre','detalle','estado','usuario_creado','usuario_modificado','html_primera_visita'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-
     public static function obtenerFechasParaFiltroTecnico($idTecnico)
     {
         return DB::table("cotizacion_pre AS cp")
@@ -36,7 +35,7 @@ class PreCotizaion extends Model
 
     }
     public static function obtenerPreCotizacion($idPreCotizacion,$idTecnico){
-        $preCotizacion = PreCotizaionTecnico::select("cotizacion_pre.id","formato_visita_pdf","html_primera_visita")->join("cotizacion_pre","cotizacion_pre.id","=","cotizacion_pre_tecnicos.id_pre_cotizacion")->where(['id_pre_cotizacion' => $idPreCotizacion]);
+        $preCotizacion = PreCotizaionTecnico::select("cotizacion_pre.id","formato_visita_pdf","html_primera_visita","formato_visita_nombre")->join("cotizacion_pre","cotizacion_pre.id","=","cotizacion_pre_tecnicos.id_pre_cotizacion")->where(['id_pre_cotizacion' => $idPreCotizacion]);
         if(!is_null($idTecnico)){
             $preCotizacion = $preCotizacion->where(['id_tecnico' => $idTecnico,'responsable' => 1,'cotizacion_pre.estado' => 1]);
         }
@@ -46,7 +45,7 @@ class PreCotizaion extends Model
         }
         $preCotizacion->secciones = CotizacionPreSecciones::select("id AS idSeccion","titulo","columnas")->where('id_pre_cotizacion',$preCotizacion->id)->get();
         foreach ($preCotizacion->secciones as $key => $seccion) {
-            $seccion->listaImagenes = PreCotizacionSeccionImagen::select("id AS idImagen","id_pre_cotizacion_seccion AS idSeccion","url_imagen","descripcion")->where('id_pre_cotizacion_seccion',$seccion->id)->get();
+            $seccion->listaImagenes = PreCotizacionSeccionImagen::select("id AS idImagen","id_pre_cotizacion_seccion AS idSeccion","url_imagen","descripcion")->where('id_pre_cotizacion_seccion',$seccion->idSeccion)->get();
         }
         $preCotizacion->servicios = PreCotizacionServicios::select("id_servicios")->where('id_pre_cotizacion',$preCotizacion->id)->get();
         return ['success' => $preCotizacion];

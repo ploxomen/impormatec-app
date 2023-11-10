@@ -3,6 +3,8 @@
     @include('helper.headDatatable')
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
+    <script src="/preCotizacion/compartido.js"></script>
+    <link rel="stylesheet" href="/ordenServicio/informe.css?v1.1">
     <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.5">
     <script src="/preCotizacion/misPreCotizaciones.js"></script>
     <title>Mis Pre - Cotizaciones</title>
@@ -38,4 +40,5 @@
     </section>
     @include('tecnico.modales.reportePrimeraVisita')
     @include('preCotizacion.modales.editarPreCotizacion')
+    @include('ordenesServicio.modales.agregarSeccion')
 @endsection

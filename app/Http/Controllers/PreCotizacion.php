@@ -6,6 +6,7 @@ use App\Models\Clientes;
 use App\Models\ClientesContactos;
 use App\Models\Configuracion;
 use App\Models\CotizacionPreSecciones;
+use App\Models\PreCotizacionSeccionImagen;
 use App\Models\PreCotizacionServicios;
 use App\Models\PreCotizaion;
 use App\Models\PreCotizaionContacto;
@@ -30,6 +31,7 @@ class PreCotizacion extends Controller
     private $usuarioController;
     private $moduloPreCotizacion = "cotizacion.precotizacion.nueva";
     private $moduloMisPreCotizacion = "cotizacion.precotizacion.lista";
+    private $moduloInformeTecnico = "cotizacion.tecnico.visita.pre";
     function __construct()
     {
         $this->usuarioController = new Usuario();
@@ -42,15 +44,23 @@ class PreCotizacion extends Controller
         $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->groupBy("cp.id")->get();
         return DataTables::of($preCotizaciones)->toJson();
     }
-    public function eliminarFormatoVisita(PreCotizaion $preCotizacion) {
+    public function obtenerInformePreCotizacion($idPreCotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
         if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        return response()->json(PreCotizaion::obtenerPreCotizacion($idPreCotizacion,null));
+    }
+    public function eliminarFormatoVisita(PreCotizaion $preCotizacion) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);        
+        if(isset($verif['session']) && isset($verif2['session'])){
             return response()->json(['session' => true]);
         }
         $rutaVisataUnica = '/formatoVisitas/'.$preCotizacion->formato_visita_pdf;
         if(!empty($preCotizacion->formato_visita_pdf) && Storage::exists($rutaVisataUnica)){
             Storage::delete($rutaVisataUnica);
-            $preCotizacion->update(['formato_visita_pdf' => null]);
+            $preCotizacion->update(['formato_visita_pdf' => null,'formato_visita_nombre' => null]);
             return response()->json(['success' => 'se eliminó el documento de visita de manera correcta']);
         }
         return response()->json(['alerta' => 'No se encontró ningún documento de visita para ser eliminado']);
@@ -118,27 +128,29 @@ class PreCotizacion extends Controller
             return response()->json(['session' => true]);
         }
         DB::beginTransaction();
-        $rutaReporteVisita = "";
+        $rutaReporteVisita = null;
         try {
             $fechaHrModificada = now(); 
             $datos = [
                 'html_primera_visita' => $request->html,
                 'usuario_modificado' => Auth::id(),
                 'fechaActualizada' => $fechaHrModificada,
-                'columnas' => $request->columnas
             ];
-            
             $preCotizacionModel = PreCotizaion::find($request->preCotizacion);
-            $nombreReporteVisita = "reporte_visitas_" . $preCotizacionModel->id . "_". time() .".pdf";
-            $reporteVisita = $request->file('formatoVisitaPdf');
-            $rutaReporteVisita = "formatoVisitas/" . $nombreReporteVisita;
-            if ($reporteVisita) {
-                $rutaReporteVisitaAntigua = "formatoVisitas/" . $preCotizacionModel->formato_visita_pdf;
-                if(Storage::exists($rutaReporteVisitaAntigua)){
-                    Storage::delete($rutaReporteVisitaAntigua);
+            if($request->has('formatoVisitaPdf')){
+                $nombreReporteVisita = null;
+                $nombreSistemaPdf = null;
+                if(!empty($preCotizacionModel->formato_visita_pdf) && Storage::exists('/formatoVisitas/'.$preCotizacionModel->formato_visita_pdf)){
+                    Storage::delete('/formatoVisitas/'.$preCotizacionModel->formato_visita_pdf);
                 }
-                $reporteVisita->storeAs('formatoVisitas', $nombreReporteVisita);
-                $datos['formato_visita_pdf'] = $nombreReporteVisita;
+                $reporteVisita = $request->file('formatoVisitaPdf');
+                if ($reporteVisita) {
+                    $nombreSistemaPdf = "reporte_visitas_" . $preCotizacionModel->id . "_". uniqid() .".pdf";
+                    $rutaReporteVisita = "formatoVisitas/" . $nombreSistemaPdf;
+                    $nombreReporteVisita = $reporteVisita->getClientOriginalName();
+                    $reporteVisita->storeAs('formatoVisitas', $nombreSistemaPdf);
+                }
+                $preCotizacionModel->update(['formato_visita_pdf' => $nombreSistemaPdf,'formato_visita_nombre' => $nombreReporteVisita]);
             }
             $preCotizacionModel->update($datos);
             PreCotizacionServicios::where('id_pre_cotizacion',$request->preCotizacion)->delete();
@@ -149,13 +161,6 @@ class PreCotizacion extends Controller
                          'id_servicios' => $request->servicios[$i],
                      ]);
                  }
-            }
-            if($request->has('idImagenDetalle')){
-                for ($i=0; $i < count($request->idImagenDetalle) ; $i++) { 
-                    CotizacionPreSecciones::where(['id_pre_cotizacion' => $request->preCotizacion, 'id' => $request->idImagenDetalle[$i]])->update([
-                        'descripcion' => isset($request->descripcionImagen[$i]) ? $request->descripcionImagen[$i] : null
-                    ]);
-                }
             }
             DB::commit();
             return response()->json(['success' => 'reporte de pre - cotización actualizado correctamente']);
@@ -307,6 +312,171 @@ class PreCotizacion extends Controller
         }
         $resultado = ["cliente" => Clientes::obenerCliente($request->cliente)];
         return response()->json($resultado);
+    }
+    public function editarSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);        
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $preCotizacion = PreCotizaion::find($request->preCotizacion);
+        if(empty($preCotizacion)){
+            return response()->json(['alerta' => 'No se encontró la pre-cotizacion para agregar la seccion']);
+        }
+        CotizacionPreSecciones::where([
+            'id_pre_cotizacion' => $preCotizacion->id,
+            'id' => $request->seccion,
+        ])->update([
+            'titulo' => $request->titulo,
+            'columnas' => $request->columnas
+        ]);
+        return response()->json(['success' => 'seccion actualizada correctamente', 'titulo' => $request->titulo, 'columna' => $request->columnas, 'idSeccion' =>$request->seccion]);
+    }
+    public function agregarImagenEnLaSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);        
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $preCotizacion = PreCotizaion::find($request->preCotizacion);
+        if(empty($preCotizacion)){
+            return response()->json(['alerta' => 'No se encontró la pre-cotizacion para agregar la seccion']);
+        }
+        $seccion = CotizacionPreSecciones::where([
+            'id_pre_cotizacion' => $preCotizacion->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        $nombreArchivo = null;
+        DB::beginTransaction();
+        try {
+            $img = PreCotizacionSeccionImagen::create([
+                'id_pre_cotizacion_seccion' => $seccion->id,
+                'estado' => 1,
+                'descripcion' => ''
+            ]);
+            $extension = $request->file('imagen')->getClientOriginalExtension();
+            $nombreArchivo = $seccion->id . '_' . $img->id . '_' .uniqid() . '.' . $extension;
+            $request->file('imagen')->storeAs('preCotizacionImgSeccion',$nombreArchivo);
+            $img->update(['url_imagen' => $nombreArchivo]);
+            DB::commit();
+            return response()->json(['success' => 'imagen agregada correctamente', 'idSeccion' => $seccion->id, 'urlImagen' => route("urlImagen",["preCotizacionImgSeccion",$nombreArchivo]), 'idImagen' => $img->id, 'descripcion' => ""]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            if(!is_null($nombreArchivo) && Storage::disk('preCotizacionImgSeccion')->exists($nombreArchivo)){
+                Storage::disk('preCotizacionImgSeccion')->delete($nombreArchivo);
+            }
+            return response()->json(['alerta' => $th->getMessage()]);
+        }
+    }
+    public function eliminarSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);        
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $preCotizacion = PreCotizaion::find($request->preCotizacion);
+        if(empty($preCotizacion)){
+            return response()->json(['alerta' => 'No se encontró la pre-cotizacion para agregar la seccion']);
+        }
+        $seccion = CotizacionPreSecciones::where([
+            'id_pre_cotizacion' => $preCotizacion->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        foreach (PreCotizacionSeccionImagen::where('id_pre_cotizacion_seccion',$seccion->id)->get() as $key => $imagen) {
+            if(Storage::disk('preCotizacionImgSeccion')->exists($imagen->url_imagen)){
+                Storage::disk('preCotizacionImgSeccion')->delete($imagen->url_imagen);
+            }
+            $imagen->delete();
+        }
+        $seccion->delete();
+        return response()->json(['success' => 'seccion eliminada correctamente']);
+    }
+    public function eliminarImagenEnLaSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);        
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $preCotizacion = PreCotizaion::find($request->preCotizacion);
+        if(empty($preCotizacion)){
+            return response()->json(['alerta' => 'No se encontró la pre-cotizacion para agregar la seccion']);
+        }
+        $seccion = CotizacionPreSecciones::where([
+            'id_pre_cotizacion' => $preCotizacion->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        $imagen = PreCotizacionSeccionImagen::where(['id_pre_cotizacion_seccion' => $seccion->id,'id' => $request->img])->first();
+        if(!empty($imagen) && Storage::disk('preCotizacionImgSeccion')->exists($imagen->url_imagen)){
+            Storage::disk('preCotizacionImgSeccion')->delete($imagen->url_imagen);
+        }
+        $imagen->delete();
+        return response()->json(['success' => 'imagen eliminada correctamente']);
+    }
+    public function obtenerInformacionSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);        
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $preCotizacion = PreCotizaion::find($request->preCotizacion);
+        if(empty($preCotizacion)){
+            return response()->json(['alerta' => 'No se encontró la pre-cotizacion para agregar la seccion']);
+        }
+        $seccion = CotizacionPreSecciones::where([
+            'id_pre_cotizacion' => $preCotizacion->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        return response()->json(['success' => $seccion]);
+    }
+    public function actualizarDatos(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);        
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $preCotizacion = PreCotizaion::find($request->preCotizacion);
+        if(empty($preCotizacion)){
+            return response()->json(['alerta' => 'No se encontró la pre-cotizacion para agregar la seccion']);
+        }
+        $seccion = CotizacionPreSecciones::where([
+            'id_pre_cotizacion' => $preCotizacion->id,
+            'id' => $request->seccion,
+        ])->first();
+        if(empty($seccion)){
+            return response()->json(['alerta' => 'No se encontró la seccion para registrar la imagen']);
+        }
+        PreCotizacionSeccionImagen::where(['id_pre_cotizacion_seccion' => $seccion->id,'id' => $request->imagen])->update(['descripcion' => $request->valor]);
+        return response()->json(['success' => 'descripcion actualizada correctamente']);
+    }
+    public function agregarNuevaSeccion(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloInformeTecnico);
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return response()->json(['session' => true]);
+        }
+        $preCotizacion = PreCotizaion::find($request->preCotizacion);
+        if(empty($preCotizacion)){
+            return response()->json(['alerta' => 'No se encontró la pre-cotizacion para agregar la seccion']);
+        }
+        $preCotizacionSeccion = CotizacionPreSecciones::create([
+            'id_pre_cotizacion' => $preCotizacion->id,
+            'titulo' => $request->titulo,
+            'columnas' => $request->columnas,
+            'estado' => 1
+        ]);
+        return response()->json(['success' => 'seccion agregada correctamente', 'titulo' => $preCotizacionSeccion->titulo, 'columnas' => $preCotizacionSeccion->columnas, 'idSeccion' => $preCotizacionSeccion->id, 'listaImagenes' => []]);
     }
     public function accionesPreCotizacion(Request $request)
     {

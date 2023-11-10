@@ -3,6 +3,7 @@
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
     <script src="/preCotizacion/compartido.js"></script>
+    <link rel="stylesheet" href="/ordenServicio/informe.css?v1.1">
     <script src="/tecnico/primeraVisitaPreCoti.js?v1.5"></script>
     <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.5">
     <title>Visitas Pre - Cotización</title>
@@ -33,7 +34,6 @@
                 <span>Descargar formato de visitas</span>
             </a>
         </div>
-        
         <div class="mb-3 d-flex flex-wrap" style="gap:10px;" id="contenidoFiltro"></div>
         <h5 class="text-primary">
             <i class="fas fa-caret-right"></i>

@@ -37,9 +37,6 @@ class Tecnico extends Controller
         }
         return response()->json(PreCotizaion::obtenerPreCotizacion($idPreCotizacion,auth()->user()->tecnico->id));
     }
-    function FunctionName() {
-        
-    }
     public function accionesPreCotizacion(Request $request)
     {
         ini_set('max_execution_time', '300');
@@ -67,19 +64,6 @@ class Tecnico extends Controller
                     if(PreCotizaion::validarPrecotizacionResponsable($idPreCotizacion,$idTecnico,1) === 0){
                         return ['alerta' => 'Usted no tiene autorizado la modificacion de esta Pre - Cotizacion'];
                     }
-                    if($request->has('imagenes')){
-                        $guardarImgs = new MisProductos();
-                        $listaImgs = $guardarImgs->guardarArhivoMasivo($request,"imagenes","imgCotizacionPre");
-                        CotizacionPreSecciones::where('id_pre_cotizacion',$idPreCotizacion)->delete();
-                        for ($i=0; $i < count($request->file("imagenes")) ; $i++) { 
-                            CotizacionPreSecciones::create([
-                                'id_pre_cotizacion' => $idPreCotizacion,
-                                'url_imagen' => $listaImgs[$i]['url_imagen'],
-                                'nombre_original_imagen' => $listaImgs[$i]['nombre_real'],
-                                'descripcion' => isset($request->descripcionImagen[$i]) ? $request->descripcionImagen[$i] : null
-                            ]);
-                        }
-                    }
                     if($request->has('servicios')){
                         PreCotizacionServicios::where('id_pre_cotizacion',$idPreCotizacion)->delete();
                         for ($i=0; $i < count($servicios) ; $i++) { 
@@ -93,16 +77,21 @@ class Tecnico extends Controller
                         }
                     }
                     $nombreReporteVisita = null;
+                    $nombreSistemaPdf = null;
+                    $preCotizacionModel = PreCotizaion::find($idPreCotizacion);
                     if($request->has('formatoVisitaPdf')){
-                        $nombreReporteVisita = "reporte_visitas_" . $idPreCotizacion . "_". time() .".pdf";
+                        if(!empty($preCotizacionModel->formato_visita_pdf) && Storage::exists('/formatoVisitas/'.$preCotizacionModel->formato_visita_pdf)){
+                            Storage::delete('/formatoVisitas/'.$preCotizacionModel->formato_visita_pdf);
+                        }
                         $reporteVisita = $request->file('formatoVisitaPdf');
-                        $rutaReporteVisita = "formatoVisitas/" . $nombreReporteVisita;
                         if ($reporteVisita) {
-                            $reporteVisita->storeAs('formatoVisitas', $nombreReporteVisita);
+                            $nombreSistemaPdf = "reporte_visitas_" . $idPreCotizacion . "_". uniqid() .".pdf";
+                            $rutaReporteVisita = "formatoVisitas/" . $nombreSistemaPdf;
+                            $nombreReporteVisita = $reporteVisita->getClientOriginalName();
+                            $reporteVisita->storeAs('formatoVisitas', $nombreSistemaPdf);
                         }
                     }
-                    
-                    PreCotizaion::find($idPreCotizacion)->update(['html_primera_visita' => $html,'columnas' => $request->columnas,'formato_visita_pdf' => $nombreReporteVisita,'estado' => 2,'usuario_modificado' => $usuario]);
+                    $preCotizacionModel->update(['html_primera_visita' => $html,'formato_visita_pdf' => $nombreSistemaPdf,'formato_visita_nombre' => $nombreReporteVisita,'estado' => 2,'usuario_modificado' => $usuario]);
                     DB::commit();
                     return ['success' => 'Reporte generado con éxito'];
                 } catch (\Throwable $th) {

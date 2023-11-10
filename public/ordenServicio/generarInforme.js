@@ -246,7 +246,6 @@ function loadPage() {
         }
     });
     const $frmSeccion = document.querySelector("#agregarSeccion #frmSeccionNueva");
-    console.log($frmSeccion);
     $frmSeccion.addEventListener("submit",async function(e){
         e.preventDefault();
         try {

@@ -46,11 +46,9 @@
                 <i class="fas fa-caret-right"></i>
                 Formato de visitas
               </h5>
-              <div class="d-flex" style="gap: 5px;">
-                <div>
-                  <input type="file" id="documentoVisitas" accept=".pdf" class="form-control">
-                </div>
-                <button class="btn btn-sm btn-danger" type="button" id="btnFormatoVisitas" title="Eliminar documento">
+              <div class="d-flex flex-wrap" style="gap: 5px;">
+                <input type="file" id="documentoVisitas" accept=".pdf" class="form-control" style="max-width: 500px;">
+                <button class="btn btn-sm btn-danger" hidden type="button" id="btnFormatoVisitasEliminar" title="Eliminar documento">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>

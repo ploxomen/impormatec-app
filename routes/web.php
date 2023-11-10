@@ -26,6 +26,7 @@ use App\Http\Controllers\Seguimiento;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
 use App\Http\Controllers\Utilitarios;
+use App\Models\PreCotizaion;
 // use App\Http\Controllers\Ventas\Comprobantes;
 // use App\Http\Controllers\Ventas\Cotizacion;
 // use App\Http\Controllers\Ventas\Ventas;
@@ -215,9 +216,17 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('nuevo', [PreCotizacion::class, 'indexNuevaPreCotizacion'])->name('cotizacion.precotizacion.nueva');
             Route::get('lista', [PreCotizacion::class, 'indexMisPreCotizaciones'])->name('cotizacion.precotizacion.lista');
             Route::post('lista-precotizacion', [PreCotizacion::class, 'obtenerPreCotizaciones']);
+            Route::post('seccion/agregar', [PreCotizacion::class, 'agregarNuevaSeccion']);
+            Route::post('seccion/imagen/agregar', [PreCotizacion::class, 'agregarImagenEnLaSeccion']);
+            Route::post('actualizar/datos', [PreCotizacion::class, 'actualizarDatos']);
+            Route::post('seccion/editar', [PreCotizacion::class, 'editarSeccion']);
+            Route::post('seccion/obtener', [PreCotizacion::class, 'obtenerInformacionSeccion']);
+            Route::post('seccion/eliminar', [PreCotizacion::class, 'eliminarSeccion']);
+            Route::post('seccion/imagen/eliminar', [PreCotizacion::class, 'eliminarImagenEnLaSeccion']);
             Route::get('lista/{precotizacion}', [PreCotizacion::class, 'showPreCotizacion']);
             Route::get('reporte/{preCotizacion}', [PreCotizacion::class, 'visualizacionPdfReporte']);
-            Route::delete('pdf-visita/{preCotizacion}', [PreCotizacion::class, 'eliminarFormatoVisita']);
+            Route::get('informe/{idPreCotizacion}', [PreCotizacion::class, 'obtenerInformePreCotizacion']);
+            Route::delete('eliminar/formato-visita/{preCotizacion}', [PreCotizacion::class, 'eliminarFormatoVisita']);
             Route::post('acciones', [PreCotizacion::class, 'accionesPreCotizacion']);
             Route::post('eliminar/imagen', [PreCotizacion::class, 'eliminarImagenPreCotizacion']);
             Route::post('actualizar', [PreCotizacion::class, 'actualizarPreCotizacion']);
@@ -230,7 +239,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('pre-cotizacion', [Tecnico::class, 'indexPrimeraVisitaPreCotizacion'])->name('cotizacion.tecnico.visita.pre');
             Route::post('acciones', [Tecnico::class, 'accionesPreCotizacion']);
             Route::get('informe/{idPreCotizacion}', [Tecnico::class, 'obtenerInformePreCotizacion']);
-
         });
         Route::prefix('seguimiento')->group(function () {
             Route::get('/', [Seguimiento::class, 'index'])->name('admin.cotizacion.seguimiento');
@@ -243,12 +251,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::delete('eliminar/{seguimiento}/{cotizacion}', [Seguimiento::class, 'destroy']);
 
         });
-        // Route::get('comprobante/{cotizacion}', [Cotizacion::class, 'comprobanteCotizacion']);
-        // Route::post('registrar', [Cotizacion::class, 'registrarCotizacion']);
-        // Route::get('listar/producto/{producto}', [Cotizacion::class, 'obtenerProducto']);
-        // Route::get('mostrar', [Cotizacion::class, 'verCotizacionesAdminIndex'])->name('admin.cotizaciones.index');
-        // Route::post('listar', [Cotizacion::class, 'verCotizacionesAdmin']);
-        // Route::delete('eliminar/{cotizacion}', [Cotizacion::class, 'eliminarCotizacion']);
     });
     Route::prefix('informe')->group(function () {
         Route::get('cliente/{idCliente}', [Informes::class, 'obtenerOrdenesServicioCliente']);

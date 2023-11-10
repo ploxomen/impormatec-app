@@ -1,5 +1,6 @@
 function loadPage() {
     let general = new General();
+    const preCotizacion = new PreCotizacion();
     let estadosPreCotizacion = ["Pragramado","Informado","Cotizado"]
     const tablaPreCotizacion = document.querySelector("#tablaPreCotizaciones");
     const cbTecnico = $("#cbTecnicoResponsable");
@@ -111,175 +112,147 @@ function loadPage() {
     let idReportePreCotizacion = null;
     const btnModalSave = document.querySelector("#btnGenerarReporte");
     const tituloModalReporte = document.querySelector("#tituloReporteCotizcion");
-    const renderImg = document.querySelector("#renderImg");
+    let idSeccion = null;
+    let borrarDatosInformeModal = true;
     const txtSinImagenes = document.querySelector("#txtSinImagenes");
     const frmServicios = document.querySelector("#contenidoServicios");
     const txtNoServicios = document.querySelector("#txtNoServi");
     const listaServicios = document.querySelector("#contenidoListaServicios");
     const cbServicios = $('#cbServicio');
-    function domImagen(idDetalle = null,urlImagen,nombreImagen,descripcion) {
-        const contenido = document.createElement("div");
-        contenido.className = "form-group col-12 col-xl-6 d-flex align-items-center";
-        contenido.style = "gap:5px;"
-        let img = new Image();
-        img.src = urlImagen;
-        img.classList.add('img-guias');
-        img.title = nombreImagen;
-        let txtDescripcion = document.createElement("textarea");
-        txtDescripcion.name = "descripcionImagen[]";
-        txtDescripcion.className = "form-control form-control-sm txtdescripcion";
-        txtDescripcion.placeholder = "Añadir descripción";
-        txtDescripcion.value = descripcion;
-        const btnDelete = document.createElement('button');
-        btnDelete.classList.add('img-btn-delete','btn','btn-sm','btn-light');
-        btnDelete.innerHTML = `<i class="fas fa-trash-alt"></i>`;
-        btnDelete.dataset.file = nombreImagen;
-        btnDelete.type = "button";
-        if(idDetalle){
-            btnDelete.dataset.detalle = idDetalle;
-            const inputId = document.createElement("input");
-            inputId.type = "hidden";
-            inputId.name = "idImagenDetalle[]";
-            inputId.value = idDetalle;
-            contenido.append(inputId);
-        }
-        contenido.append(img,txtDescripcion,btnDelete);
-        renderImg.append(contenido);
-    }
-    const imgCopia = document.querySelector("#imgCopia");
-    const btnImg = document.querySelector("#btnImagen");
-    const imgOriginal = document.querySelector("#imgsOriginal");
-    btnImg.onclick = e => imgCopia.click();
-    imgCopia.addEventListener("change",async function(e){
-        if(!this.files.length){
-            return
-        }
-        const pattern = /image-*/;
-        let datos = new FormData();   
-        for (let i = 0; i < this.files.length; i++) {
-            if(!this.files[i].type.match(pattern)){
-                return alertify.alert("Mensaje", "El archivo " + this.files[i].name +" no es una imagen");
-            }
-            datos.append('imagenes[]', this.files[i]);
-        }
-        datos.append("idPreCotizacion",idReportePreCotizacion);
-        let response = await general.funcfetch("agregar/imagen",datos,"POST");
-        if(response.listaImagenes){
-            if(renderImg.children.length === 1){
-                txtSinImagenes.hidden = true;
-            }
-            response.listaImagenes.forEach(img => {
-                domImagen(img.id,general.urlImagenesPreCotizacion + img.url_imagen,img.nombre_original_imagen,"");
-            });
-            return alertify.success("la imagen se agrego correctamente");
-        }
-    });
     const documentoFormatoVisita = document.querySelector("#documentoVisitas");
-    const btndocumentoFormatoVisita = document.querySelector("#btnFormatoVisitas");
-    btndocumentoFormatoVisita.onclick = e => {
-        alertify.confirm("Alerta","¿Desea borrar el documento de visita de manera permanente?",async ()=>{
+    const btnEliminarDocumento = document.querySelector("#btnFormatoVisitasEliminar");
+    btnEliminarDocumento.onclick = e => {
+        alertify.confirm("Alerta","¿Deseas eliminar el reporte de visita?",async () => {
             try {
-                general.cargandoPeticion(e.target, general.claseSpinner, true);
-                const response = await general.funcfetch("pdf-visita/" + idReportePreCotizacion,null,"DELETE");
-                if (response.session) {
-                    return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
+                const response = await general.funcfetch(preCotizacion.url + `/eliminar/formato-visita/${idReportePreCotizacion}`,null, "DELETE");
+                if(response.session){
+                    return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
                 }
-                if (response.alerta) {
-                    return alertify.alert("Alerta", response.alerta);
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
                 }
-                const txtFormatoVisita = document.querySelector("#modalPrimeraVisita #documento-mostrar-formato-visita");
-                if(txtFormatoVisita){
-                    txtFormatoVisita.remove();
+                documentoFormatoVisita.value = "";
+                if(document.querySelector("#documento-mostrar-formato-visita")){
+                    document.querySelector("#documento-mostrar-formato-visita").remove();
                 }
-                return alertify.success(response.success);
+                alertify.success(response.success);
             } catch (error) {
                 console.error(error);
-                alertify.error("error al obtener el eliminar el formato de visita");
-            }finally{
-                general.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
+                alertify.error("error al eliminar el formato de visita");
             }
-        },()=>{})
+        },() => {});
     };
-    // documentoFormatoVisita.addEventListener("change",function(e){
-    //     const documentos = e.target.files;
-    //     if(document.querySelector("#documento-mostrar-formato-visita")){
-    //         document.querySelector("#documento-mostrar-formato-visita").remove();
-    //     }
-    //     if(!documentos.length){
-    //         return alertify.error("documento no seleccionado");
-    //     }
-    //     const formatoVisita = documentos[0];
-    //     if(formatoVisita.type !== "application/pdf"){
-    //         return alertify.error("el documento debe de ser un pdf");
-    //     }
-    //     const documentoSubido = document.createElement("div");
-    //     documentoSubido.className = "rounded-pill bg-light p-2";
-    //     documentoSubido.id = "documento-mostrar-formato-visita";
-    //     documentoSubido.innerHTML = `
-    //     <span>${formatoVisita.name}</span>`
-    //     this.parentElement.insertAdjacentHTML("beforeend",documentoSubido.outerHTML);
-    //     return alertify.success("formato de visita seleccionado corretamente");
-    // });
-    function deleteImg(nameImg,li){
-        const newDataTrnasfer = new DataTransfer();
-        const filesParent = imgOriginal;
-        let deleteDom = false;
-        for (let i = 0; i < filesParent.files.length; i++) {
-            if(filesParent.files[i].name != nameImg){
-                newDataTrnasfer.items.add(filesParent.files[i]);
-            }else{
-                deleteDom = true;
+    preCotizacion.$contenidoSecciones.addEventListener("click",async function(e){
+        $dom = e.target;
+        if($dom.classList.contains("agregar-imagen")){
+            document.querySelector($dom.dataset.file).click();
+        }
+        if($dom.classList.contains("editar-seccion")){
+            try {
+                let datos = new FormData();
+                datos.append("preCotizacion",idReportePreCotizacion);
+                datos.append("seccion",$dom.dataset.seccion);
+                const response = await general.funcfetch(preCotizacion.url + "/seccion/obtener",datos,"POST");
+                if(response.session){
+                    return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                }
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
+                }
+                for (const key in response.success) {
+                    if (Object.hasOwnProperty.call(response.success, key)) {
+                        const element = response.success[key];
+                        const $domValor = document.querySelector("#agregarSeccion #idModalSeccion" + key);
+                        if(!$domValor){
+                            continue;
+                        }
+                        $domValor.value = element;
+                    }
+                }
+                idSeccion = response.success.id;
+                borrarDatosInformeModal = false;
+                $('#modalPrimeraVisita').modal("hide");
+                setTimeout(e => {
+                    $('#agregarSeccion').modal('show');
+                },500);
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener la seccion")
             }
         }
-        filesParent.files = newDataTrnasfer.files;
-        if(deleteDom){
-            li.remove();
-            alertify.success("la imagen se a eliminado correctamente del reporte");
+        if($dom.classList.contains("eliminar-img")){
+            alertify.confirm("Mensaje","Al continuar se eliminará la imagen. <br> ¿Desea continuar de todas formas?",async () => {
+                let datos = new FormData();
+                datos.append("preCotizacion",idReportePreCotizacion);
+                datos.append("seccion", $dom.dataset.seccion);
+                datos.append("img",$dom.dataset.img);
+                try {
+                    const response = await general.funcfetch(preCotizacion.url + "/seccion/imagen/eliminar",datos,"POST");
+                    if(response.session){
+                        return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    $contenedor = $dom.parentElement;
+                    $contenedor.remove();
+                    $contenedorSecciones = document.querySelector(`#idModalContenidoImagenes${$dom.dataset.seccion}`);
+                    if($contenedorSecciones.children.length === 0){
+                        $contenedorSecciones.innerHTML = `
+                        <div class="text-center contenido-vacio-img col-12">
+                            <span>No se agregaron imágenes para esta sección</span>
+                        </div>
+                        `
+                    }
+                    return alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al eliminar la imagen")
+                }
+            },()=>{})
         }
-        if(renderImg.children.length === 1){
-            txtSinImagenes.hidden = false;
+        if($dom.classList.contains("eliminar-seccion")){
+            alertify.confirm("Mensaje","Al continuar se eliminará la sección y las imágenes relacionadas a ella. <br> ¿Desea continuar de todas formas?",async () => {
+                let datos = new FormData();
+                datos.append("preCotizacion",idReportePreCotizacion);
+                datos.append("seccion",$dom.dataset.seccion);
+                try {
+                    const response = await general.funcfetch(preCotizacion.url + "/seccion/eliminar",datos,"POST");
+                    if(response.session){
+                        return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    $contenedor = $dom.parentElement.parentElement.parentElement;
+                    $contenedor.remove();
+                    $contenedorSecciones = Array.from((preCotizacion.$contenidoSecciones).children);
+                    if($contenedorSecciones.length === 0){
+                        preCotizacion.$contenidoSecciones.innerHTML = `
+                        <div class="text-center contenido-vacio">
+                            <span>No se agregaron secciones</span>
+                        </div>
+                        `
+                    }else{
+                        $contenedorSecciones.forEach((seccion,kseccion) => {
+                            if(seccion.querySelector(".nombre-seccion")){
+                                seccion.querySelector(".nombre-seccion").textContent = `Sección N° ${kseccion + 1}`
+                            }
+                        })
+                    }
+                    return alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al eliminar la seccion")
+                }
+            },()=>{})
         }
-    }
-    const cbColumnas = document.querySelector("#idModalSeccioncolumnas");
+    });
     tablaPreCotizacion.addEventListener("click",async function(e){
         if (e.target.classList.contains("editar-informe")){
             btnModalSave.querySelector("span").textContent = "Editar reporte";
-            try {
-                general.cargandoPeticion(e.target, general.claseSpinner, true);
-                const response = await general.funcfetch("lista/" + e.target.dataset.precotizacion,null,"GET");
-                general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);
-                if (response.session) {
-                    return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
-                }
-                tituloModalReporte.textContent = "Editar Reporte de Pre - Cotización";
-                idReportePreCotizacion = e.target.dataset.precotizacion;
-                const preCotizacionResponse = response.precotizacion;
-                tinymce.activeEditor.setContent(!preCotizacionResponse.html_primera_visita ? "" : preCotizacionResponse.html_primera_visita);
-                if(preCotizacionResponse.listaImagenes.length){
-                    txtSinImagenes.hidden = true;
-                }
-                preCotizacionResponse.listaImagenes.forEach(img => {
-                    domImagen(img.id,general.urlImagenesPreCotizacion + img.url_imagen,img.nombre_original_imagen,img.descripcion);
-                });
-                preCotizacionResponse.listaServicios.forEach(ser => {
-                    cbServicios.val(ser.id_servicios).trigger("change");
-                });
-                cbColumnas.value = preCotizacionResponse.columnas;
-                if(preCotizacionResponse.formato_visita_pdf){
-                    const documentoSubido = document.createElement("a");
-                    documentoSubido.className = "rounded-pill bg-light p-2";
-                    documentoSubido.id = "documento-mostrar-formato-visita";
-                    documentoSubido.href = window.origin + "/intranet/storage/formatoVisitas/" + preCotizacionResponse.formato_visita_pdf;
-                    documentoSubido.target = "_blank";
-                    documentoSubido.textContent = "formato_unicio_visitas.pdf";
-                    documentoFormatoVisita.parentElement.insertAdjacentHTML("afterend",documentoSubido.outerHTML);
-                }
-                $('#modalPrimeraVisita').modal("show");
-            } catch (error) {
-                general.cargandoPeticion(e.target, 'fas fa-pencil-alt', false);
-                console.error(error);
-                alertify.error("error al obtener el reporte de pre - cotización");
-            }
+            idReportePreCotizacion = e.target.dataset.precotizacion;
+            preCotizacion.cargarPreInformeEditar({idVisita : idReportePreCotizacion,cbServicios,listaServicios,txtNoServicios,btnEliminarDocumento,documentoFormatoVisita});
         }
         if (e.target.classList.contains("editar-precotizacion")) {
             try {
@@ -344,40 +317,6 @@ function loadPage() {
             },()=>{});
         }
     })
-    
-    renderImg.onclick = function(e){
-        if(e.target.classList.contains("img-btn-delete")){
-            const btnEliminarImagen = e.target;
-            const li = btnEliminarImagen.parentElement;
-            if(!btnEliminarImagen.dataset.detalle){
-                deleteImg(btnEliminarImagen.dataset.file,li);
-            }else{
-                alertify.confirm("Mensaje","¿Estas seguro de eliminar la imagen de este reporte?",async () => {
-                    try {
-                        general.cargandoPeticion(btnEliminarImagen, general.claseSpinner, true);
-                        let datos = new FormData();
-                        datos.append("idPreCotizacion",idReportePreCotizacion);
-                        datos.append("idImagen",btnEliminarImagen.dataset.detalle);
-                        const response = await general.funcfetch("eliminar/imagen",datos,"POST");
-                        if (response.session) {
-                            return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
-                        }
-                        li.remove();
-                        alertify.success(response.success);
-                        if(renderImg.children.length === 1){
-                            txtSinImagenes.hidden = false;
-                        }
-                    }catch(error){
-                        console.error(error);
-                        alertify.error("error al eliminar la imagen del reporte")
-                    }finally{
-                        general.cargandoPeticion(btnEliminarImagen, 'fas fa-trash-alt', false);
-                    }
-                },()=>{})
-            }
-        }
-    }
-    
     cbServicios.on("change.select2",function(e){
         general.seleccionarServicios(cbServicios,listaServicios,txtNoServicios)
     });
@@ -394,6 +333,20 @@ function loadPage() {
             }
         }
     }
+    document.querySelector("#btnAgregarSeccion").onclick = e => {
+        borrarDatosInformeModal = false;
+        idSeccion = null;
+        $('#modalPrimeraVisita').modal("hide");
+        setTimeout(e => {
+            $('#agregarSeccion').modal('show');
+        },500);
+    }
+    document.querySelector("#btnGuardarFrmSeccion").onclick = e => document.querySelector("#btnSeccionAgregar").click();
+    const $frmSeccion = document.querySelector("#frmSeccionNueva");
+    $frmSeccion.addEventListener("submit",function(e){
+        e.preventDefault();
+        preCotizacion.agregarEditarSeccion(this,idSeccion,idReportePreCotizacion);
+    });
     const btnSaveModal = document.querySelector("#btnGenerarReporte");
     btnSaveModal.onclick = e => document.querySelector("#btnFrom").click();
     frmServicios.addEventListener("submit",async function(e){
@@ -402,13 +355,12 @@ function loadPage() {
         if(!contenido){
             return alertify.error("por favor redacte el informe");
         }
-        // if(!documentoFormatoVisita.value){
-        //     return alertify.error("por favor carge su formato unico de visita");
-        // }
         const data = new FormData(this);
         data.append("html",contenido);
         data.append("preCotizacion",idReportePreCotizacion);
-        data.append("formatoVisitaPdf",documentoFormatoVisita.files[0]);
+        if(documentoFormatoVisita.value){
+            data.append("formatoVisitaPdf",documentoFormatoVisita.files[0]);
+        }
         general.cargandoPeticion(btnSaveModal, general.claseSpinner, true);
         try {
             const response = await general.funcfetch("actualizar",data, "POST");
@@ -432,10 +384,15 @@ function loadPage() {
         }
     })
     $('#modalPrimeraVisita').on('hidden.bs.modal', function (event) {
-        tinymce.activeEditor.setContent("");
+        if(!borrarDatosInformeModal){
+            return false;
+        }
+        if(document.querySelector("#documento-mostrar-formato-visita")){
+            document.querySelector("#documento-mostrar-formato-visita").remove();
+        }
+        preCotizacion.$contenidoSecciones.innerHTML = "";
         txtNoServicios.hidden = false;
-        txtSinImagenes.hidden = false;
-        cbColumnas.value = 3;
+        btnEliminarDocumento.hidden = true;
         documentoFormatoVisita.value = "";
         if(document.querySelector("#documento-mostrar-formato-visita")){
             document.querySelector("#documento-mostrar-formato-visita").remove();
@@ -445,9 +402,6 @@ function loadPage() {
         }
         for (const cb of cbServicios[0].options) {
             cb.disabled = false;
-        }
-        for (const red of renderImg.querySelectorAll(".d-flex")) {
-            red.remove();
         }
     });
     const formPreCotizacion = document.querySelector("#contenidoPreCotizacion");
@@ -546,6 +500,12 @@ function loadPage() {
             txt.hidden = condicion;
         }
     }
+    $('#agregarSeccion').on('hidden.bs.modal', function (event) {
+        borrarDatosInformeModal = true;
+        setTimeout(e => {
+            $('#modalPrimeraVisita').modal('show');
+        },500);
+    });
     const btnPreCoti = document.querySelector("#btnEditarPreCotizacion");
     btnPreCoti.onclick = e => document.querySelector("#btnFrmEnviar").click();
     formPreCotizacion.addEventListener("submit",async function(e){
