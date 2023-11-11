@@ -71,7 +71,6 @@ class PreCotizacion extends Controller
             return redirect()->route("home"); 
         }
         $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
-        $preCotizacion->img = CotizacionPreSecciones::where('id_pre_cotizacion',$preCotizacion->id)->get();
         $titulo = 'REPORTE_PRECOTIZACION_'.str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT);
         $rutaVisataUnica = '/formatoVisitas/'.$preCotizacion->formato_visita_pdf;
         try {

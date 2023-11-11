@@ -87,9 +87,17 @@ function loadPage() {
                         <i class="fas fa-pencil-alt text-info"></i>
                         <span>Editar Informe</span>
                     </a>
+                    <a href="javascript:void(0)" class="dropdown-item generar-acta" data-orden-servicio="${data}">
+                        <i class="fas fa-share-square text-primary"></i>
+                        <span>Acta de entrega</span>
+                    </a>
                     <a href="../informe/reporte/previa/${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <span>Ver Informe PDF</span>
+                    </a>
+                    <a href="../informe/reporte/previa/${data}" target="_blank" class="dropdown-item">
+                        <i class="fas fa-file-pdf text-danger"></i> 
+                        <span>Ver acta de entrega</span>
                     </a>
                     `
                 }
@@ -140,12 +148,48 @@ function loadPage() {
             }
         })
     });
+    const canvaFirma = document.querySelector("#idModalActafirma");
+    const signaturePad = new SignaturePad(canvaFirma,{
+        minWidth:0.5,
+        maxWidth:1
+    });
+    document.querySelector("#btnLimpiarFirma").onclick = e => signaturePad.clear();
     let tablaServicios = document.querySelector("#contenidoServicios");
     let tablaServiciosAdicionales = document.querySelector("#tablaServiciosAdicionales");
     let $tipoMoneda = document.querySelector("#editarOrdenServicio #idModaltipoMoneda");
     let listaServicios = [];
     let idOrdenServicio = null;
     const cbCotizaciones = document.querySelector("#idCotizacionServicio");
+    document.querySelector("#btnGuardarCambiosActa").onclick = e => document.querySelector("#enviarActa").click();
+    const formularioActa = document.querySelector("#frmActa");
+    let idActaEntrega = null;
+    formularioActa.addEventListener("submit",async (e)=>{
+        e.preventDefault();
+        try {
+            let datos = new FormData(e.target);
+            if(signaturePad.isEmpty()){
+                return alertify.error("por favor establesca una firma");
+            }
+            datos.append("ordenServicio",idOrdenServicio);
+            if(idActaEntrega){
+                datos.append("idEntregaActa",idActaEntrega);
+            }
+            datos.append("imagenFirmaRepresentante",signaturePad.toDataURL());
+            const response = await gen.funcfetch("acta-entrega/guardar",datos,"POST");
+            if (response.session) {
+                return alertify.alert([...gen.alertaSesion], () => {
+                    window.location.reload();
+                });
+            }
+            if(response.alerta){
+                return alertify.alert("Alerta",response.alerta);
+            }
+            return alertify.success(response.success);
+        }catch(error){
+            console.error(error);
+            alertify.error("error al guardar los datos de la acta de entrega");
+        }
+    });
     tablaOs.addEventListener("click",async (e)=>{
         if(e.target.classList.contains("editar-os")){
             try {
@@ -203,6 +247,42 @@ function loadPage() {
                 alertify.error("error al obtener los datos de la orden de servicio");
             }
         }
+        if(e.target.classList.contains("generar-acta")){
+            try {
+                const response = await gen.funcfetch("acta-entrega/" + e.target.dataset.ordenServicio,null,"GET");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => {
+                        window.location.reload();
+                    });
+                }
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
+                }
+                idOrdenServicio = e.target.dataset.ordenServicio;
+                for (const key in response.actas) {
+                    if (Object.hasOwnProperty.call(response.actas, key)) {
+                        const valor = response.actas[key];
+                        const dom = document.querySelector("#generarActaEntrega #idModalActa" + key);
+                        if(key === 'imgFirmanteRepresentante'){
+                            signaturePad.fromDataURL(window.origin + '/intranet/storage/firmaEntregaActas/' + valor);
+                            continue;
+                        }
+                        if(!dom){
+                            continue;
+                        }
+                        dom.value = valor;
+                    }
+                }
+                if(response.actas){
+                    idActaEntrega = response.actas.id;
+                }
+                $('#generarActaEntrega .select2-simple').trigger("change");
+                $('#generarActaEntrega').modal("show")
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener los datos de la acta de entrega");
+            }
+        }
     });
     $(cbCotizaciones).on('select2:select',async (e)=>{
         try {
@@ -241,6 +321,13 @@ function loadPage() {
     );
     btnAgregarServiciosAdicionales.onclick = e => ordenServicio.agregarServiciosAdicionales(tablaServiciosAdicionales,listaServicios,$tipoMoneda.value);
     const frmOs = document.querySelector("#frmOrdenServicio");
+    $('#generarActaEntrega').on('hidden.bs.modal', function (event) {
+        formularioActa.reset();
+        $('#generarActaEntrega .select2-simple').trigger("change");
+        signaturePad.clear();
+        idActaEntrega = null;
+        idOrdenServicio = null;
+    });
     $('#editarOrdenServicio').on('hidden.bs.modal', function (event) {
         cbCotizaciones.innerHTML = "";
         tablaServiciosAdicionales.innerHTML = "";

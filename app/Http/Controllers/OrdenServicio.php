@@ -7,13 +7,16 @@ use App\Models\Configuracion;
 use App\Models\Cotizacion;
 use App\Models\CotizacionProductos;
 use App\Models\CotizacionServicio;
+use App\Models\EntregaActa;
 use App\Models\OrdenServicio as ModelsOrdenServicio;
 use App\Models\OrdenServicioAdicional;
 use App\Models\OrdenServicioCotizacionProducto;
 use App\Models\OrdenServicioCotizacionServicio;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class OrdenServicio extends Controller
@@ -48,7 +51,8 @@ class OrdenServicio extends Controller
         }
         $clientes = Clientes::obenerClientesActivos();
         $modulos = $this->usuarioController->obtenerModulos();
-        return view("ordenesServicio.misOrdenes",compact("modulos","clientes"));
+        $firmasUsuarios = User::firmasHabilitadas();
+        return view("ordenesServicio.misOrdenes",compact("modulos","clientes","firmasUsuarios"));
     }
     public function accionesOrdenServicio(Request $request)  {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
@@ -211,6 +215,52 @@ class OrdenServicio extends Controller
         }
         $ordenesServicios = ModelsOrdenServicio::misOrdeneseServicio();
         return DataTables::of($ordenesServicios)->toJson();
+    }
+    public function obtenerDatosActa(ModelsOrdenServicio $ordenServicio) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $entregaActa = EntregaActa::select("id","id_responsable_firmante AS firmaEntrega","nombre_representante AS nombreRepresentante","dni_representante AS dniRepresentante","firma_representante AS imgFirmanteRepresentante")->where('id_orden_servicio',$ordenServicio->id)->first();
+        return response()->json(['actas' => $entregaActa]);
+    }
+    public function guardarDatosActa(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $datos = [
+            'id_responsable_firmante' => $request->usuario_entrega,
+            'nombre_representante' => $request->nombre_representante,
+            'dni_representante' => $request->dni_representante,
+            'estado' => 1
+        ];
+        DB::beginTransaction();
+        try {
+            if($request->has('idEntregaActa')){
+                $entregaActaModel = EntregaActa::find($request->idEntregaActa);
+                if(!empty($entregaActaModel->firma_representante) && Storage::exists('/firmaEntregaActas/'.$entregaActaModel->firma_representante)){
+                    Storage::delete('/firmaEntregaActas/'.$entregaActaModel->firma_representante);
+                }
+            }
+            $data_uri = $request->imagenFirmaRepresentante;
+            $encoded_image = explode(",", $data_uri)[1];
+            $nombreArchivo = 'firma_' . time() . '.png';
+            $decoded_image = base64_decode($encoded_image);
+            file_put_contents(storage_path('/app/firmaEntregaActas/'.$nombreArchivo), $decoded_image);
+            $datos['firma_representante'] = $nombreArchivo;
+            if(!$request->has('idEntregaActa')){
+                $datos['id_orden_servicio'] = $request->ordenServicio;
+                EntregaActa::create($datos);
+            }else{
+                EntregaActa::find($request->idEntregaActa)->update($datos);
+            }
+            DB::commit();
+            return response()->json(['success' => 'datos guardados correctamente']);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json(['error' => $th->getMessage()]);
+        }
     }
     public function reporteOrdenServicio(ModelsOrdenServicio $ordenServicio) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);

@@ -3,6 +3,7 @@
     @include('helper.headDatatable')
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="/ordenServicio/compartidoOs.js?v1.5"></script>
     <script src="/ordenServicio/misOs.js?v1.5"></script>
     <title>Mis Cotizaciones</title>
@@ -35,4 +36,5 @@
        </div>
     </section>
     @include('ordenesServicio.modales.editarOrdenes')
+    @include('ordenesServicio.modales.actaEntrega')
 @endsection

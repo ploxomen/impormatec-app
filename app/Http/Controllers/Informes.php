@@ -98,15 +98,24 @@ class Informes extends Controller
         }
         $cetificadoOperativo = CertificadosServicios::where('id_os_cotizacion_servicio',$OsCotizacionServicio->id);
         if(!$cetificadoOperativo->count()){
-            $cetificadoOperativo = CertificadosServicios::create(['estado' => 1,'id_os_cotizacion_servicio' => $OsCotizacionServicio->id]);
+            $cetificadoOperativo = CertificadosServicios::create(['estado' => 1,'id_os_cotizacion_servicio' => $OsCotizacionServicio->id,'fecha' => date('Y-m-d'),'lugar' => 'Lima','asunto' => 'Certificado de Operatividad del ' . $OsCotizacionServicio->cotizacionServicio->servicios->servicio]);
             $OsCotizacionServicio->update(['estado' => 3]);
         }else{
             $cetificadoOperativo = $cetificadoOperativo->first();
         }
+        return redirect()->route('certificado.informe',[$cetificadoOperativo->id]);
+        
+    }
+    public function visualizarCertificadoInforme(CertificadosServicios $cetificadoOperativo) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
+        if(isset($verif['session']) && isset($verif2['session'])){
+            return redirect()->route("home");
+        }
         $modulos = $this->usuarioController->obtenerModulos();
         return view('ordenesServicio.generarCertificado',compact("cetificadoOperativo","modulos"));
     }
-    public function visualizarCertificado(OrdenServicioCotizacionServicio $OsCotizacionServicio) {
+    public function visualizarCertificado(CertificadosServicios $certificado) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
         $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisInformes);
         if(isset($verif['session']) && isset($verif2['session'])){
@@ -114,7 +123,6 @@ class Informes extends Controller
         }
         $utilitarios = new Utilitarios();
         $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter','ruc'])->get();
-        $certificado = $OsCotizacionServicio->certificado;
         $certificado->fechaLarga = $utilitarios->obtenerFechaLargaSinDia(strtotime($certificado->fecha));
         $cliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->cliente;
         $direccionCliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->direccionCliente;

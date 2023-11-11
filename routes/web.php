@@ -259,10 +259,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('seccion/editar', [Informes::class, 'editarSeccion']);
         Route::post('seccion/obtener', [Informes::class, 'obtenerInformacionSeccion']);
         Route::post('seccion/eliminar', [Informes::class, 'eliminarSeccion']);
-        Route::get('certificado/{OsCotizacionServicio}', [Informes::class, 'certificadoInforme'])->name("certificado.informe");
+        Route::get('certificado/{OsCotizacionServicio}', [Informes::class, 'certificadoInforme']);
+        Route::get('certificado/visualizar/{cetificadoOperativo}', [Informes::class, 'visualizarCertificadoInforme'])->name("certificado.informe");
         Route::post('certificado/actualizar', [Informes::class, 'actualizarCertificado']);
-        Route::get('certificado/reporte/{OsCotizacionServicio}', [Informes::class, 'visualizarCertificado']);
-
+        Route::get('certificado/reporte/{certificado}', [Informes::class, 'visualizarCertificado']);
         Route::get('reporte/previa/{idOrdenServicio}/{idServicio?}', [Informes::class, 'reportePrevioInforme'])->name("reporte.previo.informe");
         Route::post('seccion/imagen/agregar', [Informes::class, 'agregarImagenEnLaSeccion']);
         Route::post('actualizar/datos', [Informes::class, 'actualizarDatos']);
@@ -282,6 +282,8 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::post('acciones', [OrdenServicio::class, 'accionesOrdenServicio']);
         Route::get('mostrar/{ordenServicio}', [OrdenServicio::class, 'obtenerDatosOrdenServicio']);
         Route::get('reporte/{ordenServicio}', [OrdenServicio::class, 'reporteOrdenServicio']);
+        Route::get('acta-entrega/{ordenServicio}', [OrdenServicio::class, 'obtenerDatosActa']);
+        Route::post('acta-entrega/guardar', [OrdenServicio::class, 'guardarDatosActa']);
     });
     Route::prefix('usuarios')->group(function(){
         Route::post('accion',[Usuario::class,'usuarioAccion']);

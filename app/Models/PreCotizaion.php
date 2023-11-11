@@ -32,7 +32,6 @@ class PreCotizaion extends Model
             $preCotizacion->tecnicos = PreCotizaionTecnico::where('id_pre_cotizacion',$preCotizacion->id)->get();
         }
         return $preCotizacion;
-
     }
     public static function obtenerPreCotizacion($idPreCotizacion,$idTecnico){
         $preCotizacion = PreCotizaionTecnico::select("cotizacion_pre.id","formato_visita_pdf","html_primera_visita","formato_visita_nombre")->join("cotizacion_pre","cotizacion_pre.id","=","cotizacion_pre_tecnicos.id_pre_cotizacion")->where(['id_pre_cotizacion' => $idPreCotizacion]);
@@ -110,6 +109,10 @@ class PreCotizaion extends Model
     public function cliente()
     {
         return $this->belongsTo(Clientes::class,'id_cliente');
+    }
+    public function secciones()
+    {
+        return $this->hasMany(CotizacionPreSecciones::class,'id_pre_cotizacion');
     }
     public function contactos()
     {

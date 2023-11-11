@@ -19,60 +19,66 @@
 <div>
     {!! $reportePreCotizacionHtml !!}
 </div>
-@if (count($reportePreCotizacionImagenes))
-    <div class="saltopagina"></div>
-    <p>
-        <strong>
-            <u>IMAGENES DETALLADAS:</u>
-        </strong>
-    </p>
-    <table>
+<div class="saltopagina"></div>
+@foreach ($preCotizacion->secciones as $ks => $seccion)
+    <h3 class="text-center titulo-seccion">
+    {{$seccion->titulo}}
+    </h3>
+    @if ($seccion->imagenes->count() === 0)
+        <h4 class="text-center">NO SE ASIGNARON FOTOS A ESTA SECCION</h4>
         @php
-            $columna = $preCotizacion->columnas;
-            $ancho = 100;
-            switch ($columna) {
-                case 2:
-                    $ancho = 350;
-                break;
-                case 3:
-                    $ancho = 235;
-                break;
-                case 4:
-                    $ancho = 175;
-                break;
-            }
-            $inicioContador = 1;
+            continue;
         @endphp
-            @foreach ($reportePreCotizacionImagenes as $keyImagen => $imagen)
+    @endif
+    @php
+        $columna = $seccion->columnas;
+        $ancho = 100;
+        switch ($columna) {
+            case 2:
+                $ancho = 350;
+            break;
+            case 3:
+                $ancho = 235;
+            break;
+            case 4:
+                $ancho = 175;
+            break;
+        }
+        $inicioContador = 1;
+    @endphp
+    <table>
+        @foreach ($seccion->imagenes as $keyImagen => $imagen)
+            @php
+                $path = storage_path('app/preCotizacionImgSeccion/' . $imagen->url_imagen);
+                if (!\File::exists($path) || empty($imagen->url_imagen)) {
+                    $path = storage_path('app/productos/sin-imagen.png');
+                }
+            @endphp
+            @if ($inicioContador === 1)
+                <tr>
+            @endif
+            <td style="width:{{$ancho}}px;vertical-align: top !important;" class="text-center">
+                <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
+                <h4 class="descripcion-img">
+                    {{$imagen->descripcion}}
+                </h4>
+            </td>
+            @if ($inicioContador === $columna || ($columna !== $inicioContador && ($keyImagen + 1) === count($seccion->imagenes)))
+                </tr>
                 @php
-                    $pathReporte = storage_path('app/imgCotizacionPre/' . $imagen->url_imagen);
-                    $pixelReporte = 160;
-                    if (!\File::exists($pathReporte) || empty($imagen->url_imagen)) {
-                        $pathReporte = storage_path('app/productos/sin-imagen.png');
-                    }
+                    $inicioContador = 1;
                 @endphp
-                @if ($inicioContador === 1)
-                    <tr>
-                @endif
-                <td style="width:{{$ancho}}px;vertical-align: top !important;" class="text-center">
-                    <img src="{{$pathReporte}}" alt="Imagen del informe" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
-                    <p>
-                        {{$imagen->descripcion}}
-                    </p>
-                </td>
-                @if ($inicioContador === $columna || ($columna !== $inicioContador && ($keyImagen + 1) === count($reportePreCotizacionImagenes)))
-                    </tr>
-                    @php
-                        $inicioContador = 1;
-                    @endphp
-                @else
-                    @php
-                        $inicioContador++;
-                    @endphp
-                @endif
-            @endforeach
+            @else
+                @php
+                    $inicioContador++;
+                @endphp
+            @endif
+        @endforeach
     </table>
-@endif
+    @if (($ks + 1) !== count($preCotizacion->secciones))
+        <div class="saltopagina"></div>
+    @endif
+@endforeach
 @php
     $firmaTecnico = $preCotizacion->tecnicoResponsable;
     $firma = null;

@@ -11,5 +11,7 @@ class CotizacionPreSecciones extends Model
     protected $fillable = ['id_pre_cotizacion','titulo','columnas','estado','nombre_original_imagen'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-    
+    public function imagenes() {
+        return $this->hasMany(PreCotizacionSeccionImagen::class,'id_pre_cotizacion_seccion');
+    }
 }

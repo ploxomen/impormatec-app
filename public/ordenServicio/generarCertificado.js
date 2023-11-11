@@ -34,7 +34,7 @@ function loadPage() {
             let datos = new FormData(this);
             datos.append("certificado",idCertificado);
             datos.append("descripcion",tinymce.activeEditor.getContent());
-            const response = await general.funcfetch('actualizar',datos,"POST");
+            const response = await general.funcfetch('../actualizar',datos,"POST");
             if(response.session){
                 return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
             }
@@ -50,7 +50,7 @@ function loadPage() {
     $('[data-toggle="tooltip"]').tooltip();
     document.querySelector("#visualizarCertificado").addEventListener("click",function(e){
         e.preventDefault();
-        window.open('reporte/' + idCertificado,'target');
+        window.open('../reporte/' + idCertificado,'target');
     })
 }
 window.addEventListener("DOMContentLoaded", loadPage);
