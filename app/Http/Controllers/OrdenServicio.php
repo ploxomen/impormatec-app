@@ -264,14 +264,14 @@ class OrdenServicio extends Controller
             }
             $data_uri = $request->imagenFirmaRepresentante;
             $encoded_image = explode(",", $data_uri)[1];
-            $nombreArchivo = 'firma_' . time() . '.png';
+            $nombreArchivo = 'firma_' . time() . '.jpeg';
             $decoded_image = base64_decode($encoded_image);
             file_put_contents(storage_path('/app/firmaEntregaActas/'.$nombreArchivo), $decoded_image);
             $rutaOriginal = storage_path('app/firmaEntregaActas/'.$nombreArchivo);
             //Proceso para cortar una imagen
             $imagen = Image::make($rutaOriginal);
-            $imagenRecortada = $imagen->trim('transparent',['top', 'bottom','left','right'],0,15);
-            $nombreArchivoCortado = 'firma_cortado_' . (time() + 1) . '.png';
+            $imagenRecortada = $imagen->trim();
+            $nombreArchivoCortado = 'firma_cortado_' . (time() + 1) . '.jpeg';
             $rutaRecortada = storage_path('/app/firmaEntregaActas/'.$nombreArchivoCortado);
             $imagenRecortada->save($rutaRecortada);
             $datos['firma_representante'] = $nombreArchivo;

@@ -146,9 +146,9 @@ function loadPage() {
     });
     const canvaFirma = document.querySelector("#idModalActafirma");
     const signaturePad = new SignaturePad(canvaFirma,{
-        minWidth:0.5,
+        minWidth:1,
         maxWidth:1,
-        throttle: 0,
+        backgroundColor: 'rgb(255, 255, 255)'
     });
     document.querySelector("#btnLimpiarFirma").onclick = e => signaturePad.clear();
     let tablaServicios = document.querySelector("#contenidoServicios");
@@ -171,7 +171,7 @@ function loadPage() {
             if(idActaEntrega){
                 datos.append("idEntregaActa",idActaEntrega);
             }
-            datos.append("imagenFirmaRepresentante",signaturePad.toDataURL());
+            datos.append("imagenFirmaRepresentante",signaturePad.toDataURL("image/jpeg"));
             const response = await gen.funcfetch("acta-entrega/guardar",datos,"POST");
             if (response.session) {
                 return alertify.alert([...gen.alertaSesion], () => {
@@ -262,7 +262,7 @@ function loadPage() {
                         const valor = response.actas[key];
                         const dom = document.querySelector("#generarActaEntrega #idModalActa" + key);
                         if(key === 'firma_representante' && valor){
-                            signaturePad.fromDataURL(window.origin + '/intranet/storage/firmaEntregaActas/' + valor);
+                            signaturePad.fromDataURL(window.origin + '/intranet/storage/firmaEntregaActas/' + valor,{width: 300, height: 150, xOffset: 0, yOffset: 0 });
                             continue;
                         }
                         if(!dom){
