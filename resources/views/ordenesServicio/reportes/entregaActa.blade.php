@@ -62,7 +62,7 @@
             <td style="width: 50%; padding: 20px;">
                 <div style="text-align: center;">
                     <img src="{{storage_path('app/firmaEntregaActas/' . $entregaActa->firma_representante_cortado)}}" alt="Firma de la conformidad" width="170px" height="120px">
-                    <hr style="border: .5px solid #cbcbcb; margin-bottom: 0; margin-top:10px; ">
+                    <hr style="border: .5px solid #cbcbcb; margin-bottom: 0;  margin-top:10px; ">
                     <p style="margin: 0;">Firma de Conformidad</p>
                     <p style="margin: 0;"><b>{{$entregaActa->nombre_representante}}</b></p>
                 </div>
