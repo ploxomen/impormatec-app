@@ -31,7 +31,8 @@
         </tr>
         <tr>
             <td>
-                <strong>{{$cliente->nombreCliente}}</strong>
+                <strong>{{$cliente->nombreCliente}}</strong><br>
+                <span>{{$cotizacion->direccionCliente}}</span>
             </td>
             <td class="tabla-detalle">
                 <strong>Mes</strong>

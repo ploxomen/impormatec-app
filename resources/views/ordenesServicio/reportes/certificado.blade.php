@@ -44,7 +44,7 @@
     <p>
         <span>Señores:</span><br>
         <strong>{{$cliente->nombreCliente}}</strong><br>
-        <span>{{$direccionCliente}}</span><br>
+        <span>{{$cliente->usuario->direccion}}</span><br>
         <span>{{$cliente->departamento . ' - ' . $cliente->pais->pais_espanish}}</span>
     </p>
     <p>
@@ -63,7 +63,7 @@
         habilitado para ejercer la ingeniería en nuestro país, garantiza que las inspecciones y pruebas fueron realizadas bajo los estándares correspondientes.
     </p>
     <p class="text-justify">
-        El certificado de operatividad tendrá una vigencia de {{$certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->mesesGarantia}} meses, siempre que no se realicen cambios y/o manipulaciones en el sistema evaluado.
+        El certificado de operatividad tendrá una vigencia de <b>{{$certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->mesesGarantia}} meses</b>, siempre que no se realicen cambios y/o manipulaciones en el sistema evaluado.
     </p>
     @if (!empty($certificado->ordenServicioCotizacion->id_firma_profesional))
         <img src="{{$certificado->ordenServicioCotizacion->usuario->firma}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="200px" height="150px">

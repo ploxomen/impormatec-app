@@ -283,6 +283,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('mostrar/{ordenServicio}', [OrdenServicio::class, 'obtenerDatosOrdenServicio']);
         Route::get('reporte/{ordenServicio}', [OrdenServicio::class, 'reporteOrdenServicio']);
         Route::get('acta-entrega/{ordenServicio}', [OrdenServicio::class, 'obtenerDatosActa']);
+        Route::get('acta-entrega/reporte/{entregaActa}', [OrdenServicio::class, 'reporteEntregaActa']);
         Route::post('acta-entrega/guardar', [OrdenServicio::class, 'guardarDatosActa']);
     });
     Route::prefix('usuarios')->group(function(){

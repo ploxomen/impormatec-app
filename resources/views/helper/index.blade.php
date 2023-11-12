@@ -4,7 +4,6 @@
     @include('helper.meta')
     <script src="/home.js"></script>
     @yield('head')
-    <title>@yield('title')</title>
 </head>
 <body>
     <div class="menu-activos" id="salirMenuNavegacion"></div>

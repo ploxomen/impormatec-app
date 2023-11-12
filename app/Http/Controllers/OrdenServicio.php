@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use Intervention\Image\Facades\Image;
 
 class OrdenServicio extends Controller
 {
@@ -216,12 +217,26 @@ class OrdenServicio extends Controller
         $ordenesServicios = ModelsOrdenServicio::misOrdeneseServicio();
         return DataTables::of($ordenesServicios)->toJson();
     }
+    public function reporteEntregaActa(EntregaActa $entregaActa) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $utilitarios = new Utilitarios();
+        $tituloPdf = "ENTREGA ACTAS - " . str_pad($entregaActa->id,5,'0',STR_PAD_LEFT);
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $diaFecha = $utilitarios->obtenerFechaLargaSinDia(strtotime($entregaActa->fecha_entrega));
+        return Pdf::loadView('ordenesServicio.reportes.entregaActa',compact("tituloPdf","configuracion","entregaActa","diaFecha"))->stream($tituloPdf.".pdf");
+    }
     public function obtenerDatosActa(ModelsOrdenServicio $ordenServicio) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $entregaActa = EntregaActa::select("id","id_responsable_firmante AS firmaEntrega","nombre_representante AS nombreRepresentante","dni_representante AS dniRepresentante","firma_representante AS imgFirmanteRepresentante")->where('id_orden_servicio',$ordenServicio->id)->first();
+        $entregaActa = EntregaActa::select("id","id_responsable_firmante","nombre_representante","dni_representante","firma_representante","fecha_entrega")->where('id_orden_servicio',$ordenServicio->id)->first();
+        if(empty($entregaActa)){
+            $entregaActa = EntregaActa::create(['id_orden_servicio' => $ordenServicio->id,'estado' => 1]);
+        }
         return response()->json(['actas' => $entregaActa]);
     }
     public function guardarDatosActa(Request $request) {
@@ -233,6 +248,7 @@ class OrdenServicio extends Controller
             'id_responsable_firmante' => $request->usuario_entrega,
             'nombre_representante' => $request->nombre_representante,
             'dni_representante' => $request->dni_representante,
+            'fecha_entrega' => $request->fecha_entrega_acta,
             'estado' => 1
         ];
         DB::beginTransaction();
@@ -242,13 +258,24 @@ class OrdenServicio extends Controller
                 if(!empty($entregaActaModel->firma_representante) && Storage::exists('/firmaEntregaActas/'.$entregaActaModel->firma_representante)){
                     Storage::delete('/firmaEntregaActas/'.$entregaActaModel->firma_representante);
                 }
+                if(!empty($entregaActaModel->firma_representante_cortado) && Storage::exists('/firmaEntregaActas/'.$entregaActaModel->firma_representante_cortado)){
+                    Storage::delete('/firmaEntregaActas/'.$entregaActaModel->firma_representante_cortado);
+                }
             }
             $data_uri = $request->imagenFirmaRepresentante;
             $encoded_image = explode(",", $data_uri)[1];
             $nombreArchivo = 'firma_' . time() . '.png';
             $decoded_image = base64_decode($encoded_image);
             file_put_contents(storage_path('/app/firmaEntregaActas/'.$nombreArchivo), $decoded_image);
+            $rutaOriginal = storage_path('app/firmaEntregaActas/'.$nombreArchivo);
+            //Proceso para cortar una imagen
+            $imagen = Image::make($rutaOriginal);
+            $imagenRecortada = $imagen->trim('transparent',['top', 'bottom','left','right'],0,15);
+            $nombreArchivoCortado = 'firma_cortado_' . (time() + 1) . '.png';
+            $rutaRecortada = storage_path('/app/firmaEntregaActas/'.$nombreArchivoCortado);
+            $imagenRecortada->save($rutaRecortada);
             $datos['firma_representante'] = $nombreArchivo;
+            $datos['firma_representante_cortado'] = $nombreArchivoCortado;
             if(!$request->has('idEntregaActa')){
                 $datos['id_orden_servicio'] = $request->ordenServicio;
                 EntregaActa::create($datos);
@@ -259,7 +286,7 @@ class OrdenServicio extends Controller
             return response()->json(['success' => 'datos guardados correctamente']);
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['error' => $th->getMessage()]);
+            return response()->json(['error' => $th->getMessage(),'line' => $th->getLine()]);
         }
     }
     public function reporteOrdenServicio(ModelsOrdenServicio $ordenServicio) {

@@ -95,10 +95,6 @@ function loadPage() {
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <span>Ver Informe PDF</span>
                     </a>
-                    <a href="../informe/reporte/previa/${data}" target="_blank" class="dropdown-item">
-                        <i class="fas fa-file-pdf text-danger"></i> 
-                        <span>Ver acta de entrega</span>
-                    </a>
                     `
                 }
                 return `
@@ -151,7 +147,8 @@ function loadPage() {
     const canvaFirma = document.querySelector("#idModalActafirma");
     const signaturePad = new SignaturePad(canvaFirma,{
         minWidth:0.5,
-        maxWidth:1
+        maxWidth:1,
+        throttle: 0,
     });
     document.querySelector("#btnLimpiarFirma").onclick = e => signaturePad.clear();
     let tablaServicios = document.querySelector("#contenidoServicios");
@@ -190,6 +187,7 @@ function loadPage() {
             alertify.error("error al guardar los datos de la acta de entrega");
         }
     });
+    const linkReporteActas = document.querySelector("#verReporteActas");
     tablaOs.addEventListener("click",async (e)=>{
         if(e.target.classList.contains("editar-os")){
             try {
@@ -263,7 +261,7 @@ function loadPage() {
                     if (Object.hasOwnProperty.call(response.actas, key)) {
                         const valor = response.actas[key];
                         const dom = document.querySelector("#generarActaEntrega #idModalActa" + key);
-                        if(key === 'imgFirmanteRepresentante'){
+                        if(key === 'firma_representante' && valor){
                             signaturePad.fromDataURL(window.origin + '/intranet/storage/firmaEntregaActas/' + valor);
                             continue;
                         }
@@ -275,6 +273,7 @@ function loadPage() {
                 }
                 if(response.actas){
                     idActaEntrega = response.actas.id;
+                    linkReporteActas.href= "acta-entrega/reporte/" + idActaEntrega;
                 }
                 $('#generarActaEntrega .select2-simple').trigger("change");
                 $('#generarActaEntrega').modal("show")
@@ -327,6 +326,7 @@ function loadPage() {
         signaturePad.clear();
         idActaEntrega = null;
         idOrdenServicio = null;
+        linkReporteActas.href = "#";
     });
     $('#editarOrdenServicio').on('hidden.bs.modal', function (event) {
         cbCotizaciones.innerHTML = "";

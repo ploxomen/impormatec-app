@@ -10,8 +10,8 @@
         <div class="modal-body">
           <form class="form-row" id="frmActa">
             <div class="col-12 col-md-6 form-group">
-                <label for="idModalActafirmaEntrega">Responsable entrega</label>
-                <select name="usuario_entrega" id="idModalActafirmaEntrega" required data-placeholder="Seleccione el responsable de entrega" class="select2-simple">
+                <label for="idModalActaid_responsable_firmante">Responsable entrega</label>
+                <select name="usuario_entrega" id="idModalActaid_responsable_firmante" required data-placeholder="Seleccione el responsable de entrega" class="select2-simple">
                     <option value=""></option>
                     @foreach ($firmasUsuarios as $firmaUsuario)
                         <option value="{{$firmaUsuario->id}}">{{$firmaUsuario->nombres . ' ' . $firmaUsuario->apellidos}}</option>
@@ -19,13 +19,17 @@
                 </select>
             </div>
             <div class="col-12 col-md-6 form-group">
-                <label for="idModalActadniRepresentante">DNI representante</label>
-                <input required name="dni_representante" type="text" class="form-control form-control-sm" id="idModalActadniRepresentante">
+                <label for="idModalActadni_representante">DNI representante</label>
+                <input required name="dni_representante" type="text" class="form-control form-control-sm" id="idModalActadni_representante">
             </div>
             <div class="col-12 form-group">
-                <label for="idModalActanombreRepresentante">Nombre representante</label>
-                <input required name="nombre_representante" type="text" class="form-control form-control-sm" id="idModalActanombreRepresentante">
+                <label for="idModalActanombre_representante">Nombre representante</label>
+                <input required name="nombre_representante" type="text" class="form-control form-control-sm" id="idModalActanombre_representante">
             </div>
+            <div class="col-12 col-md-6 form-group">
+              <label for="idModalActafecha_entrega">Fecha entrega</label>
+              <input required name="fecha_entrega_acta" type="date" class="form-control form-control-sm" id="idModalActafecha_entrega">
+          </div>
             <div class="form-group col-12 text-center">
                 <span>Firma representante</span>
                 <canvas id="idModalActafirma" class="m-auto border d-block" style="width: 300px; height: 150px;"></canvas>
@@ -35,7 +39,7 @@
                     <i class="fas fa-broom"></i>
                     <span>Limpiar firma</span>
                 </button>
-                <a target="_blank" type="button" class="btn btn-sm btn-success">
+                <a target="_blank" type="button" class="btn btn-sm btn-success" href="#" id="verReporteActas">
                     <i class="fas fa-eye"></i>
                     <span>Ver acta</span>
                 </a>

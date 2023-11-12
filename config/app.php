@@ -195,8 +195,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class        
-
+        Maatwebsite\Excel\ExcelServiceProvider::class,      
+        Intervention\Image\ImageServiceProvider::class
     ],
 
     /*
@@ -212,8 +212,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         'PDFMerger' => Webklex\PDFMerger\Facades\PDFMergerFacade::class,
-        'Excel' => Maatwebsite\Excel\Facades\Excel::class
-        // 'ExampleClass' => App\Example\ExampleClass::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'Image' => Intervention\Image\Facades\Image::class,
     ])->toArray(),
-
 ];
