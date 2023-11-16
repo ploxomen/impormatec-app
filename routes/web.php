@@ -274,6 +274,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('obtener', [Informes::class, 'listarInformes']);
     });
     Route::prefix('ordenes-servicio')->group(function () {
+        Route::get('probar', [OrdenServicio::class, 'probarBoloeta']);
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
         Route::post('agregar', [OrdenServicio::class, 'agregarOs']);
