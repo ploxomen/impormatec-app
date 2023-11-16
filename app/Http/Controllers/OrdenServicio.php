@@ -29,6 +29,10 @@ class OrdenServicio extends Controller
     {
         $this->usuarioController = new Usuario();
     }
+    public function probarBoloeta() {
+        $rapifact = new RapiFac();
+        dd($rapifact->facturaConIgv());
+    }
     public function indexNuevaOs() {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);
         if(isset($verif['session'])){
