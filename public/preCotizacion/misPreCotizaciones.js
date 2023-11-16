@@ -174,7 +174,7 @@ function loadPage() {
                 $('#modalPrimeraVisita').modal("hide");
                 setTimeout(e => {
                     $('#agregarSeccion').modal('show');
-                },500);
+                },300);
             } catch (error) {
                 console.error(error);
                 alertify.error("error al obtener la seccion")
@@ -339,7 +339,7 @@ function loadPage() {
         $('#modalPrimeraVisita').modal("hide");
         setTimeout(e => {
             $('#agregarSeccion').modal('show');
-        },500);
+        },300);
     }
     document.querySelector("#btnGuardarFrmSeccion").onclick = e => document.querySelector("#btnSeccionAgregar").click();
     const $frmSeccion = document.querySelector("#frmSeccionNueva");
@@ -503,8 +503,9 @@ function loadPage() {
     $('#agregarSeccion').on('hidden.bs.modal', function (event) {
         borrarDatosInformeModal = true;
         setTimeout(e => {
+            $frmSeccion.reset();
             $('#modalPrimeraVisita').modal('show');
-        },500);
+        },300);
     });
     const btnPreCoti = document.querySelector("#btnEditarPreCotizacion");
     btnPreCoti.onclick = e => document.querySelector("#btnFrmEnviar").click();

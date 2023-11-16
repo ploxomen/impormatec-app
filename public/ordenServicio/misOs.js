@@ -108,6 +108,18 @@ function loadPage() {
                             <span>Editar OS</span>
                         </a>
                         ${opcionesInforme}
+                        <a href="javascript:void(0)" class="dropdown-item" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarPagos">
+                            <i class="fas fa-hands-helping text-primary"></i>
+                            <span>Pago a credito</span>
+                        </a>
+                        <a href="javascript:void(0)" class="dropdown-item" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarFactura">
+                            <i class="fas fa-money-bill-alt text-success"></i>
+                            <span>Pago al contado</span>
+                        </a>
+                        <a href="javascript:void(0)" class="dropdown-item" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarGuiaRemision">
+                            <i class="fas fa-box-open text-warning"></i>
+                            <span>Guía de remisión</span>
+                        </a>
                         <a href="reporte/${data}" target="_blank" class="dropdown-item">
                             <i class="fas fa-file-pdf text-danger"></i>                        
                             <span>Reporte OS PDF</span>
@@ -415,6 +427,31 @@ function loadPage() {
         alertify.success(response.success);
         tablaDataOs.draw();
     })
-
+    //Pago a cuotas
+    const tablaCuotas = document.querySelector("#contenidoPagosCuotas");
+    tablaCuotas.addEventListener("click",e => {
+        if(e.target.classList.contains("modificar-cuota")){
+            $('#generarPagos').modal("hide");
+            setTimeout(e => {
+                $('#modificarCuota').modal('show');
+            },300);
+        }
+        if(e.target.classList.contains("eliminar-cuota")){
+            alertify.confirm("Alerta","¿Deseas eliminar esta cuota?",()=>{},()=>{})
+        }
+    })
+    $('#modificarCuota').on('hidden.bs.modal', function (event) {
+        setTimeout(e => {
+            $('#generarPagos').modal('show');
+        },300);
+    });
+    const radioPagosCuotas = document.querySelector("#radioCambioPagos");
+    radioPagosCuotas.addEventListener("change",e => cambioPago(!e.target.checked));
+    function cambioPago(valor){
+        for (const textoPago of document.querySelectorAll("#modificarCuota .pago-texto")) {
+            textoPago.disabled = valor
+        }
+    }
+    
 }
 window.addEventListener("DOMContentLoaded",loadPage);

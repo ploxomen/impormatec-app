@@ -37,4 +37,9 @@
     </section>
     @include('ordenesServicio.modales.editarOrdenes')
     @include('ordenesServicio.modales.actaEntrega')
+    @include('ordenesServicio.modales.pagos')
+    @include('ordenesServicio.modales.editarCuota')
+    @include('ordenesServicio.modales.editarPago')
+    @include('ordenesServicio.modales.nuevaFactura')
+    @include('ordenesServicio.modales.nuevaGuiaRemitente')
 @endsection

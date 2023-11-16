@@ -215,7 +215,7 @@ function loadPage() {
                 $('#modalPrimeraVisita').modal("hide");
                 setTimeout(e => {
                     $('#agregarSeccion').modal('show');
-                },500);
+                },300);
             } catch (error) {
                 console.error(error);
                 alertify.error("error al obtener la seccion")
@@ -295,7 +295,7 @@ function loadPage() {
         $('#modalPrimeraVisita').modal("hide");
         setTimeout(e => {
             $('#agregarSeccion').modal('show');
-        },500);
+        },300);
     }
     let idSeccion = null;
     const $frmSeccion = document.querySelector("#frmSeccionNueva");
@@ -398,8 +398,9 @@ function loadPage() {
     $('#agregarSeccion').on('hidden.bs.modal', function (event) {
         borrarDatosInformeModal = true;
         setTimeout(e => {
+            $frmSeccion.reset();
             $('#modalPrimeraVisita').modal('show');
-        },500);
+        },300);
     });
     $('#modalPrimeraVisita').on('hidden.bs.modal', function (event) {
         if(!borrarDatosInformeModal){

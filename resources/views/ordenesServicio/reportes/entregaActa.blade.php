@@ -33,7 +33,7 @@
             <tr>
                 <td scope="row" colspan="2">
                     <div style="padding: 20px 0;">
-                        <p>Yo <b>{{$entregaActa->reponsableFirmante->nombres . ' ' . $entregaActa->reponsableFirmante->apellidos}}</b> con D.N.I <b>{{$entregaActa->reponsableFirmante->nroDocumento}}</b> y en representación de la compañia{{$configuracion->where('descripcion','razon_social_largo')->first()->valor}}, procedo hacer la entrega del Servicio con la siguientedescripión:</p>
+                        <p>Yo <b>{{$entregaActa->reponsableFirmante->nombres . ' ' . $entregaActa->reponsableFirmante->apellidos}}</b> con D.N.I <b>{{$entregaActa->reponsableFirmante->nroDocumento}}</b> y en representación de la compañia {{$configuracion->where('descripcion','razon_social_largo')->first()->valor}}, procedo hacer la entrega del servicio con la siguiente descripión:</p>
                         <p>
                             @foreach ($entregaActa->ordenServicio->servicios as $key => $servicio)
                                 No. Coti. {{str_pad($servicio->cotizacionServicio->id_cotizacion,5,'0',STR_PAD_LEFT) . ' - ' . $servicio->cotizacionServicio->servicios->servicio}}

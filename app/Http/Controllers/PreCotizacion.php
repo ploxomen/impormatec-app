@@ -83,7 +83,7 @@ class PreCotizacion extends Controller
                 $oMerger->setFileName($titulo);
                 return $oMerger->stream();
             }else{
-                return $pdf->stream($titulo);
+                return $pdf->stream($titulo.".pdf");
             }
         } catch (\Throwable $th) {
             echo 'Error :' . $th->getMessage();
