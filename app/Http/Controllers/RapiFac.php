@@ -177,7 +177,7 @@ class RapiFac extends Controller
             "ISC" => 0,
             "ISCBase" => 0,
             "IdRepositorio" => 0,
-            "ImporteTotalTexto" => $this->numeroAPalabras($montoTotal),
+            // "ImporteTotalTexto" => $this->numeroAPalabras($montoTotal),
             "ImpuestoTotal" => 0,
             "ImpuestoVarios" => 0,
             "Inafecto" => 0,
@@ -303,7 +303,7 @@ class RapiFac extends Controller
         }
         return [$detalles,$total];
     }
-    function numeroAPalabras($numero) {
+    function numeroAPalabras($numero,$moneda) {
         $fmt = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
         // Convierte el número en palabras
         $palabras = $fmt->format($numero);
@@ -316,7 +316,8 @@ class RapiFac extends Controller
             list($entero, $decimal) = explode('.', $numero);
             $decimal = ltrim($decimal, '0'); // Eliminar ceros a la izquierda
         }
-        $palabras .= ' Y ' . $decimal . '/100 DOLARES';
+        $tiposMonedas = ['PEN' => 'SOLES','USD' => 'DOLARES'];
+        $palabras .= ' Y ' . $decimal . '/100 ' . $tiposMonedas[$moneda];
         return mb_strtoupper($palabras,'UTF-8');
     }
     function listarComprobantes($documento = "00",$desde,$hasta,$busqueda="",$pagina) {
@@ -672,99 +673,128 @@ class RapiFac extends Controller
             return $e->getMessage();
         }
     }
-    function boletaVenta(){
+    function detalleComprobanteBoleta($servicios,$productos){
+        $detalles = [];
+        $item = 0;
+        $totalGeneral = 0;
+        $totalSinIgv = 0;
+        $impuestoTotal = 0;
+        foreach ($servicios as $servicio) {
+            $item++;
+            $cotizacion = $servicio->cotizacionServicio;
+            $total = round($cotizacion->total + $cotizacion->igv,2);
+            $codigoServicio = 'Serv' . str_pad($cotizacion->id_servicio,5,"0",STR_PAD_LEFT);
+            $detalles[] = [
+                'Item' => $item,
+                'TipoProductoCodigo' => '',
+                'ProductoCodigo' => $codigoServicio,
+                'ProductoCodigoCliente' => $codigoServicio,
+                'ProductoCodigoSUNAT' => '',
+                'TipoSistemaISCCodigo' => '00',
+                'UnidadMedidaCodigo' => 'NIU',
+                'PrecioUnitarioItem' => round($cotizacion->precio + ($cotizacion->precio * 0.18),2),
+                'PrecioVentaCodigo' => '01',
+                'ICBPER' => 0,
+                'DescuentoCargoCodigo' => '00',
+                'Control' => '0',
+                'ImporteTotalReferencia' => 0,
+                'CantidadUnidadMedida' => 1,
+                'CantidadReferencial' => 1,
+                'PrecioUnitarioNeto' => round($total/$cotizacion->cantidad,2),
+                'DescuentoGlobal' => 0,
+                'Descuento' => $cotizacion->descuento,
+                'ValorUnitario' => $cotizacion->precio,
+                'ValorUnitarioNeto' => $cotizacion->total,
+                'ValorVentaItem' => $cotizacion->total,
+                'ValorVentaItemXML' => $cotizacion->total,
+                'ValorVentaNeto' => $cotizacion->total,
+                'ValorVentaNetoXML' => 0,
+                'ISCUnitario' => 0,
+                'ISCNeto' => 0,
+                'ISC' => 0,
+                'IGV' => $cotizacion->igv,
+                'ICBPERItem' => 0,
+                'ICBPERSubTotal' => 0,
+                'DescuentoBase' => $cotizacion->importe,
+                'PrecioVenta' => $total,
+                'MontoTributo' => $cotizacion->igv,
+                'ISCPorcentaje' => 0,
+                'ISCMonto' => 0,
+                'Descripcion' => $cotizacion->servicios->servicio,
+                'Observacion' => '',
+                'Cantidad' => $cotizacion->cantidad,
+                'PrecioUnitario' => round($cotizacion->precio + ($cotizacion->precio * 0.18),2),
+                'DescuentoMonto' => $cotizacion->descuento,
+                'DescuentoPorcentaje' => round(($cotizacion->descuento/$cotizacion->importe)*100,2),
+                'TipoAfectacionIGVCodigo' => '10',
+                'ValorVenta' => $cotizacion->importe,
+                'Ganancia' => 116.82,
+                'IGVNeto' => $cotizacion->igv,
+                'ImporteTotal' => $total,
+            ];
+            $totalSinIgv += $cotizacion->total;
+            $totalGeneral += $total;
+            $impuestoTotal += $cotizacion->igv;
+        }
+        return [$detalles,round($totalSinIgv,2),round($totalGeneral,2),round($impuestoTotal,2)];
+    }
+    function boletaVenta($servicios,$productos,$ordenServicio,$pago){
+        list($detalles,$totalSinIgv,$totalGeneral,$impuestoTotal) = $this->detalleComprobanteBoleta($servicios,$productos);
         $parametros = [
             "Usuario" => env('API_RAPIFAC_USER'),
             "Sucursal" => env('API_RAPIFAC_SUCURSAL_ID'),
             "IGVPorcentaje" => 18,
-            "DetraccionTipoOperacion" => "",
+            "DetraccionTipoOperacion" => "01",
             "CantidadDecimales" => 2,
             "CanalVenta" => 2,
+            // "OrigenSistema" => 7,
             "Vendedor" => env('API_RAPIFAC_USER'),
-            "CondicionPago" => "Contado",
+            "CondicionPago" => $pago['condicionPago'],
             "SituacionPagoCodigo" => 2,
-            "Ubigeo" => "150200",
-            "ClienteNumeroDocIdentidad" => "73700496",
-            "ClienteUbigeo" => "150200",
+            "Ubigeo" => "150135",
+            "ClienteNumeroDocIdentidad" => $pago['numeroDocumento'],
+            // "ClienteUbigeo" => "150135",
             "ClientePaisDocEmisor" => "PE",
             "CorreoElectronicoSecundario" => "prueba@gmail.com",
-            "FechaConsumo" => "08/03/2023",
-            "ListaDetalles" => [
-                [
-                    "Item" => 1,
-                    "TipoProductoCodigo" => "",
-                    "ProductoCodigo" => "",
-                    "ProductoCodigoCliente" => "",
-                    "ProductoCodigoSUNAT" => "",
-                    "TipoSistemaISCCodigo" => "00",
-                    "UnidadMedidaCodigo" => "NIU",
-                    "PrecioUnitarioItem" => 118,
-                    "PrecioVentaCodigo" => "01",
-                    "PrecioCompra" => 1.18,
-                    "PrecioCompra_BASE" => 1.18,
-                    "CantidadUnidadMedida" => 1,
-                    "CantidadReferencial" => 1,
-                    "PrecioUnitarioNeto" => 118,
-                    "ValorUnitario" => 100,
-                    "ValorUnitarioNeto" => 100,
-                    "ValorVentaItem" => 100,
-                    "ValorVentaItemXML" => 100,
-                    "ValorVentaNeto" => 100,
-                    "IGV" => 18,
-                    "DescuentoBase" => 100,
-                    "PrecioVenta" => 118,
-                    "MontoTributo" => 18,
-                    "Descripcion" => "PRODUCTO GRAVADO1",
-                    "Cantidad" => 1,
-                    "PrecioUnitario" => "118",
-                    "Peso" => 1,
-                    "TipoAfectacionIGVCodigo" => "10",
-                    "ValorVenta" => 100,
-                    "IGVNeto" => 18,
-                    "ImporteTotal" => 118,
-                ]
-            ],
-            "ImporteTotalTexto" => "CIENTO DIECIOCHO CON 00/100 DOLARES",
-            "DescuentoGlobalMontoBase" => 100,
-            "CargoGlobalMontoBase" => 100,
-            "TotalPrecioVenta" => 118,
-            "TotalValorVenta" => 100,
-            "NOMBRE_UBIGEOLLEGADA" => " -  - ",
-            "NOMBRE_UBIGEOPARTIDA" => "LIMA - LIMA - LA VICTORIA",
-            "CONTADOR_CLICKEMITIR" => 1,
+            'ClienteTipoDocIdentidadCodigo' => $pago['tipoDocumento'],
+            "FechaConsumo" => $pago['fechaEmision'],
+            "ListaDetalles" => $detalles,
+            "ImporteTotalTexto" => $this->numeroAPalabras($totalGeneral,$ordenServicio->tipoMoneda),
+            "DescuentoGlobalMontoBase" => $totalSinIgv,
+            "CargoGlobalMontoBase" => $totalSinIgv,
+            "TotalPrecioVenta" => $totalGeneral,
+            "TotalValorVenta" => $totalSinIgv,
+            // "NOMBRE_UBIGEOLLEGADA" => " -  - ",
+            // "NOMBRE_UBIGEOPARTIDA" => "LIMA - LIMA - LA VICTORIA",
+            // "CONTADOR_CLICKEMITIR" => 1,
             "paginasFiltroProducto" => 1,
             "ClasePrecioCodigo" => 1,
             "TipoDocumentoCodigo" => "03",
             "Serie" => "B001",
-            "Correlativo" => 5299,
-            "MonedaCodigo" => "USD",
-            "FechaEmision" => "08/03/2023",
+            "Correlativo" => 30,
+            "MonedaCodigo" => $ordenServicio->tipoMoneda,
+            "FechaEmision" => $pago['fechaEmision'],
             "TipoDocumentoCodigoModificado" => "01",
-            "TipoNotaCreditoCodigo" => "01",
-            "TipoNotaDebitoCodigo" => "01",
-            "TipoOperacionCodigo" => "0101",
+            // "TipoNotaCreditoCodigo" => "01",
+            // "TipoNotaDebitoCodigo" => "01",
+            // "TipoOperacionCodigo" => "0101",
             "TipoCambio" => "3.919",
-            "MotivoTrasladoCodigo" => "01",
-            "ClienteNombreRazonSocial" => "CLIENTES VARIOS",
-            "ClienteDireccion" => "av. siempre viva",
-            "UbigeoPartida" => "150200",
-            "DireccionPartida" => "Av. Carlos Villaran N° 104",
-            "DireccionLlegada" => "av. siempre viva",
+            // "MotivoTrasladoCodigo" => "01",
+            "ClienteNombreRazonSocial" => $pago['razonSocial'],
+            "ClienteDireccion" => $pago['direccion'],
             "CorreoElectronicoPrincipal" => "no-send@rapifac.com",
-            "Gravado" => 100,
-            "IGV" => 18,
-            "ImpuestoTotal" => 18,
-            "TotalImporteVenta" => 118,
-            "TotalImporteVentaCelular" => 118,
-            "TotalPago" => 118,
+            "Gravado" => $totalSinIgv,
+            "IGV" => $impuestoTotal,
+            "ImpuestoTotal" => $impuestoTotal,
+            "TotalImporteVenta" => $totalGeneral,
+            "TotalImporteVentaCelular" => $totalGeneral,
+            "TotalPago" => $totalGeneral,
             "PesoTotal" => 1,
             "PesoTotalCelular" => 1,
             "Bultos" => 1,
             "BultosCelular" => 1,
-            "BienServicioCodigo" => "022",
-            "DetraccionCuenta" => "0800638123",
             "DocAdicionalCodigo" => 1,
-            "PendientePago" => "118.00",
+            "PendientePago" => $totalGeneral,
         ];
         try {
             $token = $this->obtenerToken();
@@ -774,7 +804,7 @@ class RapiFac extends Controller
                 'Content-Type' => 'application/json'
             ];
             $body = json_encode($parametros);
-            dd($body);
+            // dd($body);
             $response = $client->post($this->urlComprobante,[
                 'headers' => $headers,
                 'body' => $body

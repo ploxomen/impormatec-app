@@ -12,6 +12,8 @@ use App\Models\OrdenServicio as ModelsOrdenServicio;
 use App\Models\OrdenServicioAdicional;
 use App\Models\OrdenServicioCotizacionProducto;
 use App\Models\OrdenServicioCotizacionServicio;
+use App\Models\PagoCuotas;
+use App\Models\PagoCuotasImg;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -29,9 +31,236 @@ class OrdenServicio extends Controller
     {
         $this->usuarioController = new Usuario();
     }
-    public function probarBoloeta() {
-        $rapifact = new RapiFac();
-        dd($rapifact->facturaConIgv());
+    public function probarBoloeta(ModelsOrdenServicio $ordenServicio) {
+        /*$rapifact = new RapiFac();
+        $servicios = OrdenServicioCotizacionServicio::where('id_orden_servicio',$ordenServicio->id)->get();
+        // dd($servicios,$ordenServicio);
+        $pago = [
+            'fechaEmision' => date('d/m/Y'),
+            'numeroDocumento' => "73700496",
+            'tipoDocumento' => 1,
+            'razonSocial' => 'JEAN PIER CARRASCO TAMARIZ',
+            'direccion' => 'SADSA',
+            'condicionPago' => 'Credito'
+        ];
+        $productos = OrdenServicioCotizacionProducto::where('id_orden_servicio',$ordenServicio->id)->get();
+        
+        dd($rapifact->boletaVenta($servicios,$productos,$ordenServicio,$pago));
+        */
+        $this->agregarCuotaOrdenServicio(2,$ordenServicio->id);
+    }
+    public function agregarCuotaOrdenServicio($cantidadCuotas,$idOrdenServicio) {
+        DB::beginTransaction();
+        try {
+            $cuotaAntigua = PagoCuotas::where('id_orden_servicio',$idOrdenServicio);
+            $fechaInicio = date('Y-m-d');
+            $numeroCuota = 0;
+            if(!$cuotaAntigua->get()->isEmpty()){
+                $fechaInicio = $cuotaAntigua->orderBy('fecha_vencimiento','desc')->first()->fecha_vencimiento;
+                $numeroCuota = $cuotaAntigua->orderBy('nro_cuota','desc')->first()->nro_cuota;
+            }
+            for ($i=0; $i < $cantidadCuotas; $i++) { 
+                $numeroCuota++;
+                $fechaInicio = date('Y-m-d',strtotime($fechaInicio . "+ 1 month"));
+                PagoCuotas::create([
+                    'id_orden_servicio' => $idOrdenServicio,
+                    'nro_cuota' => $numeroCuota,
+                    'fecha_vencimiento' => $fechaInicio
+                ]);
+            }
+            DB::commit();
+            return ['success' => 'cuotas agregadas correctamente'];
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ['error' => $th->getMessage()];
+        }
+    }
+    public function modificarFacturacionExterna(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        ModelsOrdenServicio::find($request->ordenServicio)->update(['facturacion_externa' => $request->valor === 'true' ? 1 : 0]);
+        return response()->json(['success' => 'facturacion externa modificada correctamente']);
+    }
+    public function modificarCuota(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $pagoCuota = PagoCuotas::where(['id_orden_servicio' => $request->ordenServicioId,'id' => $request->cuotaId])->first();
+        if(empty($pagoCuota)){
+            return response()->json(['alerta' => 'No se encontro la cuota para ser modificada']);
+        }
+        $datosCuotas = $request->only("fecha_vencimiento","monto_pagar");
+        $datosPagos = [
+            'estado' => 1,
+            'fecha_pagada' => null,
+            'monto_pagado' => null,
+            'id_firmante_pago' => null,
+            'descripcion_pagada' => null
+        ];
+        if($request->has('cuota_pagada')){
+            $datosPagos = $request->only("fecha_pagada","monto_pagado","id_firmante_pago","descripcion_pagada");
+            $datosPagos['estado'] = 2;
+        }
+        list($comprobanteSunat,$nombreComprobante) = [$pagoCuota->comprobante_unico,$pagoCuota->comprobante_nombre];
+        if($request->has('comprobante_sunat')){
+            if(!is_null($pagoCuota->comprobante_unico) && Storage::disk('pagoCuotasSunat')->exists($pagoCuota->comprobante_unico)){
+                Storage::disk('pagoCuotasSunat')->delete($pagoCuota->comprobante_unico);
+            }
+            $extension = $request->file('comprobante_sunat')->getClientOriginalExtension();
+            $comprobanteSunat = $pagoCuota->id . '_' . $pagoCuota->id_orden_servicio . '_' .time() . '.' . $extension;
+            $request->file('comprobante_sunat')->storeAs('pagoCuotasSunat',$comprobanteSunat);
+            $nombreComprobante = $request->file('comprobante_sunat')->getClientOriginalName();
+        }
+        $ordenServicio = ModelsOrdenServicio::find($request->ordenServicioId);
+        $pagoCuota->update(array_merge($datosCuotas,$datosPagos,['comprobante_unico' => $comprobanteSunat, 'comprobante_nombre' => $nombreComprobante]));
+        return response()->json(['success' => 'cuota modificada correctamente', 'cuotas' => PagoCuotas::obtenerCuotasOrdenServicio($ordenServicio->id,$ordenServicio->tipoMoneda)]);
+    }
+    public function agregarCuota(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $ordenServicio = ModelsOrdenServicio::find($request->ordenServicioId);
+        $agregarCuota = $this->agregarCuotaOrdenServicio($request->numeroCuota,$ordenServicio->id);
+        $listaCuotas = ['cuotas' => PagoCuotas::obtenerCuotasOrdenServicio($ordenServicio->id,$ordenServicio->tipoMoneda)];
+        return response()->json(array_merge($agregarCuota,$listaCuotas));
+    }
+    public function eliminarComprobanteSunat($ordenServicio, $cuota){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $comprobante = PagoCuotas::where(['id_orden_servicio' => $ordenServicio,'id' => $cuota])->first();
+        if(empty($comprobante)){
+            return response()->json(['alerta' => 'No se encontro el comprobante para ser eliminado']);
+        }
+        if(!is_null($comprobante->comprobante_unico) && Storage::disk('pagoCuotasSunat')->exists($comprobante->comprobante_unico)){
+            Storage::disk('pagoCuotasSunat')->delete($comprobante->comprobante_unico);
+            $comprobante->update(['comprobante_unico' => null, 'comprobante_nombre' => null]);
+            return response()->json(['success' => 'se elimino el comprobante externo de forma correcta']);
+        }
+        return response()->json(['alerta' => 'El comprobante externo no se encuentra almacenado en el sistema']);
+    }
+    public function eliminarCuota(ModelsOrdenServicio $ordenServicio, $cuota){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $comprobante = PagoCuotas::where(['id_orden_servicio' => $ordenServicio->id,'id' => $cuota])->first();
+        if(empty($comprobante)){
+            return response()->json(['alerta' => 'No se encontro el comprobante para ser eliminado']);
+        }
+        $imagenes = PagoCuotasImg::where(['id_pago_cuota' => $cuota])->get();
+        DB::beginTransaction();
+        try {
+            foreach ($imagenes as $imagen) {
+                if(!is_null($imagen->url_imagen) && Storage::disk('pagoCuotasImg')->exists($imagen->url_imagen)){
+                    Storage::disk('pagoCuotasImg')->delete($imagen->url_imagen);
+                }
+                $imagen->delete();
+            }
+            if(!is_null($comprobante->comprobante_unico) && Storage::disk('pagoCuotasSunat')->exists($comprobante->comprobante_unico)){
+                Storage::disk('pagoCuotasSunat')->delete($comprobante->comprobante_unico);
+            }
+            $comprobante->delete();
+            $comporbantes = PagoCuotas::where(['id_orden_servicio' => $ordenServicio->id])->orderBy('nro_cuota','asc')->get();
+            foreach ($comporbantes as $key => $comprobante) {
+                $comprobante->update(['nro_cuota' => $key + 1]);
+            }
+            DB::commit();
+            return response()->json(['success' => 'se elimino la cuota de forma correcta','cuotas' => PagoCuotas::obtenerCuotasOrdenServicio($ordenServicio->id,$ordenServicio->tipoMoneda)]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json(['alerta' => $th->getMessage()]);
+        }
+    }
+    public function eliminarImagenCuola($cuota, $imagen){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $imagen = PagoCuotasImg::where(['id_pago_cuota' => $cuota,'id' => $imagen])->first();
+        if(empty($imagen)){
+            return response()->json(['alerta' => 'No se encontro la imagen para ser eliminada']);
+        }
+        if(!is_null($imagen->url_imagen) && Storage::disk('pagoCuotasImg')->exists($imagen->url_imagen)){
+            Storage::disk('pagoCuotasImg')->delete($imagen->url_imagen);
+            $imagen->delete();
+            return response()->json(['success' => 'se elimino la imagen de forma correcta']);
+        }
+        return response()->json(['alerta' => 'La imagen no se encuentra almacenada en el sistema']);
+    }
+    public function verComprobanteSunat($ordenServicio,$idCuota){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return redirect()->route('home');
+        }
+        $cuota = PagoCuotas::where(['id' => $idCuota,'id_orden_servicio' => $ordenServicio])->first();
+        if(empty($cuota) || is_null($cuota->comprobante_unico) || !Storage::disk('pagoCuotasSunat')->exists($cuota->comprobante_unico)){
+            return abort(404);
+        }
+        $documento = Storage::disk('pagoCuotasSunat')->get($cuota->comprobante_unico);
+        return response($documento,200,[
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $cuota->comprobante_nombre . '"',
+        ]);
+    }
+    public function guardarImagenCuota(Request $request){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $nombreArchivo = null;
+        DB::beginTransaction();
+        try {
+            $img = PagoCuotasImg::create([
+                'id_pago_cuota' => $request->cuota,
+            ]);
+            $extension = $request->file('imagen')->getClientOriginalExtension();
+            $nombreArchivo = $request->cuota . '_' . $img->id . '_' .time() . '.' . $extension;
+            $request->file('imagen')->storeAs('pagoCuotasImg',$nombreArchivo);
+            $nombreOriginal = $request->file('imagen')->getClientOriginalName();
+            $img->update(['url_imagen' => $nombreArchivo,'nombre_imagen' => $nombreOriginal]);
+            DB::commit();
+            return response()->json(['success' => 'imagen agregada correctamente', 'urlImagen' => $nombreArchivo, 'id' => $img->id, 'nombre' => $nombreOriginal]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            if(!is_null($nombreArchivo) && Storage::disk('pagoCuotasImg')->exists($nombreArchivo)){
+                Storage::disk('pagoCuotasImg')->delete($nombreArchivo);
+            }
+            return response()->json(['alerta' => $th->getMessage()]);
+        }
+    }
+    public function obtenerCuotas(ModelsOrdenServicio $ordenServicio){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        return response()->json(['cuotas' => PagoCuotas::obtenerCuotasOrdenServicio($ordenServicio->id,$ordenServicio->tipoMoneda),'facturacionExterna' => $ordenServicio->facturacion_externa]);
+    }
+    public function verComprobanteCuota(PagoCuotas $cuota) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return redirect()->route('home');
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $numeroPago = str_pad($cuota->id,6,'0',STR_PAD_LEFT);
+        $titulo = "CUOTA - " . $numeroPago;
+        $strFechaPago = strtotime($cuota->fecha_pagada);
+        $fechaTexto = (new Utilitarios)->obtenerFechaLargaSinDia($strFechaPago);
+        $fechaFormato = date('d/m/Y',$strFechaPago);
+        $nombreMonto = (new RapiFac)->numeroAPalabras($cuota->monto_pagado,$cuota->ordenServicio->tipoMoneda);
+        return Pdf::loadView('ordenesServicio.reportes.pagoCuota',compact("cuota","titulo","configuracion","fechaFormato","fechaTexto","numeroPago","nombreMonto"))->setPaper('none')->stream($titulo . '.pdf');
+    }
+    public function obtenerCuota($ordenServicio,$cuota){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        return response()->json(['cuota' => PagoCuotas::obtenerCuota($ordenServicio,$cuota),'imagenesPagos' => PagoCuotasImg::obtenerImagenes($cuota)]);
     }
     public function indexNuevaOs() {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);

@@ -5,6 +5,7 @@
     <script src="/library/tinyeditor/es.js"></script>
     <script src="/library/signature.js"></script>
     <script src="/ordenServicio/compartidoOs.js?v1.5"></script>
+    <link rel="stylesheet" href="/ordenServicio/ordenServicio.css">
     <script src="/ordenServicio/misOs.js?v1.5"></script>
     <title>Mis Cotizaciones</title>
 @endsection
@@ -39,7 +40,6 @@
     @include('ordenesServicio.modales.actaEntrega')
     @include('ordenesServicio.modales.pagos')
     @include('ordenesServicio.modales.editarCuota')
-    @include('ordenesServicio.modales.editarPago')
     @include('ordenesServicio.modales.nuevaFactura')
     @include('ordenesServicio.modales.nuevaGuiaRemitente')
 @endsection

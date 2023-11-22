@@ -1,0 +1,13 @@
+.contenido-img button {
+    position: absolute;
+    top: 0;
+    right: 15px;
+}
+.contenido-img{
+    position: relative;
+}
+.contenido-img img{
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+}

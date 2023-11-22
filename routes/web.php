@@ -274,11 +274,22 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('obtener', [Informes::class, 'listarInformes']);
     });
     Route::prefix('ordenes-servicio')->group(function () {
-        Route::get('probar', [OrdenServicio::class, 'probarBoloeta']);
+        Route::get('probar/{ordenServicio}', [OrdenServicio::class, 'probarBoloeta']);
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
         Route::post('agregar', [OrdenServicio::class, 'agregarOs']);
         Route::get('todos', [OrdenServicio::class, 'indexMisOs'])->name("admin.ordenesServicios.index");
+        Route::post('pago/cuota-agregar', [OrdenServicio::class, 'agregarCuota']);
+        Route::post('pago/cuota-modificar', [OrdenServicio::class, 'modificarCuota']);
+        Route::post('pago/cuota/facturacion-externa', [OrdenServicio::class, 'modificarFacturacionExterna']);
+        Route::delete('pago/cuota/{ordenServicio}/{cuota}', [OrdenServicio::class, 'eliminarCuota']);
+        Route::delete('pago/cuota-prueba/imagen/{cuota}/{imagen}', [OrdenServicio::class, 'eliminarImagenCuola']);
+        Route::delete('pago/cuota-comprobante/{ordenServicio}/{cuota}', [OrdenServicio::class, 'eliminarComprobanteSunat']);
+        Route::post('pago/cuota-prueba/imagen', [OrdenServicio::class, 'guardarImagenCuota']);
+        Route::get('pago/cuota/comprobante-sunat/{ordenServicio}/{idCuota}', [OrdenServicio::class, 'verComprobanteSunat']);
+        Route::get('pago/cuotas/{ordenServicio}', [OrdenServicio::class, 'obtenerCuotas']);
+        Route::get('pago/comprobante-cuota/{cuota}', [OrdenServicio::class, 'verComprobanteCuota']);
+        Route::get('pago/cuota/{ordenServicio}/{cuota}', [OrdenServicio::class, 'obtenerCuota']);
         Route::post('obtener', [OrdenServicio::class, 'obtenerOrdenServicio']);
         Route::post('acciones', [OrdenServicio::class, 'accionesOrdenServicio']);
         Route::get('mostrar/{ordenServicio}', [OrdenServicio::class, 'obtenerDatosOrdenServicio']);

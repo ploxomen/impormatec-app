@@ -77,6 +77,16 @@ return [
             'root' => storage_path('app/preCotizacionImgSeccion'),
             'url' => env('APP_URL').'/storage/preCotizacionImgSeccion',
         ],
+        'pagoCuotasImg' => [
+            'driver' => 'local',
+            'root' => storage_path('app/pagoCuotasImg'),
+            'url' => env('APP_URL').'/storage/pagoCuotasImg',
+        ],
+        'pagoCuotasSunat' => [
+            'driver' => 'local',
+            'root' => storage_path('app/pagoCuotasSunat'),
+            'url' => env('APP_URL').'/storage/pagoCuotasSunat',
+        ],
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

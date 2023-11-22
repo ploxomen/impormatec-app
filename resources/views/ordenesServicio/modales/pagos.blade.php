@@ -8,28 +8,29 @@
           </button>
         </div>
         <div class="modal-body">
-          <form class="form-row" id="frmPagoCredito">
-            <div class="col-12 col-md-6 col-lg-4 form-group">
-                <label for="numeroMesesAgregar">No. Cuotas</label>
-                <input type="number" value="6" min="1" max="20" required class="form-control form-control-sm" id="numeroMesesAgregar">
-            </div>
-            <div class="col-12 col-md-6 col-lg-8 form-group">
-                <button class="btn btn-primary btn-sm" title="Agregar cuotas">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-            <div class="form-group col-12">
-                <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="facturacionExterna">
-                    <label class="custom-control-label" for="facturacionExterna">Facturación externa</label>
-                </div>
-            </div>
-            <div class="col-12 form-group">
-                <h5 class="text-primary mb-0">
-                    <i class="fas fa-caret-right"></i>
-                    Lista de cuotas
-                </h5>
-            </div>
+            <form class="form-row" id="frmPagoCredito">
+              <div class="col-12 col-md-6 col-lg-4 form-group">
+                  <label for="numeroCuotas">No. Cuotas</label>
+                  <input type="number" value="6" min="1" max="20" id="numeroCuotas" required class="form-control form-control-sm" name="numeroCuota">
+              </div>
+              <div class="col-12 col-md-6 col-lg-8 form-group">
+                  <button class="btn btn-primary btn-sm" type="submit" title="Agregar cuotas" id="btnAgregarCuotas">
+                      <i class="fas fa-plus"></i>
+                  </button>
+              </div>
+              <div class="form-group col-12">
+                  <div class="custom-control custom-switch">
+                      <input type="checkbox" class="custom-control-input" id="facturacionExterna">
+                      <label class="custom-control-label" for="facturacionExterna">Facturación externa</label>
+                  </div>
+              </div>
+              <div class="col-12 form-group">
+                  <h5 class="text-primary mb-0">
+                      <i class="fas fa-caret-right"></i>
+                      Lista de cuotas
+                  </h5>
+              </div>
+            </form>
             <div class="col-12 table-responsive">
                 <table class="table table-sm table-bordered" style="font-size: 12px; min-width: 1050px;">
                     <thead>
@@ -44,60 +45,11 @@
                             <th scope="col">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="contenidoPagosCuotas">
-                        <tr>
-                            <th scope="row">1</th>
-                            <td>23/10/2023</td>
-                            <td>21/10/2023</td>
-                            <td>S/ 1500.00</td>
-                            <td>S/ 1800.00</td>
-                            <td>Avance por el primer proyecto empezado</td>
-                            <td>
-                                <span class="badge badge-success">Pagado</span>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-wrap justify-content-center" style="gap: 5px;">
-                                    <button class="btn btn-sm btn-danger py-1 px-2" type="button" title="Ver comprobante">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-info py-1 modificar-cuota px-2" type="button" title="Modificar cuota y/o pago">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger py-1 px-2" type="button" title="Eliminar cuota">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">2</th>
-                            <td>23/11/2023</td>
-                            <td></td>
-                            <td>S/ 1500.00</td>
-                            <td></td>
-                            <td></td>
-                            <td>
-                                <span class="badge badge-danger">Por pagar</span>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-wrap justify-content-center" style="gap: 5px;">
-                                    <button class="btn btn-sm btn-info py-1 px-2"  type="button" title="Modificar cuota y/o pago">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger py-1 px-2"  type="button" title="Eliminar cuota">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="contenidoPagosCuotas"></tbody>
                 </table>
             </div>
-            <input type="submit" hidden id="enviarActa">
-          </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="btnGuardarCambiosActa">Guardar</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
         </div>
       </div>

@@ -108,7 +108,7 @@ function loadPage() {
                             <span>Editar OS</span>
                         </a>
                         ${opcionesInforme}
-                        <a href="javascript:void(0)" class="dropdown-item" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarPagos">
+                        <a href="javascript:void(0)" class="dropdown-item pago-cuotas" data-orden-servicio="${data}">
                             <i class="fas fa-hands-helping text-primary"></i>
                             <span>Pago a credito</span>
                         </a>
@@ -199,6 +199,43 @@ function loadPage() {
             alertify.error("error al guardar los datos de la acta de entrega");
         }
     });
+    function renderizarCuotaPagos({numeroCuota,fechaVencimiento,fechaPago,tipoMoneda,montoPagado,montoPagar,descripcion,estado,id}) {
+        let $botonVerComprobante = "";
+        let $estadoPago = `<span class="badge badge-danger">Pendiente</span>`;
+        if(estado === 2){
+            $estadoPago = `<span class="badge badge-success">Pagado</span>`;
+            $botonVerComprobante = `
+            <a class="btn btn-sm btn-danger" target="_blank" href="pago/comprobante-cuota/${id}" title="Ver comprobante">
+                <i class="fas fa-file-pdf"></i>
+            </a>
+            `
+        }
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+        <th scope="row">${numeroCuota}</th>
+        <td>${fechaVencimiento}</td>
+        <td>${fechaPago}</td>
+        <td>${gen.resetearMoneda(montoPagar,tipoMoneda)}</td>
+        <td>${gen.resetearMoneda(montoPagado,tipoMoneda)}</td>
+        <td>${descripcion}</td>
+        <td>
+            ${$estadoPago}
+        </td>
+        <td>
+            <div class="d-flex flex-wrap justify-content-center" style="gap: 5px;">
+                ${$botonVerComprobante}
+                <button class="btn btn-sm btn-info modificar-cuota" data-cuota="${id}" type="button" title="Modificar cuota y/o pago">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger eliminar-cuota" data-cuota="${id}" type="button" title="Eliminar cuota">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </td>
+        `
+        return tr;
+    }
+    const tablaCuotasPagos = document.querySelector("#generarPagos #contenidoPagosCuotas")
     const linkReporteActas = document.querySelector("#verReporteActas");
     tablaOs.addEventListener("click",async (e)=>{
         if(e.target.classList.contains("editar-os")){
@@ -292,6 +329,27 @@ function loadPage() {
             } catch (error) {
                 console.error(error);
                 alertify.error("error al obtener los datos de la acta de entrega");
+            }
+        }
+        if(e.target.classList.contains("pago-cuotas")){
+            try {
+                const response = await gen.funcfetch("pago/cuotas/" + e.target.dataset.ordenServicio,null,"GET");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => {
+                        window.location.reload();
+                    });
+                }
+                idOrdenServicio = e.target.dataset.ordenServicio;
+                let template = "";
+                response.cuotas.forEach(cuota => {
+                    template += renderizarCuotaPagos(cuota).outerHTML;
+                });
+                radioFacturacionExterna.checked = response.facturacionExterna === 1 ? true : false;
+                tablaCuotasPagos.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se asignaron cuotas</td></tr>` : template;
+                $('#generarPagos').modal("show");
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener los datos de la orden de servicio");
             }
         }
     });
@@ -426,32 +484,299 @@ function loadPage() {
         $('#editarOrdenServicio').modal("hide");
         alertify.success(response.success);
         tablaDataOs.draw();
-    })
+    });
     //Pago a cuotas
     const tablaCuotas = document.querySelector("#contenidoPagosCuotas");
-    tablaCuotas.addEventListener("click",e => {
-        if(e.target.classList.contains("modificar-cuota")){
-            $('#generarPagos').modal("hide");
-            setTimeout(e => {
-                $('#modificarCuota').modal('show');
-            },300);
-        }
-        if(e.target.classList.contains("eliminar-cuota")){
-            alertify.confirm("Alerta","¿Deseas eliminar esta cuota?",()=>{},()=>{})
-        }
-    })
-    $('#modificarCuota').on('hidden.bs.modal', function (event) {
-        setTimeout(e => {
-            $('#generarPagos').modal('show');
-        },300);
-    });
+    const radioFacturacionExterna = document.querySelector("#generarPagos #facturacionExterna");
     const radioPagosCuotas = document.querySelector("#radioCambioPagos");
+    const botonComprobanteSunat = document.querySelector("#modificarCuota #botonDocumentoComprobante");
+    const contenidoPagosImagenes = document.querySelector("#modificarCuota #contenidoImagenPagos");
+    const documentoSunat = document.querySelector("#modificarCuota #documentoComprobante");
+    const enlaceComprobante = document.querySelector("#modificarCuota #enlaceDocumentoComprobante");
+    const botonEliminarDocumentoSunat = document.querySelector("#modificarCuota #eliminarDocumentoSunat");
+    document.querySelector("#btnGuardarCuota").onclick = e => document.querySelector("#enviarCuota").click();
     radioPagosCuotas.addEventListener("change",e => cambioPago(!e.target.checked));
+    botonComprobanteSunat.onclick = e => documentoSunat.click();
+    radioFacturacionExterna.addEventListener("change",async function(e){
+        const valor = e.target.checked;
+        let datos = new FormData();
+        datos.append("valor", e.target.checked);
+        datos.append("ordenServicio", idOrdenServicio);
+        try {
+            const response = await gen.funcfetch(`pago/cuota/facturacion-externa`,datos,"POST");
+            if (response.session) {
+                return alertify.alert([...gen.alertaSesion], () => {
+                    window.location.reload();
+                });
+            }
+            alertify.success(response.success);
+        }catch(error){
+            e.target.checked = valor ? false : true;
+            console.error(error);
+            alertify.error("error al modificar la facturacion externa")
+        }
+    });
     function cambioPago(valor){
         for (const textoPago of document.querySelectorAll("#modificarCuota .pago-texto")) {
             textoPago.disabled = valor
         }
+        for (const domPago of document.querySelectorAll("#modificarCuota .pagos-ocultar")) {
+            domPago.hidden = valor
+        }
+        botonComprobanteSunat.hidden = radioFacturacionExterna.checked && radioPagosCuotas.checked ? false : true;
     }
+    botonEliminarDocumentoSunat.addEventListener("click", e => {
+        if(e.target.dataset.valor){
+            alertify.confirm("Mensaje","¿Deseas eliminar este comprobante externo de manera permanente?",async ()=>{
+                try {
+                    const response = await gen.funcfetch(`pago/cuota-comprobante/${idOrdenServicio}/${idCuota}`,null,"DELETE");
+                    if (response.session) {
+                        return alertify.alert([...gen.alertaSesion], () => {
+                            window.location.reload();
+                        });
+                    }
+                    if (response.alerta) {
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    e.target.parentElement.hidden = true;
+                    documentoSunat.value = "";
+                    alertify.success(response.success);
+                }catch(error){
+                    console.error(error);
+                    alertify.error("error al eliminar el comprobante externo")
+                }
+            }, () =>{})
+        }else{
+            e.target.parentElement.hidden = true;
+            documentoSunat.value = "";
+            alertify.success("comprobante eliminado correctamente");
+        }
+    });
+    documentoSunat.addEventListener("change", e => {
+        const input = e.target;
+        enlaceComprobante.removeAttribute("target");
+        if(!input.value){
+            enlaceComprobante.parentElement.hidden = true;
+            return
+        }
+        enlaceComprobante.href = "javascript:void(0)";
+        enlaceComprobante.parentElement.hidden = false;
+        enlaceComprobante.textContent = input.files[0].name;
+        enlaceComprobante.parentElement.querySelector("button").removeAttribute('data-valor');
+    });
+    let idCuota = null;
+    const tituloCuota = document.querySelector("#modificarCuota #tituloCuota")
+    function renderizarImagenesPagos({id,nombre,url}) {
+        const contenidoImagen = document.createElement("div");
+        contenidoImagen.className = "form-group col-12 col-lg-6 contenido-img";
+        contenidoImagen.innerHTML = `
+        <img src="${window.origin + "/intranet/storage/pagoCuotasImg/" + url}" class="img-fluid d-block m-auto"/>
+        <button type="button" title="Eliminar imagen" class="btn btn-sm btn-danger" data-img="${id}">
+        <i class="fas fa-trash-alt"></i>
+        </button>`;
+        return contenidoImagen;
+    }
+    async function cargarImagen(files,idOrdenServicio,idCuota) {
+        if(!files.length){
+            return
+        }
+        try {
+            const imagenes = files;
+            const pattern = /image-*/;
+            for (let i = 0; i < imagenes.length; i++) {
+                if(!files[i].type.match(pattern)){
+                    alertify.alert("Mensaje", "El archivo " + files[i].name +" no es se cargo correctamente debido a que no es una imagen");
+                    continue;
+                }
+                let datos = new FormData();   
+                datos.append("ordenServicio",idOrdenServicio);
+                datos.append("cuota",idCuota);
+                datos.append("imagen",files[i]);
+                let response = await gen.funcfetch("pago/cuota-prueba/imagen",datos,"POST");
+                if(response.session){
+                    return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
+                }
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
+                }
+                const $img = renderizarImagenesPagos(response);
+                contenidoPagosImagenes.append($img);
+            }
+            alertify.success(imagenes.length > 1 ? imagenes.length + ' imagenes cargadas correctamente' : '1 imagen cargada correctamente');
+        } catch (error) {
+            console.error(error);
+            alertify.error("error al cargar las imagenes");
+        }
+    }
+    const documentoImagenPagos = document.querySelector("#modificarCuota #documentoImagenPagos");
+    const formularioCuotas = document.querySelector("#generarPagos #frmPagoCredito");
+    const numeroCuota = document.querySelector("#generarPagos #numeroCuotas");
+    const formularioPago = document.querySelector("#modificarCuota #frmCuotaPago");
+    documentoImagenPagos.addEventListener("change", e => cargarImagen(e.target.files,idOrdenServicio,idCuota));
+    document.querySelector("#modificarCuota #btnAgregarImagenPagos").addEventListener("click", e => documentoImagenPagos.click());
+    contenidoPagosImagenes.addEventListener("click",e => {
+        if(e.target.classList.contains("btn-danger")){
+            alertify.confirm("Mensaje","¿Deseas eliminar esta imagen de manera permanente?",async ()=>{
+                try {
+                    const response = await gen.funcfetch(`pago/cuota-prueba/imagen/${idCuota}/${e.target.dataset.img}`,null,"DELETE");
+                    if (response.session) {
+                        return alertify.alert([...gen.alertaSesion], () => {
+                            window.location.reload();
+                        });
+                    }
+                    if (response.alerta) {
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    e.target.parentElement.remove();
+                    alertify.success(response.success);
+                }catch(error){
+                    console.error(error);
+                    alertify.error("error al eliminar la imagen")
+                }
+            },()=>{})
+        }
+    });
+    tablaCuotas.addEventListener("click",async e => {
+        if(e.target.classList.contains("modificar-cuota")){
+            $('#generarPagos').modal("hide");
+            try {
+                const response = await gen.funcfetch(`pago/cuota/${idOrdenServicio}/${e.target.dataset.cuota}`,null,"GET");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => {
+                        window.location.reload();
+                    });
+                }
+                idCuota = response.cuota.id;
+                tituloCuota.textContent = "Modificar cuota " + response.cuota.numeroCuota;
+                response.imagenesPagos.forEach(img => {
+                    contenidoPagosImagenes.append(renderizarImagenesPagos(img));
+                });
+                for (const key in response.cuota) {
+                    if (Object.hasOwnProperty.call(response.cuota, key)) {
+                        const valor = response.cuota[key];
+                        const dom = document.querySelector("#modificarCuota #idCuota" + key);
+                        if(key === "comprobanteNombre" && valor){
+                            enlaceComprobante.parentElement.hidden = false;
+                            enlaceComprobante.textContent = valor;
+                            enlaceComprobante.setAttribute("target","_blank");
+                            enlaceComprobante.parentElement.querySelector("button").dataset.valor = "true";
+                            enlaceComprobante.href = `pago/cuota/comprobante-sunat/${idOrdenServicio}/${idCuota}`;
+                            continue;
+                        }
+                        if(key === "estado" && valor === 2){
+                            radioPagosCuotas.checked = true;
+                            cambioPago(false);
+                            botonComprobanteSunat.hidden = false;
+                        }
+                        if(!dom){
+                            continue;
+                        }
+                        dom.value = valor;
+                    }
+                }
+                $('#modificarCuota .select2-simple').trigger("change");
+                setTimeout(e => {
+                    $('#modificarCuota').modal("show");
+                },300);
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener los datos de la cuota")
+            }
+        }
+        if(e.target.classList.contains("eliminar-cuota")){
+            alertify.confirm("Alerta","¿Deseas eliminar esta cuota?",async () =>{
+                try {
+                    const response = await gen.funcfetch(`pago/cuota/${idOrdenServicio}/${e.target.dataset.cuota}`,null,"DELETE");
+                    if (response.session) {
+                        return alertify.alert([...gen.alertaSesion], () => {
+                            window.location.reload();
+                        });
+                    }
+                    if (response.alerta) {
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    let template = "";
+                    response.cuotas.forEach(cuota => {
+                        template += renderizarCuotaPagos(cuota).outerHTML;
+                    });
+                    tablaCuotasPagos.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se asignaron cuotas</td></tr>` : template;
+                    alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al eliminar la cuota");
+                }
+            },()=>{})
+        }
+    })
+    $('#modificarCuota').on('hidden.bs.modal', function (event) {
+        enlaceComprobante.parentElement.hidden = true;
+        enlaceComprobante.removeAttribute("target");
+        enlaceComprobante.parentElement.querySelector("button").removeAttribute("data-valor");
+        radioPagosCuotas.checked = false;
+        botonComprobanteSunat.hidden = true;
+        contenidoPagosImagenes.innerHTML = "";
+        documentoSunat.value = "";
+        idCuota = null;
+        cambioPago(true);
+        setTimeout(e => {
+            $('#generarPagos').modal('show');
+        },300);
+    });
+    formularioCuotas.addEventListener("submit",function(e){
+        e.preventDefault();
+        const valorCuota = numeroCuota.value;
+        alertify.confirm("Mensaje","¿Deseas agregar " + valorCuota + " cuotas?",async () => {
+            try {
+                let datos = new FormData(e.target);
+                datos.append("ordenServicioId",idOrdenServicio);
+                const response = await gen.funcfetch("pago/cuota-agregar",datos,"POST");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => {
+                        window.location.reload();
+                    });
+                }
+                if (response.error) {
+                    return alertify.alert("Alerta",response.error);
+                }
+                let template = "";
+                response.cuotas.forEach(cuota => {
+                    template += renderizarCuotaPagos(cuota).outerHTML;
+                });
+                tablaCuotasPagos.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se asignaron cuotas</td></tr>` : template;
+                alertify.success(response.success);
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al agregar las cuotas");
+            }
+        }, () => {})
+    })
+    formularioPago.addEventListener("submit",async function(e){
+        e.preventDefault();
+        try {
+            let datos = new FormData(e.target);
+            datos.append("ordenServicioId",idOrdenServicio);
+            datos.append("cuotaId",idCuota);
+            const response = await gen.funcfetch("pago/cuota-modificar",datos,"POST");
+            if (response.session) {
+                return alertify.alert([...gen.alertaSesion], () => {
+                    window.location.reload();
+                });
+            }
+            if (response.alerta) {
+                return alertify.alert("Alerta",response.alerta);
+            }
+            let template = "";
+            response.cuotas.forEach(cuota => {
+                template += renderizarCuotaPagos(cuota).outerHTML;
+            });
+            tablaCuotasPagos.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se asignaron cuotas</td></tr>` : template;
+            $('#modificarCuota').modal("hide");
+            alertify.success(response.success);
+        } catch (error) {
+            console.error(error);
+            alertify.error("error al editar la cuota");
+        }
+    })
     
 }
 window.addEventListener("DOMContentLoaded",loadPage);
