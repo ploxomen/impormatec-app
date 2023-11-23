@@ -91,6 +91,11 @@ function loadPage() {
                         <i class="fas fa-share-square text-primary"></i>
                         <span>Acta de entrega</span>
                     </a>
+                    `
+                }
+                let opcionInfomePdf = "";
+                if(row.estado){
+                    opcionInfomePdf = `
                     <a href="../informe/reporte/previa/${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <span>Ver Informe PDF</span>
@@ -109,17 +114,18 @@ function loadPage() {
                         </a>
                         ${opcionesInforme}
                         <a href="javascript:void(0)" class="dropdown-item pago-cuotas" data-orden-servicio="${data}">
-                            <i class="fas fa-hands-helping text-primary"></i>
+                            <i class="fas fa-hands-helping text-success"></i>
                             <span>Pago a credito</span>
                         </a>
-                        <a href="javascript:void(0)" class="dropdown-item" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarFactura">
+                        <a href="javascript:void(0)" class="dropdown-item generar-comprobante" data-orden-servicio="${data}">
                             <i class="fas fa-money-bill-alt text-success"></i>
-                            <span>Pago al contado</span>
+                            <span>Generar comprobante</span>
                         </a>
                         <a href="javascript:void(0)" class="dropdown-item" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarGuiaRemision">
                             <i class="fas fa-box-open text-warning"></i>
                             <span>Guía de remisión</span>
                         </a>
+                        ${opcionInfomePdf}
                         <a href="reporte/${data}" target="_blank" class="dropdown-item">
                             <i class="fas fa-file-pdf text-danger"></i>                        
                             <span>Reporte OS PDF</span>

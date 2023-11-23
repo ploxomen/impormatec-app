@@ -48,6 +48,14 @@ function loadPage(){
                     cbContactos.append(cotizacionGeneral.templateOpcionContacto(c));
                 });
                 txtDireccion.value = response.cliente.direccion;
+                if(response.cliente.id_pais !== 165){
+                    $('#idModalincluirIGV').val("0").trigger("change");
+                    $('#idModalincluirIGV').prop("disabled",true);
+                }else{
+                    $('#idModalincluirIGV').prop("disabled",false);
+                }
+                cotizacionGeneral.ocultarMostrarIGV($('#idModalincluirIGV').val());
+                cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
             }
         } catch (error) {
             console.error(error);
