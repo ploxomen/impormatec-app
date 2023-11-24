@@ -140,8 +140,10 @@ class Cotizacion extends Controller
         }
         $cotizacionModel = ModelsCotizacion::find($request->idCotizacion);
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
-        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente","mesesGarantia","incluirIGV");
+        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente","mesesGarantia");
+        $incluirIgv = !$request->has('incluirIGV') ? false : ($request->incluirIGV === "1" ? true : false);
         $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
+        $cotizacion['incluirIGV'] = $incluirIgv;
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
         $cotizacion['fechaFinCotizacion'] = $request->fechaVencimiento;
         $cotizacion['id_pre_cotizacion'] = $preCotizacion;
@@ -160,7 +162,9 @@ class Cotizacion extends Controller
             $cotizacionModel->update($cotizacion);
             foreach ($detalleCotizacion as $key => $coti) {
                 $importes['descuentoTotal'] += $coti->descuento;
-                $importes['igvTotal'] += $coti->pTotal * 0.18;
+                if($incluirIgv){
+                    $importes['igvTotal'] += $coti->pTotal * 0.18;
+                }
                 $importes['importeTotal'] += $coti->pTotal;
                 $coleccionDatos = [
                     'precio' => $coti->pUni,
@@ -169,7 +173,7 @@ class Cotizacion extends Controller
                     'importe' => $coti->pImporte,
                     'descuento' => $coti->descuento,
                     'total' => $coti->pTotal,
-                    'igv' => $coti->pTotal * 0.18,
+                    'igv' => $incluirIgv ? $coti->pTotal * 0.18 : 0,
                 ];
                 if(empty($coti->idServicio) && !empty($coti->idProducto)){
                     CotizacionProductos::updateOrCreate([
@@ -195,7 +199,7 @@ class Cotizacion extends Controller
                     ]);
                 }
             }
-            $importes['total'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
+            $importes['total'] = $incluirIgv ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
             $importes['importeTotal'] = $importes['importeTotal'] + $importes['descuentoTotal'];
             $cotizacionModel->update($importes);
             $cotizacionModel->fresh();
@@ -415,7 +419,9 @@ class Cotizacion extends Controller
             return response()->json(['session' => true]);
         }
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
-        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente","mesesGarantia","incluirIGV");
+        $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente","mesesGarantia");
+        $incluirIgv = !$request->has('incluirIGV') ? false : ($request->incluirIGV === "1" ? true : false);
+        $cotizacion['incluirIGV'] = $incluirIgv;
         $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");
         $cotizacion['fechaFinCotizacion'] = $request->fechaVencimiento;
@@ -436,7 +442,9 @@ class Cotizacion extends Controller
             $mCotizacion = ModelsCotizacion::create($cotizacion);
             foreach ($detalleCotizacion as $key => $coti) {
                 $importes['descuentoTotal'] += $coti->descuento;
-                $importes['igvTotal'] += $coti->pTotal * 0.18;
+                if($incluirIgv){
+                    $importes['igvTotal'] += $coti->pTotal * 0.18;
+                }
                 $importes['importeTotal'] += $coti->pTotal;
                 $coleccionDatos = [
                     'id_cotizacion' => $mCotizacion->id,
@@ -446,7 +454,7 @@ class Cotizacion extends Controller
                     'importe' => $coti->pImporte,
                     'descuento' => $coti->descuento,
                     'total' => $coti->pTotal,
-                    'igv' => $coti->pTotal * 0.18,
+                    'igv' => $incluirIgv ? $coti->pTotal * 0.18 : 0,
                     'estado' => 1
                 ];
                 if(empty($coti->idServicio) && !empty($coti->idProducto)){
@@ -468,7 +476,7 @@ class Cotizacion extends Controller
                     ]);
                 }
             }
-            $importes['total'] = intval($request->incluirIGV) === 1 ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
+            $importes['total'] = $incluirIgv ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
             $importes['importeTotal'] = $importes['importeTotal'] + $importes['descuentoTotal'];
             $mCotizacion->update($importes);
             $documentoCotizacion = $this->renderPdf($mCotizacion->id);

@@ -40,6 +40,14 @@
                                 <option value="USD">Dolar ($)</option>
                             </select>
                         </div>
+                        <div class="form-group col-12 col-md-6 col-lg-4 col-xl-2">
+                            <label for="idModalincluirIGV">Con IGV</label>
+                            <select name="incluirIGV" id="idModalincluirIGV" required class="select2-simple form-control-sm">
+                                <option value=""></option>
+                                <option value="1" selected>SI</option>
+                                <option value="0">NO</option>
+                            </select>
+                        </div>
                 </fieldset>
             </div>
             <div class="form-group">
