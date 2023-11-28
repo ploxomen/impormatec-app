@@ -129,6 +129,7 @@
                                             <th style="min-width: 300px;">DESCRIPCIÓN</th>
                                             <th style="width: 100px;">CANT.</th>
                                             <th style="width: 120px;">P. UNIT</th>
+                                            {{-- <th style="width: 120px;">I.G.V</th> --}}
                                             <th style="width: 120px;">DESC.</th>
                                             <th>P.TOTAL</th>
                                             <th style="width: 50px;">ELIMINAR</th>

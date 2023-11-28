@@ -148,11 +148,12 @@ class OrdenServicio extends Controller
             }
         }
         $importeTotal = $operacionGravada + $igvTotal;
+        dd($detalleTotal,$importeTotal);
         $montoPagado = PagoCuotas::where('id_orden_servicio',$idOrdenServicio)->sum('monto_pagado');
         if($montoPagado !== 0 && $montoPagado > $importeTotal){
             $adiconal = $montoPagado - $importeTotal;
-            $baseAdicional = $incluirIgv ? round($adiconal/1.18,2) : $adiconal;
-            $igvAdicional = $incluirIgv ? round($baseAdicional * 0.18,2) : 0;
+            $baseAdicional = $incluirIgv ? round($adiconal/1.18,6) : $adiconal;
+            $igvAdicional = $incluirIgv ? round($baseAdicional * 0.18,6) : 0;
             $igvTotal += $igvAdicional;
             $operacionGravada += $baseAdicional;
             $importeTotal += $baseAdicional + $igvAdicional;

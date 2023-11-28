@@ -541,14 +541,22 @@ class RapiFac extends Controller
         $impuestoTotal = 0;
         foreach ($detallesComprobante as $detalle) {
             $item++;
-            $total = round($detalle['total'] + $detalle['igv'],2);
+            // dd($detalle);
+            $precioUnitario = round($detalle['precio'] + ($detalle['precio'] * 0.18),6);
+            $valorUnitario = round($precioUnitario/1.18,6);
+            $valorVenta = round($detalle['cantidad'] * $valorUnitario,6);
+            $porcentajeDescuento = round($detalle['descuento'] * 100 / $valorVenta,6);
+            $valorVentaItem = round($valorVenta - $detalle['descuento'],6);
+            $igv = round($valorVentaItem*0.18,6);
+            $totalPrecioVentaItem = round($valorVentaItem + $igv,6);
+            $precioUnitarioNeto = round($totalPrecioVentaItem/$detalle['cantidad'],6);
             $detalles[] = [
                 'Item' => $item,
                 "ProductoCodigo" => mb_strtoupper(substr($detalle['tipoServicioProducto'],0,1)) . $detalle['idOsCotizacion'],
                 "ProductoCodigoSUNAT" => "",
                 'TipoSistemaISCCodigo' => '00',
                 'UnidadMedidaCodigo' => 'NIU',
-                'PrecioUnitarioItem' => round($detalle['precio'] + ($detalle['precio'] * 0.18),2),
+                'PrecioUnitarioItem' => $precioUnitario,
                 'PrecioVentaCodigo' => '01',
                 'ICBPER' => 0,
                 'DescuentoCargoCodigo' => '00',
@@ -556,43 +564,43 @@ class RapiFac extends Controller
                 'ImporteTotalReferencia' => 0,
                 'CantidadUnidadMedida' => 1,
                 'CantidadReferencial' => 1,
-                'PrecioUnitarioNeto' => round($total/$detalle['cantidad'],2),
+                'PrecioUnitarioNeto' => $precioUnitarioNeto,
                 'DescuentoGlobal' => 0,
                 'Descuento' => $detalle['descuento'],
-                'ValorUnitario' => $detalle['precio'],
+                'ValorUnitario' => $valorUnitario,
                 'ValorUnitarioNeto' => $detalle['total'],
-                'ValorVentaItem' => $detalle['total'],
-                'ValorVentaItemXML' => $detalle['total'],
-                'ValorVentaNeto' => $detalle['total'],
+                'ValorVentaItem' => $valorVentaItem,
+                'ValorVentaItemXML' => $valorVentaItem,
+                'ValorVentaNeto' => $valorVentaItem,
                 'ValorVentaNetoXML' => 0,
                 'ISCUnitario' => 0,
                 'ISCNeto' => 0,
                 'ISC' => 0,
-                'IGV' => $detalle['igv'],
+                'IGV' => $igv,
                 'ICBPERItem' => 0,
                 'ICBPERSubTotal' => 0,
                 'DescuentoBase' => $detalle['importe'],
-                'PrecioVenta' => $total,
-                'MontoTributo' => $detalle['igv'],
+                'PrecioVenta' => $totalPrecioVentaItem,
+                'MontoTributo' => $igv,
                 'ISCPorcentaje' => 0,
                 'ISCMonto' => 0,
                 'Descripcion' => $detalle['servicio'],
                 'Observacion' => '',
                 'Cantidad' => $detalle['cantidad'],
-                'PrecioUnitario' => round($detalle['precio'] + ($detalle['precio'] * 0.18),2),
+                'PrecioUnitario' => $precioUnitario,
                 'DescuentoMonto' => $detalle['descuento'],
-                'DescuentoPorcentaje' => round(($detalle['descuento']/$detalle['importe'])*100,2),
+                'DescuentoPorcentaje' => $porcentajeDescuento,
                 'TipoAfectacionIGVCodigo' => '10',
-                'ValorVenta' => $detalle['importe'],
+                'ValorVenta' => $valorVenta,
                 'Ganancia' => '',
-                'IGVNeto' => $detalle['igv'],
-                'ImporteTotal' => $total,
+                'IGVNeto' => $igv,
+                'ImporteTotal' => $totalPrecioVentaItem,
             ];
-            $totalSinIgv += $detalle['total'];
-            $totalGeneral += $total;
-            $impuestoTotal += $detalle['igv'];
+            $totalGeneral += $totalPrecioVentaItem;
+            $impuestoTotal += $igv;
         }
-        return [$detalles,round($totalSinIgv,2),round($totalGeneral,2),round($impuestoTotal,2)];
+        $totalSinIgv = round($totalGeneral - $impuestoTotal,6);
+        return [$detalles,$totalSinIgv,round($totalGeneral,6),round($impuestoTotal,6)];
     }
     function generarComprobanteAgrabadoSUNAT($datosGenerales,$detalleComprobante,$tipoMoneda){
         list($detalles,$totalSinIgv,$totalGeneral,$impuestoTotal) = $this->detalleComprobanteAgrabadoSUNAT($detalleComprobante);
@@ -667,7 +675,7 @@ class RapiFac extends Controller
                 'Content-Type' => 'application/json'
             ];
             $body = json_encode($parametros);
-            // dd($body);
+            dd($body);
             $response = $client->post($this->urlComprobante,[
                 'headers' => $headers,
                 'body' => $body

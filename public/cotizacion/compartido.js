@@ -234,7 +234,7 @@ class Cotizacion extends General{
         if(valorTipoDocumento !== tipoMoneda){
             precioVentaConvertido = valorTipoDocumento === "USD" ? precioVenta / valorConversor :  precioVenta * valorConversor;
         }
-        return Number.parseFloat(precioVentaConvertido).toFixed(2);
+        return Number.parseFloat(precioVentaConvertido);
     }
     asignarListaServiciosProductosEditar(servicio){
         let productosLista = [];
@@ -264,37 +264,49 @@ class Cotizacion extends General{
         };
     }
     asignarListaServiciosProductos(servicio,tipo){
+        const incluirIGV = +this.$cbIncluirIGV.value;
         let productosLista = [];
-        let pUni = tipo === "producto" ? this.convertirPrecioVenta(servicio.precioVenta,servicio.tipoMoneda) : 0;
-        let subTotal = tipo === "producto" ? pUni * servicio.cantidad : 0;
+        let precioUnitarioNormal = 0;
+        let precioUnitarioConIgv = 0;
+        let importeTotal = 0;
         let descuento = 0;
+        if(tipo === "producto"){
+            precioUnitarioNormal = this.convertirPrecioVenta(servicio.precioVenta,servicio.tipoMoneda);
+            precioUnitarioConIgv = incluirIGV ? precioUnitarioNormal * this.igvTotal : precioUnitarioNormal;
+            importeTotal = precioUnitarioConIgv * servicio.cantidad;
+        }
         if(servicio.productos){
             servicio.productos.forEach(p => {
                 const descuentoProducto = !p.descuentoProducto ? 0  : p.descuentoProducto;
                 const precioVentaConvertido = this.convertirPrecioVenta(p.precioVenta,p.tipoMoneda);
+                const precioVentaIgvProducto = incluirIGV ? precioVentaConvertido * this.igvTotal : precioVentaConvertido; 
+                const importeTotalProducto = precioVentaIgvProducto * p.cantidadUsada; 
                 productosLista.push({
                     tipoPoneada : p.tipoMoneda,
                     idProducto : p.idProducto,
                     cantidad : p.cantidadUsada,
-                    pVentaConvertido : precioVentaConvertido,
-                    pVenta : p.precioVenta,
-                    importe : precioVentaConvertido * p.cantidadUsada,
+                    precioUnitarioNormal : precioVentaConvertido,
+                    precioUnitarioConIgv : precioVentaIgvProducto,
+                    importeTotal: importeTotalProducto,
                     descuento : descuentoProducto,
-                    pTotal : precioVentaConvertido * p.cantidadUsada - descuentoProducto
+                    total : importeTotalProducto - descuentoProducto
                 });
-                subTotal += precioVentaConvertido * p.cantidadUsada;
+                importeTotal += importeTotalProducto
                 descuento += descuentoProducto;
             });
-            pUni = subTotal;
+            precioUnitarioNormal += incluirIGV ? importeTotal - (importeTotal * this.igv) : importeTotal;
+            precioUnitarioConIgv += !incluirIGV ? importeTotal * this.igvTotal  : importeTotal;
         }
+        let total = importeTotal - descuento;
         return {
             idServicio : servicio.id_servicio,
             idProducto : servicio.id_producto,
             cantidad : servicio.cantidad,
-            pUni,
-            pImporte : subTotal,
-            descuento: descuento,
-            pTotal : subTotal - descuento,
+            precioUnitarioNormal,
+            precioUnitarioConIgv,
+            importeTotal,
+            descuento,
+            total,
             productosLista
         };
     }
@@ -504,7 +516,9 @@ class Cotizacion extends General{
                 tablaServicioProductos.innerHTML = "";
             }
             const listaServicioProducto = this.asignarListaServiciosProductos(servicioJSON,tipoProductoServicio);
-            const {pTotal} = listaServicioProducto;
+            console.log(listaServicioProducto);
+            // return false;
+            const {total} = listaServicioProducto;
             serviciosProductos.push(listaServicioProducto);
             tablaServicios.append(this.agregarServicio(tablaServicios.children.length + 1,servicioJSON.id,servicioJSON.servicio||servicioJSON.nombreProducto,1,pTotal,0,pTotal,tipoProductoServicio));
             for (const cambio of tablaServicios.children[tablaServicios.children.length - 1].querySelectorAll(".cambio-detalle")) {
