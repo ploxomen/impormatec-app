@@ -7,7 +7,7 @@
     <script src="/ordenServicio/compartidoOs.js?v1.5"></script>
     <link rel="stylesheet" href="/ordenServicio/ordenServicio.css">
     <script src="/ordenServicio/misOs.js?v1.5"></script>
-    <title>Mis Cotizaciones</title>
+    <title>Mis Ordenes de Servicio</title>
 @endsection
 @section('body')
     <section class="p-3">

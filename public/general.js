@@ -1,5 +1,6 @@
 class General{
     token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    idPais = 165
     alertaSesion = ["Alerta","La sesión a caducado, favor inicie sesión nuevamente"];
     urlDescargarDocumentos = window.origin + "/descargar";
     requestJson = {

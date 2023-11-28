@@ -64,10 +64,10 @@ class Cotizacion extends Model
         }
         return $servicios;
     }
-    public function scopeObtenerCotizacionesAprobadas($query,$idCliente,$tipoMoneda,$soloCotizacion = false){
+    public function scopeObtenerCotizacionesAprobadas($query,$idCliente,$tipoMoneda,$conIgv,$soloCotizacion = false){
         $cotizaciones = $query->select("id","importeTotal","descuentoTotal","igvTotal","total")
         ->selectRaw("LPAD(id,5,'0') AS nroCotizacion")
-        ->where(['id_cliente' => $idCliente,'tipoMoneda' => $tipoMoneda])
+        ->where(['id_cliente' => $idCliente,'tipoMoneda' => $tipoMoneda,'incluirIgv' => $conIgv])
         ->whereIn('estado',[2,3])->get();
         if($soloCotizacion){
             return $cotizaciones;

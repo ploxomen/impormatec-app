@@ -38,7 +38,7 @@ class OrdenServicioCotizacionServicio extends Model
         ->get();
     }
     public static function mostrarServiciosOrdenServicio($idOrdenServicio) {
-        return OrdenServicioCotizacionServicio::select("orden_servicio_cotizacion_servicio.id AS idOsCotizacion","servicios.servicio","cotizacion_servicios.cantidad","cotizacion_servicios.importe","cotizacion_servicios.descuento","cotizacion_servicios.total","cotizacion_servicios.id AS idCotizacionServicio","orden_servicio_cotizacion_servicio.orden","orden_servicio_cotizacion_servicio.id_cotizacion_servicio AS idCotizacionDetalle")
+        return OrdenServicioCotizacionServicio::select("orden_servicio_cotizacion_servicio.id AS idOsCotizacion","servicios.servicio","cotizacion_servicios.cantidad","cotizacion_servicios.importe","cotizacion_servicios.descuento","cotizacion_servicios.igv","cotizacion_servicios.precio","cotizacion_servicios.total","cotizacion_servicios.id AS idCotizacionServicio","orden_servicio_cotizacion_servicio.orden","orden_servicio_cotizacion_servicio.id_cotizacion_servicio AS idCotizacionDetalle")
         ->selectRaw("LPAD(cotizacion_servicios.id_cotizacion,5,'0') AS nroCotizacion,'servicio' AS tipoServicioProducto")
         ->join("cotizacion_servicios","cotizacion_servicios.id","=","orden_servicio_cotizacion_servicio.id_cotizacion_servicio")
         ->join("servicios","cotizacion_servicios.id_servicio","=","servicios.id")

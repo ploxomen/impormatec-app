@@ -310,7 +310,14 @@ function loadPage() {
                         dom.value = valor;
                     }
                 }
+                if(response.cotizacion?.cliente_pais !== general.idPais){
+                    $('#idModalincluirIGV').prop('disabled',true);
+                }
+                if(response.cotizacion?.estado >= 4){
+                    $('#editarCotizacion .bloquer-os').prop('disabled',true);
+                }
                 $('#editarCotizacion .select2-simple').trigger("change");
+                cotizacionGeneral.ocultarMostrarIGV($('#idModalincluirIGV').val());
                 $('#editarCotizacion').modal("show");
             } catch (error) {
                 console.error(error);
@@ -493,6 +500,37 @@ function loadPage() {
             }
         }
     });
+    const cbClientes = document.querySelector("#idModalid_cliente");
+    $(cbClientes).on("select2:select",async function(e){
+        let datos = new FormData();
+        datos.append("cliente",$(this).val());
+        try {
+            const response = await general.funcfetch("obtener/cliente",datos, "POST");
+            if(response.session){
+                return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
+            }
+            if(response.cliente && Object.keys(response.cliente).length){
+                nuevoCliente = false;
+                cbRepresentastes.innerHTML = "";
+                cbRepresentastes.append({id : null });
+                response.cliente.contactos.forEach(c => {
+                    cbRepresentastes.append(cotizacionGeneral.templateOpcionContacto(c));
+                });
+                document.querySelector("#idModaldireccionCliente").value = response.cliente.direccion;
+                if(response.cliente.id_pais !== 165){
+                    $('#idModalincluirIGV').val("0").trigger("change");
+                    $('#idModalincluirIGV').prop("disabled",true);
+                }else{
+                    $('#idModalincluirIGV').prop("disabled",false);
+                }
+                cotizacionGeneral.ocultarMostrarIGV($('#idModalincluirIGV').val());
+                cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
+            }
+        } catch (error) {
+            console.error(error);
+            alertify.error("error al obtener la informacion del cliente");
+        }
+    });
     const btnActualizar = document.querySelector("#actualizarCotizacion");
     btnActualizar.onclick = e => document.querySelector("#btnActualizar").click();
     formCotizacion.addEventListener("submit",async function(e){
@@ -508,7 +546,7 @@ function loadPage() {
         try {
             const response = await general.funcfetch("modificar",datos,"POST");
             if(response.session){
-                return alertify.alert([...gen.alertaSesion],() => {window.location.reload()});
+                return alertify.alert([...general.alertaSesion],() => {window.location.reload()});
             }
             if(response.error){
                 return alertify.alert("Error",response.error);

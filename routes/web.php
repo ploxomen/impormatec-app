@@ -278,8 +278,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
         Route::post('agregar', [OrdenServicio::class, 'agregarOs']);
+        Route::post('generar/factura', [OrdenServicio::class, 'generarComprobante']);
         Route::get('todos', [OrdenServicio::class, 'indexMisOs'])->name("admin.ordenesServicios.index");
         Route::post('pago/cuota-agregar', [OrdenServicio::class, 'agregarCuota']);
+        Route::get('pago/generar/{ordenServicio}', [OrdenServicio::class, 'previoPago']);
         Route::post('pago/cuota-modificar', [OrdenServicio::class, 'modificarCuota']);
         Route::post('pago/cuota/facturacion-externa', [OrdenServicio::class, 'modificarFacturacionExterna']);
         Route::delete('pago/cuota/{ordenServicio}/{cuota}', [OrdenServicio::class, 'eliminarCuota']);

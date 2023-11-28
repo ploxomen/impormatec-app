@@ -243,6 +243,9 @@ function loadPage() {
     }
     const tablaCuotasPagos = document.querySelector("#generarPagos #contenidoPagosCuotas")
     const linkReporteActas = document.querySelector("#verReporteActas");
+    const detalleFactura = document.querySelector("#generarFactura #tablaProductos");
+    let totalFacturar = 0;
+    let tipoMonedaFacturacion = null;
     tablaOs.addEventListener("click",async (e)=>{
         if(e.target.classList.contains("editar-os")){
             try {
@@ -258,7 +261,7 @@ function loadPage() {
                 let template = "";
                 const detalleOrdenServicio = response.ordenServicio;
                 tinymce.activeEditor.setContent(!detalleOrdenServicio.observaciones ? "" : detalleOrdenServicio.observaciones);
-                const {fecha,tipoMoneda,id,adicionales,nombreCliente} = detalleOrdenServicio;
+                const {fecha,tipoMoneda,incluir_igv:incluirIgv,id,adicionales,nombreCliente} = detalleOrdenServicio;
                 detalleOrdenServicio.cotizaciones.forEach((servicio, key) => {
                     servicio.index = key + 1;
                     servicio.tipoMoneda = tipoMoneda;
@@ -293,6 +296,7 @@ function loadPage() {
                 document.querySelector("#idModalcliente").value = nombreCliente;
                 document.querySelector("#idModalfechaEmitida").value = fecha;
                 $("#editarOrdenServicio #idModaltipoMoneda").val(tipoMoneda).trigger("change");
+                $("#editarOrdenServicio #idModalincluir_igv").val(incluirIgv).trigger("change");
                 ordenServicio.calcularServiciosTotales(listaServicios,tablaServiciosAdicionales,tipoMoneda);
                 $('#editarOrdenServicio').modal("show");
             } catch (error) {
@@ -358,6 +362,210 @@ function loadPage() {
                 alertify.error("error al obtener los datos de la orden de servicio");
             }
         }
+        if(e.target.classList.contains("generar-comprobante")){
+            try {
+                const response = await gen.funcfetch("pago/generar/" + e.target.dataset.ordenServicio,null,"GET");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => {
+                        window.location.reload();
+                    });
+                }
+                idOrdenServicio = e.target.dataset.ordenServicio;
+                tipoMonedaFacturacion = response.comprobanteDetalle.tipoMoneda;
+                cambioVisibilidadComprobantes(response.comprobanteCliente);
+                let template = "";
+                response.comprobanteDetalle.detalle.forEach((detalleVenta,key) => {
+                    template += `
+                    <tr>
+                        <td>${key + 1}</td>
+                        <td>${detalleVenta.servicio}</td>
+                        <td>${detalleVenta.cantidad}</td>
+                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.precio) + parseFloat(detalleVenta.igv),tipoMonedaFacturacion)}</td>
+                        <td>${gen.resetearMoneda(detalleVenta.descuento,tipoMonedaFacturacion)}</td>
+                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.total) + parseFloat(detalleVenta.igv),tipoMonedaFacturacion)}</td>
+                    <tr>
+                    `
+                });
+                detalleFactura.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se encontraron detalles de la facturación</td></tr>` : template;
+                totalFacturar = Number.parseFloat(response.comprobanteDetalle.importeTotal).toFixed(2);
+                for (const key in response.comprobanteDetalle) {
+                    if (Object.hasOwnProperty.call(response.comprobanteDetalle, key)) {
+                        const valor = response.comprobanteDetalle[key];
+                        const dom = document.querySelector("#generarFactura #idModal" + key);
+                        if(!dom){
+                            continue;
+                        }
+                        dom.textContent = ['igvTotal','importeTotal','operacionGravada'].indexOf(key) >= 0 ? gen.resetearMoneda(valor,tipoMonedaFacturacion) : valor;
+                    }
+                }
+                $('#generarFactura').modal("show");
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener los datos de la orden de servicio");
+            }
+        }
+    });
+    const $detalleCriditoFacturacion = document.querySelector("#generarFactura #bloqueCredito");
+    const $txtFechaEmision = document.querySelector("#generarFactura #modalFechaEmision");
+    const $tablaCreditosFactura = document.querySelector("#generarFactura #tablaCreditos");
+    const formFacturar = document.querySelector("#generarFactura #formFacturar");
+    const $sinCuotas = `
+    <tr>
+        <td colspan="100%" class="text-center">No se asignaron cuotas</td>
+    </tr>
+    `
+    let numeroCuotasFactura = 0;
+    for (const tipoFactura of document.querySelectorAll("#generarFactura .cambio-tipo-factura")) {
+        tipoFactura.addEventListener("change",function(e){
+            if(e.target.value === "Contado"){
+                $tablaCreditosFactura.innerHTML = $sinCuotas;
+                $detalleCriditoFacturacion.hidden = true;
+                numeroCuotasFactura = 0;
+                return false;
+            }
+            $detalleCriditoFacturacion.hidden = false;
+        })
+    }
+    document.querySelector("#generarFactura #btnAgregarCuotaFactura").addEventListener("click",()=>{
+        $tablaCreditosFactura.append(agregarCuotaFactura());
+    });
+    $('#generarFactura').on("hidden.bs.modal",function(e){
+        formFacturar.reset();
+        numeroCuotasFactura = 0;
+        $detalleCriditoFacturacion.hidden = true;
+        $tablaCreditosFactura.innerHTML = $sinCuotas;
+        for (const tipoFactura of document.querySelectorAll('#generarFactura .cambio-tipo-factura')) {
+            tipoFactura.disabled = true;
+            tipoFactura.parentElement.parentElement.hidden =  true;
+        }
+        idOrdenServicio = null;
+        totalFacturar = 0;
+        tipoMonedaFacturacion = null;
+        $('#generarFactura .select2-simple').trigger("change");
+    });
+    $tablaCreditosFactura.addEventListener("click",function(e){
+        if(e.target.classList.contains("btn-danger")){
+            numeroCuotasFactura--;
+            e.target.parentElement.parentElement.remove();
+            Array.from($tablaCreditosFactura.children).forEach((tr,key) => {
+                tr.children[0].textContent = key + 1;
+            });
+            alertify.success("cuota eliminada correctamente");
+        }
+    })
+    function agregarCuotaFactura() {
+        if(numeroCuotasFactura <= 0){
+            $tablaCreditosFactura.innerHTML = "";
+        }
+        numeroCuotasFactura++;
+        const $fechaLimite = document.createElement("input");
+        const $monto = document.createElement("input");
+        const $btnEliminar = document.createElement("button");
+        const $tr = document.createElement("tr");
+        $fechaLimite.type = "date";
+        $monto.type = "number";
+        $fechaLimite.setAttribute("required","required");
+        $monto.setAttribute("required","required");
+        $fechaLimite.name = "cuotasFacturaFecha[]";
+        $monto.name = "cuotasFacturaMonto[]";
+        $fechaLimite.className = 'form-control form-control-sm';
+        $monto.className = 'form-control form-control-sm';
+        $fechaLimite.min = $txtFechaEmision.value;
+        $monto.step = "0.01";
+        $monto.min = "0";
+        $btnEliminar.className = 'btn btn-sm btn-danger';
+        $btnEliminar.type = 'button';
+        $btnEliminar.innerHTML = `<i class="fas fa-trash-alt"></i>`
+        $tr.innerHTML = `
+        <td>${numeroCuotasFactura}</td>
+        <td>${$fechaLimite.outerHTML}</td>
+        <td>${$monto.outerHTML}</td>
+        <td class="text-center">${$btnEliminar.outerHTML}</td>
+        `
+        return $tr;
+    }
+    for (const tipoFactura of document.querySelectorAll("#generarFactura .tipo-factura")) {
+        tipoFactura.addEventListener("change",function(e){
+            for (const tipoFactura of document.querySelectorAll('#generarFactura .cambio-tipo-factura')) {
+                tipoFactura.disabled = e.target.value !== "Factura" ? true : false;
+                tipoFactura.parentElement.parentElement.hidden =  e.target.value !== "Factura" ? true : false;
+            }
+        })
+    }
+    function cambioVisibilidadComprobantes(tipoComprobantes) {
+        for (const key in tipoComprobantes) {
+            if (Object.hasOwnProperty.call(tipoComprobantes, key)) {
+                const valor = tipoComprobantes[key];
+                const dom = document.querySelector("#generarFactura #idModal" + key);
+                if(!dom){
+                    continue;
+                }
+                if(key === 'comprobanteBoleta' || key === 'comprobanteFactura' || key === 'comprobanteInterno'){
+                    dom.disabled = valor === 1 ? false : true;
+                    dom.hidden = valor === 1 ? false : true;
+                    continue;
+                }
+                dom.value = valor;
+            }
+            $('#generarFactura .select2-simple').trigger("change");
+        }
+    }
+    document.querySelector("#generarFactura #btnFacturar").onclick = e => document.querySelector("#generarFactura #inputFacturar").click();
+    formFacturar.addEventListener("submit",async function(e){
+        e.preventDefault();
+        if(document.querySelector("#generarFactura #tipoACredito:checked")){
+            if(numeroCuotasFactura <= 0 ){
+                return alertify.error("debe haber al menos un detalle de credito");
+            }
+            let montoCredito = 0;
+            Array.from($tablaCreditosFactura.children).forEach((tr,key) => {
+                if(!tr.querySelector("input[type='date']").value){
+                    return alertify.error("debe establecer la fecha limite de la fila " + (key + 1));
+                }
+                for (let i = (key + 1); i < $tablaCreditosFactura.children.length; i++) {
+                    if(tr.querySelector("input[type='date']").value === $tablaCreditosFactura.children[i].querySelector("input[type='date']").value){
+                        return alertify.error("las fechas de los creditos no deben ser iguales cambie la fecha de la fila " + (key + 1) + " o de la fila " + (i + 1));
+                    }
+                }
+                if(!tr.querySelector("input[type='number']").value.trim()){
+                    return alertify.error("debe establecer el monto de la fila " + (key + 1));
+                }
+                montoCredito += Number.parseFloat(tr.querySelector("input[type='number']").value);
+            });
+            if(montoCredito.toFixed(2) !== totalFacturar){
+                return alertify.error("el monto acumulado de los creditos que actualmente es "+ gen.resetearMoneda(montoCredito.toFixed(2),tipoMonedaFacturacion) + " debe ser igual a " + gen.resetearMoneda(totalFacturar,tipoMonedaFacturacion));
+            }
+        }
+        alertify.confirm("Alerta","Estas apunto de generar un comprobante de <strong>" + gen.resetearMoneda(totalFacturar,tipoMonedaFacturacion) + "</strong>, ¿Deseas continuar de todas formas?",async ()=>{
+            try {
+                gen.banerLoader.hidden = false;
+                let datos = new FormData(formFacturar);
+                datos.append("ordenServicio",idOrdenServicio);
+                const response = await gen.funcfetch("generar/factura",datos,"POST");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                }
+                if (response.error) {
+                    return alertify.alert("Alerta",response.error);
+                }
+                if(response.urlPdf){
+                    const pdf = document.createElement("a");
+                    pdf.href = response.urlPdf;
+                    pdf.target = "_blank";
+                    document.body.append(pdf);
+                    pdf.click();
+                    document.body.removeChild(pdf);
+                }
+                $('#generarFactura').modal("hide");
+                tablaKardexDatatable.draw();
+                return alertify.alert("Mensaje",response.success);
+            } catch (error) {
+                alertify.alert("Alerta","Ocurrió un error al generar la factura, por favor intentelo nuevamente más tarde");
+                console.error(error);
+            }finally{
+                gen.banerLoader.hidden = true;
+            }
+        },()=>{})
     });
     $(cbCotizaciones).on('select2:select',async (e)=>{
         try {

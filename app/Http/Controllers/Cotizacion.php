@@ -73,7 +73,8 @@ class Cotizacion extends Controller
     }
     public function obtenerCliente(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloCotizacionAgregar);
-        if(isset($verif['session'])){
+        $verif2 = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
+        if(isset($verif['session']) && isset($verif2['session'])){
             return response()->json(['session' => true]);
         }
         $resultado = ["cliente" => Clientes::obenerCliente($request->cliente)];
@@ -128,6 +129,7 @@ class Cotizacion extends Controller
             ->join("productos","cotizacion_servicio_productos.id_producto","=","productos.id")
             ->where(['id_cotizacion_servicio' => $servicio->id])->get();
         }
+        $cotizacion->cliente_pais = $cotizacion->cliente->id_pais;
         $cotizacion->serviciosProductos = $detalleCotizacion;
         $cotizacion->contactosClientes = ClientesContactos::where('idCliente',$cotizacion->id_cliente)->get();
         $cotizacion->documentosPdf = CotizacionPdf::select("id","nombre_archivo")->where('id_cotizacion',$cotizacion->id)->get();

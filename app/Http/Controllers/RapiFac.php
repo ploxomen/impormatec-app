@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
@@ -137,22 +138,23 @@ class RapiFac extends Controller
         }
         return $detalles;
     }
-    function facturaSinIgv($productos,$datosFactura){
-        $detalle = $this->detallesFactura($productos);
-        list($detallesFacturacion,$montoTotal) = $detalle;
+    function generarComprobanteExtrangeroSUNAT($datosGenerales,$detalleComprobante,$tipoMoneda){
+        list($detalles,$montoTotal) = $this->detalleComprobanteExtrangeroSUNAT($detalleComprobante);
+        $cretido = !isset($datosGenerales['tipoFactura']) ? 'Contado' : $datosGenerales['tipoFactura'];
+        $fechaEmision = date('d/m/Y',strtotime($datosGenerales['fechaEmision']));
         $parametros = [
             "CargoGlobalMonto" => 0,
             "CargoGlobalMontoBase" => $montoTotal,
-            "ClienteDireccion" => $datosFactura['ClienteDireccion'],
-            "ClienteNombreRazonSocial" => $datosFactura['ClienteNombreRazonSocial'],
-            "ClienteNumeroDocIdentidad" => $datosFactura['ClienteNumeroDocIdentidad'],
+            "ClienteDireccion" => empty($datosGenerales['direccionCliente']) ? '' : $datosGenerales['direccionCliente'],
+            "ClienteNombreRazonSocial" => $datosGenerales['nombreCliente'],
+            "ClienteNumeroDocIdentidad" => $datosGenerales['numeroDocumentoCliente'],
             "ClientePaisDocEmisor" => "US",
-            "ClienteTipoDocIdentidadCodigo" => $datosFactura['ClienteTipoDocIdentidadCodigo'],
-            "CondicionPago" => $datosFactura['CondicionPago'],
+            "ClienteTipoDocIdentidadCodigo" => $datosGenerales['tipoDocumentoCliente'],
+            "CondicionPago" => $cretido,
             "Correlativo" => 2999,
             "CorrelativoModificado" => "",
             "CorreoElectronicoPrincipal" => "jeanpi.jpct@gmail.com",
-            "CreditoTotal" => $datosFactura['CreditoTotal'] ? $montoTotal : 0,
+            "CreditoTotal" => $cretido === 'Credito' ? $montoTotal : 0,
             "DescuentoGlobal" => 0,
             "DescuentoGlobalMontoBase" => 0,
             "DescuentoGlobalNGMonto" => 0,
@@ -163,10 +165,10 @@ class RapiFac extends Controller
             "ExoneradaXML" => 0,
             "Exportacion" => $montoTotal,
             "ExportacionXML" => $montoTotal,
-            "FechaConsumo" => $datosFactura['FechaEmision'],
-            "FechaEmision" => $datosFactura['FechaEmision'],
-            "FechaIngresoEstablecimiento" => $datosFactura['FechaEmision'],
-            "FechaIngresoPais" => $datosFactura['FechaEmision'],
+            "FechaConsumo" => $fechaEmision,
+            "FechaEmision" => $fechaEmision,
+            "FechaIngresoEstablecimiento" => $fechaEmision,
+            "FechaIngresoPais" => $fechaEmision,
             "Gratuito" => 0,
             "GratuitoGravado" => 0,
             "Gravado" => 0,
@@ -177,15 +179,15 @@ class RapiFac extends Controller
             "ISC" => 0,
             "ISCBase" => 0,
             "IdRepositorio" => 0,
-            // "ImporteTotalTexto" => $this->numeroAPalabras($montoTotal),
+            "ImporteTotalTexto" => $this->numeroAPalabras($montoTotal,$tipoMoneda),
             "ImpuestoTotal" => 0,
             "ImpuestoVarios" => 0,
             "Inafecto" => 0,
             "InafectoXML" => 0,
-            "ListaDetalles" => $detallesFacturacion,
+            "ListaDetalles" => $detalles,
             "ListaMovimientos" => [],
-            "MonedaCodigo" => "USD",
-            "Observacion" => $datosFactura['Observacion'],
+            "MonedaCodigo" => $tipoMoneda,
+            "Observacion" => empty($datosGenerales['observaciones']) ? '' : $datosGenerales['observaciones'],
             "OperacionNoGravada" => $montoTotal,
             "OrigenSistema" => 0,
             "PendientePago" => number_format($montoTotal,2),
@@ -214,12 +216,10 @@ class RapiFac extends Controller
             "Vendedor" => env('API_RAPIFAC_USER'),
             "VendedorNombre" => Auth::user()->nombres
         ];
-        if(isset($datosFactura['ListaCuotas'])){
-            $parametros['ListaCuotas'] = $datosFactura['ListaCuotas'];
-            $parametros['PermitirCuotas'] = count($datosFactura['ListaCuotas']);
-        }
-        if(isset($datosFactura['ListaGuias'])){
-            $parametros['ListaGuias'] = $datosFactura['ListaGuias'];
+        if(isset($datosGenerales['cuotasFacturaFecha']) && $datosGenerales['tipoFactura'] === 'Credito' && $datosGenerales['tipoComprobante'] == '01'){
+            $listaCuotas = $this->cuotasComprobantes($datosGenerales['cuotasFacturaFecha'],$datosGenerales['cuotasFacturaMonto'],$datosGenerales['fechaEmision']);
+            $parametros['ListaCuotas'] = $listaCuotas;
+            $parametros['PermitirCuotas'] = count($listaCuotas);
         }
         try {
             $token = $this->obtenerToken();
@@ -229,6 +229,7 @@ class RapiFac extends Controller
                 'Content-Type' => 'application/json'
             ];
             $body = json_encode($parametros);
+            // dd($body);
             $response = $client->post($this->urlComprobante,[
                 'headers' => $headers,
                 'body' => $body
@@ -241,13 +242,12 @@ class RapiFac extends Controller
             return $e->getMessage();
         }
     }
-    function detallesFactura($detalleKardex) {
+    function detalleComprobanteExtrangeroSUNAT($detallesComprobante) {
         $detalles = [];
         $total = 0;
-        foreach ($detalleKardex as $key => $kardex) {
-            $importe = $kardex->totalCantidades * $kardex->precio;
+        foreach ($detallesComprobante as $key => $detalle) {
             $detalles[] = [
-                "Cantidad"=> $kardex->totalCantidades,
+                "Cantidad"=> $detalle['cantidad'],
                 "CantidadUnidadMedida"=> 1,
                 "Cargo"=> 0,
                 "CargoCargoCodigo"=> 0,
@@ -258,13 +258,13 @@ class RapiFac extends Controller
                 "CargoTotal"=> 0,
                 "CodigoCategoria"=> 0,
                 "ComprobanteID"=> 0,
-                "Descripcion"=> $kardex->productos->nombreProducto,
-                "Descuento"=> 0,
-                "DescuentoBase"=> $importe,
+                'Descuento' => $detalle['descuento'],
+                "Descripcion"=> $detalle['servicio'],
+                "DescuentoBase"=> $detalle['total'],
+                'DescuentoMonto' => $detalle['descuento'],
+                'DescuentoPorcentaje' => round(($detalle['descuento']/$detalle['importe'])*100,2),
                 "DescuentoCargoCodigo"=> "01",
                 "DescuentoIndicador"=> 1,
-                "DescuentoMonto"=> 0,
-                "DescuentoPorcentaje"=> 0,
                 "ICBPER"=> 0,
                 "ICBPERItem"=> 0,
                 "ICBPERSubTotal"=> 0,
@@ -276,30 +276,31 @@ class RapiFac extends Controller
                 "ISCNeto"=> 0,
                 "ISCPorcentaje"=> 0,
                 "ISCUnitario"=> 0,
-                "ImporteTotal"=> $importe,
+                "ProductoCodigo" => mb_strtoupper(substr($detalle['tipoServicioProducto'],0,1)) . $detalle['idOsCotizacion'],
+                "ProductoCodigoSUNAT" => "",
+                "ImporteTotal"=> $detalle['total'],
                 "Item"=> $key + 1,
                 "MontoTributo"=> 0,
                 "Observacion"=> "",
-                "PrecioUnitario"=> $kardex->precio,
-                "PrecioUnitarioItem"=> $kardex->precio,
-                "PrecioUnitarioNeto"=> $kardex->precio,
-                "PrecioVenta"=> $importe,
+                "PrecioUnitario"=> $detalle['precio'],
+                "PrecioUnitarioItem"=> $detalle['precio'],
+                'PrecioUnitarioNeto' => round($detalle['total']/$detalle['cantidad'],2),
+                "PrecioVenta"=> $detalle['total'],
                 "PrecioVentaCodigo"=> "01",
-                "ProductoCodigo"=> $kardex->productos->codigo,
                 "ProductoCodigoSUNAT"=> "",
                 "TipoAfectacionIGVCodigo"=> "40",
                 "TipoProductoCodigo"=> "",
                 "TipoSistemaISCCodigo"=> "00",
-                "UnidadMedidaCodigo"=> $kardex->id_presentacion,
-                "ValorUnitario"=> $kardex->precio,
-                "ValorUnitarioNeto"=> $kardex->precio,
-                "ValorVenta"=> $importe,
-                "ValorVentaItem"=> $importe,
-                "ValorVentaItemXML"=> $importe,
-                "ValorVentaNeto"=> $importe,
-                "ValorVentaNetoXML"=> $importe
+                "UnidadMedidaCodigo"=> 'NIU',
+                "ValorUnitario"=> $detalle['precio'],
+                "ValorUnitarioNeto"=> $detalle['precio'],
+                "ValorVenta"=> $detalle['importe'],
+                "ValorVentaItem"=> $detalle['total'],
+                "ValorVentaItemXML"=> $detalle['total'],
+                "ValorVentaNeto"=> $detalle['total'],
+                "ValorVentaNetoXML"=> $detalle['total']
             ];
-            $total += $importe;
+            $total += $detalle['total'];
         }
         return [$detalles,$total];
     }
@@ -518,181 +519,36 @@ class RapiFac extends Controller
         $data = $response->getBody()->getContents();
         return json_decode($data);
     }
-    function facturaConIgv(){
-        $parametros = array (
-            'Usuario' => '15151515',
-            'Sucursal' => '3677',
-            'IGVPorcentaje' => 18,
-            'DescuentoGlobalMonto' => 0,
-            'DetraccionTipoOperacion' => '01',
-            'CantidadDecimales' => 3,
-            'CanalVenta' => 2,
-            'Vendedor' => '15151515',
-            'VendedorNombre' => 'ALBERT',
-            'CondicionPago' => 'Contado',
-            'SituacionPagoCodigo' => 2,
-            'Ubigeo' => '150200',
-            'ClienteTipoDocIdentidadCodigo' => '6',
-            'ClienteNumeroDocIdentidad' => '10000000000',
-            'ClienteUbigeo' => '150200',
-            'ClientePaisDocEmisor' => 'PE',
-            'FechaConsumo' => '06/03/2023',
-            'ClienteTipoSunat' => 1,
-            'ListaDetalles' => 
-            array (
-              0 => 
-              array (
-                'ID' => 0,
-                'ComprobanteID' => 0,
-                'Item' => 1,
-                'TipoProductoCodigo' => '',
-                'ProductoCodigo' => 'Prod00033',
-                'ProductoCodigoCliente' => 'Prod00033',
-                'ProductoCodigoSUNAT' => '39121321',
-                'TipoSistemaISCCodigo' => '00',
-                'UnidadMedidaCodigo' => 'NIU',
-                'PrecioUnitarioItem' => 118,
-                'PrecioVentaCodigo' => '01',
-                'ICBPER' => 0,
-                'DescuentoCargoCodigo' => '01',
-                'Control' => '0',
-                'PrecioCompra' => 0,
-                'PrecioCompra_BASE' => 0,
-                'ImporteTotalReferencia' => 0,
-                'CantidadUnidadMedida' => 1,
-                'CantidadReferencial' => 1,
-                'PrecioUnitarioNeto' => 118,
-                'DescuentoGlobal' => 0,
-                'Descuento' => 0,
-                'ValorUnitario' => 118,
-                'ValorUnitarioNeto' => 118,
-                'ValorVentaItem' => 118,
-                'ValorVentaItemXML' => 118,
-                'ValorVentaNeto' => 118,
-                'ValorVentaNetoXML' => 118,
-                'ISCUnitario' => 0,
-                'ISCNeto' => 0,
-                'ISC' => 0,
-                'IGV' => 0,
-                'ICBPERItem' => 0,
-                'ICBPERSubTotal' => 0,
-                'DescuentoBase' => 118,
-                'PrecioVenta' => 118,
-                'MontoTributo' => 0,
-                'ISCPorcentaje' => 0,
-                'ISCMonto' => 0,
-                'Descripcion' => 'PRODUCTO 1',
-                'Observacion' => '',
-                'Cantidad' => 1,
-                'PrecioCodigo' => 733,
-                'PrecioUnitario' => '118',
-                'DescuentoMonto' => 0,
-                'DescuentoPorcentaje' => 0,
-                'TipoAfectacionIGVCodigo' => '30',
-                'ValorVenta' => 118,
-                'Ganancia' => 118,
-                'IGVNeto' => 0,
-                'ImporteTotal' => 118,
-              ),
-            ),
-            'ExoneradaXML' => 0,
-            'InafectoXML' => 118,
-            'ImporteTotalTexto' => 'CIENTO DIECIOCHO CON 00/100 SOLES',
-            'DescuentoGlobalNGMontoBase' => 118,
-            'DescuentoNGMonto' => 0,
-            'CargoGlobalMontoBase' => 118,
-            'ISCBase' => 0,
-            'GratuitoGravado' => 0,
-            'TotalPrecioVenta' => 118,
-            'TotalValorVenta' => 118,
-            'PercepcionRegimen' => '',
-            'PercepcionFactor' => 0,
-            'CreditoTotal' => 0,
-            'FECHACAMBIO' => '06/03/2023',
-            'ClasePrecioCodigo' => 1,
-            'TipoPrecio' => '0',
-            'FormatoPDF' => 0,
-            'TipoDocumentoCodigo' => '01',
-            'Serie' => 'F001',
-            'Correlativo' => 11774,
-            'MonedaCodigo' => 'PEN',
-            'FechaEmision' => '06/03/2023',
-            'TipoDocumentoCodigoModificado' => '01',
-            'SerieModificado' => '',
-            'CorrelativoModificado' => '',
-            'TipoOperacionCodigo' => '0101',
-            'TipoCambio' => '3.919',
-            'MotivoTrasladoCodigo' => '01',
-            'ClienteNombreRazonSocial' => 'CLIENTES VARIOS',
-            'ClienteDireccion' => '-',
-            'TipoBusquedaProductoCodigo' => 0,
-            'DescuentoGlobalPorcentaje' => 0,
-            'DescuentoGlobalValor' => 0,
-            'CorreoElectronicoPrincipal' => 'prueba@rapifac.com',
-            'Observacion' => '',
-            'Gravado' => 0,
-            'Exonerada' => 0,
-            'Inafecto' => 118,
-            'Exportacion' => 0,
-            'OperacionNoGravada' => 118,
-            'Gratuito' => 0,
-            'TotalDescuentos' => 0,
-            'DescuentoGlobal' => 0,
-            'ISC' => 0,
-            'IGV' => 0,
-            'ICBPER' => 0,
-            'ImpuestoTotal' => 0,
-            'ImpuestoVarios' => 0,
-            'TotalOtrosCargos' => 0,
-            'TotalImporteVenta' => 118,
-            'PercepcionTotal' => 0,
-            'TotalPago' => 118,
-            'DetraccionCuenta' => '0800638123',
-            'DocAdicionalCodigo' => 1,
-            'DocAdicionalDetalle' => '',
-            'TotalRetencion' => 0,
-            'MontoRetencion' => 0,
-        );
-        try {
-            $token = $this->obtenerToken();
-            $client = new Client();
-            $headers = [
-                'Authorization' => 'bearer ' . $token->access_token,
-                'Content-Type' => 'application/json'
+    function cuotasComprobantes($fechas,$montos,$fechaEmision){
+        $detalleCuotas = [];
+        $fecha1 = new DateTime($fechaEmision);
+        for ($i=0; $i < count($fechas); $i++) { 
+            $fecha2 = new DateTime($fechas[$i]);
+            $direncia = $fecha2->diff($fecha1);
+            $detalleCuotas[] = [
+                'FechaVencimientoCuota' => date('d/m/Y',strtotime($fechas[$i])),
+                'MontoCuota' => floatval($montos[$i]),
+                'PlazoDiasCuota' => $direncia->days,
             ];
-            $body = json_encode($parametros);
-            // dd($body);
-            $response = $client->post($this->urlComprobante,[
-                'headers' => $headers,
-                'body' => $body
-            ]);
-            $data = $response->getBody()->getContents();
-            $nuevaData = json_decode($data);
-            return $nuevaData;
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            return $e->getMessage();
         }
+        return $detalleCuotas;
     }
-    function detalleComprobanteBoleta($servicios,$productos){
+    function detalleComprobanteAgrabadoSUNAT($detallesComprobante){
         $detalles = [];
         $item = 0;
         $totalGeneral = 0;
         $totalSinIgv = 0;
         $impuestoTotal = 0;
-        foreach ($servicios as $servicio) {
+        foreach ($detallesComprobante as $detalle) {
             $item++;
-            $cotizacion = $servicio->cotizacionServicio;
-            $total = round($cotizacion->total + $cotizacion->igv,2);
-            $codigoServicio = 'Serv' . str_pad($cotizacion->id_servicio,5,"0",STR_PAD_LEFT);
+            $total = round($detalle['total'] + $detalle['igv'],2);
             $detalles[] = [
                 'Item' => $item,
-                'TipoProductoCodigo' => '',
-                'ProductoCodigo' => $codigoServicio,
-                'ProductoCodigoCliente' => $codigoServicio,
-                'ProductoCodigoSUNAT' => '',
+                "ProductoCodigo" => mb_strtoupper(substr($detalle['tipoServicioProducto'],0,1)) . $detalle['idOsCotizacion'],
+                "ProductoCodigoSUNAT" => "",
                 'TipoSistemaISCCodigo' => '00',
                 'UnidadMedidaCodigo' => 'NIU',
-                'PrecioUnitarioItem' => round($cotizacion->precio + ($cotizacion->precio * 0.18),2),
+                'PrecioUnitarioItem' => round($detalle['precio'] + ($detalle['precio'] * 0.18),2),
                 'PrecioVentaCodigo' => '01',
                 'ICBPER' => 0,
                 'DescuentoCargoCodigo' => '00',
@@ -700,46 +556,47 @@ class RapiFac extends Controller
                 'ImporteTotalReferencia' => 0,
                 'CantidadUnidadMedida' => 1,
                 'CantidadReferencial' => 1,
-                'PrecioUnitarioNeto' => round($total/$cotizacion->cantidad,2),
+                'PrecioUnitarioNeto' => round($total/$detalle['cantidad'],2),
                 'DescuentoGlobal' => 0,
-                'Descuento' => $cotizacion->descuento,
-                'ValorUnitario' => $cotizacion->precio,
-                'ValorUnitarioNeto' => $cotizacion->total,
-                'ValorVentaItem' => $cotizacion->total,
-                'ValorVentaItemXML' => $cotizacion->total,
-                'ValorVentaNeto' => $cotizacion->total,
+                'Descuento' => $detalle['descuento'],
+                'ValorUnitario' => $detalle['precio'],
+                'ValorUnitarioNeto' => $detalle['total'],
+                'ValorVentaItem' => $detalle['total'],
+                'ValorVentaItemXML' => $detalle['total'],
+                'ValorVentaNeto' => $detalle['total'],
                 'ValorVentaNetoXML' => 0,
                 'ISCUnitario' => 0,
                 'ISCNeto' => 0,
                 'ISC' => 0,
-                'IGV' => $cotizacion->igv,
+                'IGV' => $detalle['igv'],
                 'ICBPERItem' => 0,
                 'ICBPERSubTotal' => 0,
-                'DescuentoBase' => $cotizacion->importe,
+                'DescuentoBase' => $detalle['importe'],
                 'PrecioVenta' => $total,
-                'MontoTributo' => $cotizacion->igv,
+                'MontoTributo' => $detalle['igv'],
                 'ISCPorcentaje' => 0,
                 'ISCMonto' => 0,
-                'Descripcion' => $cotizacion->servicios->servicio,
+                'Descripcion' => $detalle['servicio'],
                 'Observacion' => '',
-                'Cantidad' => $cotizacion->cantidad,
-                'PrecioUnitario' => round($cotizacion->precio + ($cotizacion->precio * 0.18),2),
-                'DescuentoMonto' => $cotizacion->descuento,
-                'DescuentoPorcentaje' => round(($cotizacion->descuento/$cotizacion->importe)*100,2),
+                'Cantidad' => $detalle['cantidad'],
+                'PrecioUnitario' => round($detalle['precio'] + ($detalle['precio'] * 0.18),2),
+                'DescuentoMonto' => $detalle['descuento'],
+                'DescuentoPorcentaje' => round(($detalle['descuento']/$detalle['importe'])*100,2),
                 'TipoAfectacionIGVCodigo' => '10',
-                'ValorVenta' => $cotizacion->importe,
-                'Ganancia' => 116.82,
-                'IGVNeto' => $cotizacion->igv,
+                'ValorVenta' => $detalle['importe'],
+                'Ganancia' => '',
+                'IGVNeto' => $detalle['igv'],
                 'ImporteTotal' => $total,
             ];
-            $totalSinIgv += $cotizacion->total;
+            $totalSinIgv += $detalle['total'];
             $totalGeneral += $total;
-            $impuestoTotal += $cotizacion->igv;
+            $impuestoTotal += $detalle['igv'];
         }
         return [$detalles,round($totalSinIgv,2),round($totalGeneral,2),round($impuestoTotal,2)];
     }
-    function boletaVenta($servicios,$productos,$ordenServicio,$pago){
-        list($detalles,$totalSinIgv,$totalGeneral,$impuestoTotal) = $this->detalleComprobanteBoleta($servicios,$productos);
+    function generarComprobanteAgrabadoSUNAT($datosGenerales,$detalleComprobante,$tipoMoneda){
+        list($detalles,$totalSinIgv,$totalGeneral,$impuestoTotal) = $this->detalleComprobanteAgrabadoSUNAT($detalleComprobante);
+        $fechaEmision = date('d/m/Y',strtotime($datosGenerales['fechaEmision']));
         $parametros = [
             "Usuario" => env('API_RAPIFAC_USER'),
             "Sucursal" => env('API_RAPIFAC_SUCURSAL_ID'),
@@ -749,39 +606,40 @@ class RapiFac extends Controller
             "CanalVenta" => 2,
             // "OrigenSistema" => 7,
             "Vendedor" => env('API_RAPIFAC_USER'),
-            "CondicionPago" => $pago['condicionPago'],
+            "CondicionPago" => !isset($datosGenerales['tipoFactura']) ? 'Contado' : $datosGenerales['tipoFactura'],
             "SituacionPagoCodigo" => 2,
             "Ubigeo" => "150135",
-            "ClienteNumeroDocIdentidad" => $pago['numeroDocumento'],
+            "ClienteNumeroDocIdentidad" => $datosGenerales['numeroDocumentoCliente'],
             // "ClienteUbigeo" => "150135",
             "ClientePaisDocEmisor" => "PE",
             "CorreoElectronicoSecundario" => "prueba@gmail.com",
-            'ClienteTipoDocIdentidadCodigo' => $pago['tipoDocumento'],
-            "FechaConsumo" => $pago['fechaEmision'],
+            'ClienteTipoDocIdentidadCodigo' => $datosGenerales['tipoDocumentoCliente'],
+            "FechaConsumo" => $fechaEmision,
             "ListaDetalles" => $detalles,
-            "ImporteTotalTexto" => $this->numeroAPalabras($totalGeneral,$ordenServicio->tipoMoneda),
+            "ImporteTotalTexto" => $this->numeroAPalabras($totalGeneral,$tipoMoneda),
             "DescuentoGlobalMontoBase" => $totalSinIgv,
             "CargoGlobalMontoBase" => $totalSinIgv,
             "TotalPrecioVenta" => $totalGeneral,
             "TotalValorVenta" => $totalSinIgv,
-            // "NOMBRE_UBIGEOLLEGADA" => " -  - ",
-            // "NOMBRE_UBIGEOPARTIDA" => "LIMA - LIMA - LA VICTORIA",
-            // "CONTADOR_CLICKEMITIR" => 1,
+            "NOMBRE_UBIGEOLLEGADA" => " -  - ",
+            "NOMBRE_UBIGEOPARTIDA" => "LIMA - LIMA - LA SAN MARTIN",
+            "CONTADOR_CLICKEMITIR" => 1,
             "paginasFiltroProducto" => 1,
             "ClasePrecioCodigo" => 1,
-            "TipoDocumentoCodigo" => "03",
-            "Serie" => "B001",
+            "TipoDocumentoCodigo" => $datosGenerales['tipoComprobante'], //cambiar a comodidad xd
+            "Serie" => $datosGenerales['tipoComprobante'] === "03" ? "B001" : "F001",
             "Correlativo" => 30,
-            "MonedaCodigo" => $ordenServicio->tipoMoneda,
-            "FechaEmision" => $pago['fechaEmision'],
+            "MonedaCodigo" => $tipoMoneda,
+            "FechaEmision" => $fechaEmision,
             "TipoDocumentoCodigoModificado" => "01",
-            // "TipoNotaCreditoCodigo" => "01",
-            // "TipoNotaDebitoCodigo" => "01",
-            // "TipoOperacionCodigo" => "0101",
+            "TipoNotaCreditoCodigo" => "01",
+            "TipoNotaDebitoCodigo" => "01",
+            "TipoOperacionCodigo" => "0101",
             "TipoCambio" => "3.919",
-            // "MotivoTrasladoCodigo" => "01",
-            "ClienteNombreRazonSocial" => $pago['razonSocial'],
-            "ClienteDireccion" => $pago['direccion'],
+            "Observacion" => empty($datosGenerales['observaciones']) ? '' : $datosGenerales['observaciones'],
+            "MotivoTrasladoCodigo" => "01",
+            "ClienteNombreRazonSocial" => $datosGenerales['nombreCliente'],
+            "ClienteDireccion" => empty($datosGenerales['direccionCliente']) ? '' : $datosGenerales['direccionCliente'],
             "CorreoElectronicoPrincipal" => "no-send@rapifac.com",
             "Gravado" => $totalSinIgv,
             "IGV" => $impuestoTotal,
@@ -796,6 +654,11 @@ class RapiFac extends Controller
             "DocAdicionalCodigo" => 1,
             "PendientePago" => $totalGeneral,
         ];
+        if(isset($datosGenerales['cuotasFacturaFecha']) && $datosGenerales['tipoFactura'] === 'Credito' && $datosGenerales['tipoComprobante'] == '01'){
+            $listaCuotas = $this->cuotasComprobantes($datosGenerales['cuotasFacturaFecha'],$datosGenerales['cuotasFacturaMonto'],$datosGenerales['fechaEmision']);
+            $parametros['ListaCuotas'] = $listaCuotas;
+            $parametros['PermitirCuotas'] = count($listaCuotas);
+        }
         try {
             $token = $this->obtenerToken();
             $client = new Client();

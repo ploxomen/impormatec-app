@@ -30,6 +30,8 @@ function loadPage() {
         })
     });
     const $tipoMoneda = document.querySelector("#idModaltipoMoneda");
+    const cbTipoIgv = document.querySelector("#idModalincluirIGV");
+    document.querySelector("#aplicarFiltros").addEventListener("click",e => obtenerDetalleCotizacion($(cbClientes).val()));
     async function obtenerDetalleCotizacion(idClientes){
         listaDetalleCotizacion = [];
         if (idClientes == "ninguno") {
@@ -39,7 +41,7 @@ function loadPage() {
         }
         try {
             const response = await gen.funcfetch(
-                "clientes/" + idClientes + "?tipoMoneda=" + $tipoMoneda.value,
+                "clientes/" + idClientes + "?tipoMoneda=" + $tipoMoneda.value + "&conIgv=" + cbTipoIgv.value,
                 null,
                 "GET"
             );
@@ -82,7 +84,16 @@ function loadPage() {
         }
         
     }
-    $(cbClientes).on("select2:select", e => obtenerDetalleCotizacion($(cbClientes).val()));
+    $(cbClientes).on("select2:select", e => {
+        const opcion = e.target.options[e.target.selectedIndex];
+        $(cbTipoIgv).prop('disabled',false);
+        $(cbTipoIgv).val("1").trigger("change");
+        if(opcion.dataset.igv === 'false'){
+            $(cbTipoIgv).prop('disabled',true);
+            $(cbTipoIgv).val("0").trigger("change");
+        }
+        obtenerDetalleCotizacion($(cbClientes).val());
+    });
     $($tipoMoneda).on("select2:select", e => obtenerDetalleCotizacion($(cbClientes).val()));
     tablaServicios.addEventListener("click",(e)=>{
         if(e.target.dataset.cotizacionServicio){

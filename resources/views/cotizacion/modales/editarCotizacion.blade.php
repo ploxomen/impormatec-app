@@ -35,14 +35,14 @@
             </div>
             <div class="form-group col-12 col-md-6 col-lg-3">
                 <label for="idModaltipoMoneda">Tipo moneda</label>
-                <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm">
+                <select name="tipoMoneda" id="idModaltipoMoneda" required class="select2-simple form-control-sm bloquer-os">
                     <option value=""></option>
                     <option value="PEN">Soles (S/)</option>
                     <option value="USD" selected>Dolar ($)</option>
                 </select>
             </div>
             <div class="form-group col-12 col-md-6 col-lg-3">
-                <label for="idModalConversionMoneda" class="col-form-label col-form-label-sm">Conversión (S/.) </label>
+                <label for="idModalconversionMoneda" class="col-form-label col-form-label-sm">Conversión (S/.) </label>
                 <input type="number" step="0.001" class="form-control form-control-sm" required id="idModalconversionMoneda" name="conversionMoneda">
             </div>
             <div class="form-group col-md-6 col-lg-3">
@@ -51,7 +51,7 @@
             </div>
             <div class="form-group col-md-6 col-lg-3">
                 <label for="idModalincluirIGV" class="col-form-label col-form-label-sm">Incluir IGV </label>
-                <select name="incluirIGV" id="idModalincluirIGV" required class="select2-simple form-control-sm">
+                <select name="incluirIGV" id="idModalincluirIGV" required class="select2-simple form-control-sm bloquer-os">
                     <option value=""></option>
                     <option value="1">Si</option>
                     <option value="0">No</option>
@@ -75,7 +75,7 @@
             </div>
             <div class="col-12 col-lg-6 form-group">
                 <label for="idModalid_cliente" class="col-form-label col-form-label-sm">Cliente</label>
-                <select name="id_cliente" id="idModalid_cliente" class="form-control select2-simple" required data-placeholder="Seleccione un cliente">
+                <select name="id_cliente" id="idModalid_cliente" class="form-control select2-simple bloquer-os" required data-placeholder="Seleccione un cliente">
                     <option value=""></option>
                     @foreach ($clientes as $cliente)
                         <option value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>

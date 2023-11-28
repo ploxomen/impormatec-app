@@ -24,7 +24,7 @@
                                 <option value=""></option>
                                 <option value="ninguno" selected>Ninguno</option>
                                 @foreach ($clientes as $cliente)
-                                    <option value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
+                                    <option value="{{$cliente->id}}" data-igv="{{$cliente->id_pais !== 165 ? 'false' : 'true'}}">{{$cliente->nombreCliente}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -47,6 +47,11 @@
                                 <option value="1" selected>SI</option>
                                 <option value="0">NO</option>
                             </select>
+                        </div>
+                        <div class="form-group col-md-6 col-lg-1">
+                            <button type="button" class="btn btn-sm btn-success" id="aplicarFiltros" title="Aplicar filtros">
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
                 </fieldset>
             </div>

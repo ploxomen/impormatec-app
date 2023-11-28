@@ -31,7 +31,7 @@ class   Clientes extends Model
     }
     public function scopeObenerClientesActivos($query)
     {
-        return $query->select("clientes.id","tipo_documento.documento","usuarios.nroDocumento","usuarios.correo","clientes.nombreCliente","usuarios.celular","usuarios.telefono","usuarios.direccion","clientes.estado")
+        return $query->select("clientes.id","tipo_documento.documento","clientes.id_pais","usuarios.nroDocumento","usuarios.correo","clientes.nombreCliente","usuarios.celular","usuarios.telefono","usuarios.direccion","clientes.estado")
         ->join("usuarios","usuarios.id","=",'clientes.id_usuario')
         ->join("tipo_documento","usuarios.tipoDocumento","=","tipo_documento.id","left")->where('clientes.estado',1)->get();
     }

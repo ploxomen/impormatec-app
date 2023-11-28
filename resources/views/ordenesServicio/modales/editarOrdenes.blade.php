@@ -15,20 +15,28 @@
                         Orden de Servicio
                     </h5>
                 </div>
-                <div class="col-12 col-md-6 col-lg-4 form-group">
+                <div class="col-12 col-md-6 col-lg-4 col-xl-6 form-group">
                     <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Clientes</label>
                     <input type="text" class="form-control form-control-sm" disabled id="idModalcliente">                    
                 </div>
-                <div class="form-group col-12 col-md-6 col-lg-4">
+                <div class="form-group col-12 col-md-6 col-lg-3 col-xl-2">
                     <label for="idModalfechaEmitida">Fecha emisión</label>
                     <input type="date" name="fecha" id="idModalfechaEmitida" class="form-control form-control-sm" required>
                 </div>
-                <div class="form-group col-12 col-md-6 col-lg-4">
+                <div class="form-group col-12 col-md-6 col-lg-3 col-xl-2">
                     <label for="idModaltipoMoneda">Tipo moneda</label>
-                    <select name="tipoMoneda" disabled id="idModaltipoMoneda" required class="select2-simple form-control-sm">
+                    <select disabled id="idModaltipoMoneda" required class="select2-simple form-control-sm">
                         <option value=""></option>
                         <option value="PEN">Soles (S/)</option>
                         <option value="USD">Dolar ($)</option>
+                    </select>
+                </div>
+                <div class="form-group col-12 col-md-6 col-lg-2 col-xl-2">
+                    <label for="idModalincluir_igv">Con IGV</label>
+                    <select id="idModalincluir_igv" disabled required class="select2-simple form-control-sm">
+                        <option value=""></option>
+                        <option value="1">SI</option>
+                        <option value="0">NO</option>
                     </select>
                 </div>
                 <div class="col-12">

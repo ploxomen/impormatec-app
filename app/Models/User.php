@@ -51,9 +51,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Rol::class,'usuario_rol','usuarioFk','rolFk')->withPivot('activo')->withTimestamps();
     }
-    public function tipoDocumento()
+    public function documento()
     {
-        return $this->hasMany(TipoDocumento::class,'tipoDocumento');
+        return $this->belongsTo(TipoDocumento::class,'tipoDocumento');
     }
     public function cliente()
     {

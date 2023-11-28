@@ -9,7 +9,7 @@ class OrdenServicio extends Model
     public $table = "orden_servicio";
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-    protected $fillable = ['id_cliente','tipoMoneda','facturacion_externa','fecha','observaciones','importe','descuento','igv','adicional','total','estado'];
+    protected $fillable = ['id_cliente','tipoMoneda','facturacion_externa','fecha','observaciones','incluir_igv','importe','descuento','igv','adicional','total','estado'];
     
     public function cliente()
     {

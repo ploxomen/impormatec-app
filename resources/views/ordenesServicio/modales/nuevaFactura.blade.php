@@ -11,68 +11,56 @@
             <form class="form-row" id="formFacturar">
                 <div class="form-group col-12 col-md-6 col-lg-4">
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="idModalFacturaBoleta" name="modoFacturaChec" required checked value="Boleta" class="custom-control-input tipo-factura">
-                        <label class="custom-control-label" for="idModalFacturaBoleta">Boleta</label>
+                        <input type="radio" id="idModalcomprobanteBoleta" name="modoFacturaChec" required value="Boleta" class="custom-control-input tipo-factura">
+                        <label class="custom-control-label" for="idModalcomprobanteBoleta">Boleta</label>
                     </div>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="idModalFacturaFactura" value="Factura" required name="modoFacturaChec" class="custom-control-input tipo-factura">
-                        <label class="custom-control-label" for="idModalFacturaFactura">Factura</label>
+                        <input type="radio" id="idModalcomprobanteFactura" value="Factura" required name="modoFacturaChec" class="custom-control-input tipo-factura">
+                        <label class="custom-control-label" for="idModalcomprobanteFactura">Factura</label>
                     </div>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="idModalComprobante" value="Comprobante" required name="modoFacturaChec" class="custom-control-input tipo-factura">
-                        <label class="custom-control-label" for="idModalComprobante">Comprobante interno</label>
+                        <input type="radio" id="idModalcomprobanteInterno" value="Comprobante" required name="modoFacturaChec" class="custom-control-input tipo-factura">
+                        <label class="custom-control-label" for="idModalcomprobanteInterno">Comprobante interno</label>
                     </div>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
                     <label for="modalFechaEmision">Fecha Emisión</label>
-                    <input type="date" name="fechaEmision" required id="modalFechaEmision" class="form-control form-control-sm">
+                    <input type="date" name="fechaEmision" value="{{date('Y-m-d')}}" min="{{date('Y-m-d',strtotime(date('Y-m-d') . ' - 2 days'))}}" max="{{date('Y-m-d')}}" required id="modalFechaEmision" class="form-control form-control-sm">
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
-                    <label for="modalTipoDocumentoSUNAT">Tipo Documento</label>
-                    <select name="agenteTipoDocumento" required id="modalTipoDocumentoSUNAT" class="form-control select2-simple">
+                    <label for="idModaltipoDocumentoCliente">Tipo Documento</label>
+                    <select name="tipoDocumentoCliente" required id="idModaltipoDocumentoCliente" class="form-control select2-simple" data-placeholder="Seleccionar un tipo de documento">
                         <option value="">Ninguno</option>
-                        <option value="0" selected>DOC.TRIB.NO.DOM.SIN.RUC</option>
-                        <option value="6">REGISTRO ÚNICO DE CONTRIBUYENTES</option>
-                        <option value="7">PASPORTE</option>
-                        <option value="A">CED. DIPLOMÁTICA DE IDENTIDAD</option>
-                        <option value="B">DOCUMENTO INDENTIDAD PAÍS RESIDENCIA-NO.D</option>
-                        <option value="C">TAX IDENTIFICACIÓN NUMBER - TIN - DOC TRIB PP.NN</option>
-                        <option value="D">IDENTIFICATION NUMBER - IN - DOC TRIB PP.JJ</option>
-                        <option value="E">TAM- TARJETA ANDINA DE MIGRACIÓN</option>
-                        <option value="F">PERMISO TEMPORAL DE PERMANENCIA PTP</option>
-                        <option value="G">SALVOCONDUCTO</option>
-                        <option value="00">OTROS</option>
+                        @foreach ($tiposDocumentos as $tipoDocumento)
+                            <option value="{{$tipoDocumento->valor}}">{{$tipoDocumento->documento}}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
-                    <label for="modalagenteNumeroDocumento">Número Documento</label>
-                    <input type="text" name="numeroDocumento" required id="modalagenteNumeroDocumento" class="form-control form-control-sm">
-                </div>
-                <div class="form-group col-12 col-md-6 col-lg-8">
-                    <label for="modalagente">Nombre</label>
-                    <input type="text" required name="nombreAgente" id="modalagente" class="form-control form-control-sm">
-                </div>
-                <div class="form-group col-12 col-md-6 col-lg-4">
-                    <label for="modalguia_remision_sunat">Guia de Remisión Remitente</label>
-                    <input type="text" name="guiaRemision" id="modalguia_remision_sunat" class="form-control form-control-sm" pattern="^[A-Za-z]+[0-9]+-[0-9]+$" placeholder="Ejm: GR001-1234">
+                    <label for="idModalnumeroDocumentoCliente">Número Documento</label>
+                    <input type="text" name="numeroDocumentoCliente" required id="idModalnumeroDocumentoCliente" class="form-control form-control-sm">
                 </div>
                 <div class="form-group col-12">
-                    <label for="modalDireccion">Dirección</label>
-                    <input type="text" name="direccionAgente" id="modalDireccion" class="form-control form-control-sm">
+                    <label for="idModalnombreCliente">Nombre</label>
+                    <input type="text" required name="nombreCliente" id="idModalnombreCliente" class="form-control form-control-sm">
                 </div>
-                <div class="form-group col-12 col-md-6">
+                <div class="form-group col-12">
+                    <label for="idModaldireccionCliente">Dirección</label>
+                    <input type="text" name="direccionCliente" id="idModaldireccionCliente" class="form-control form-control-sm">
+                </div>
+                <div class="form-group col-12 col-md-6" hidden>
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="tipoAlContado" required name="tipoFactura" value="Contado" class="custom-control-input cambio-tipo-factura">
+                        <input type="radio" id="tipoAlContado" disabled required name="tipoFactura" value="Contado" class="custom-control-input cambio-tipo-factura">
                         <label class="custom-control-label" for="tipoAlContado">Al contado</label>
                     </div>
                 </div>
-                <div class="form-group col-12 col-md-6">
+                <div class="form-group col-12 col-md-6" hidden>
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="tipoACredito" checked value="Credito" required name="tipoFactura" class="custom-control-input cambio-tipo-factura">
+                        <input type="radio" id="tipoACredito" disabled value="Credito" required name="tipoFactura" class="custom-control-input cambio-tipo-factura">
                         <label class="custom-control-label" for="tipoACredito">A crédito</label>
                     </div>
                 </div>
@@ -80,7 +68,7 @@
                     <label for="modalObservaciones">Observaciones</label>
                     <textarea name="observaciones" id="modalObservaciones" class="form-control form-control-sm" rows="3"></textarea>
                 </div>
-                <div class="form-group col-12" id="bloqueCredito">
+                <div class="form-group col-12" id="bloqueCredito" hidden>
                     <div class="d-flex justify-content-between form-group" style="gap: 10px;">
                         <h5 class="text-primary">
                             <i class="fas fa-caret-right"></i>
@@ -121,14 +109,23 @@
                                     <th>Descripcion</th>
                                     <th>Cantidad</th>
                                     <th>Precio</th>
+                                    <th>Descuento</th>
                                     <th>Importe</th>
                                 </tr>
                             </thead>
                             <tbody id="tablaProductos"></tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="4" class="text-right">Monto Total</th>
-                                    <th id="modalimporte"></th>
+                                    <th colspan="5" class="text-right">OP. GRAVADA</th>
+                                    <th id="idModaloperacionGravada"></th>
+                                </tr>
+                                <tr>
+                                    <th colspan="5" class="text-right">I.G.V</th>
+                                    <th id="idModaligvTotal"></th>
+                                </tr>
+                                <tr>
+                                    <th colspan="5" class="text-right">IMPORTE TOTAL</th>
+                                    <th id="idModalimporteTotal"></th>
                                 </tr>
                             </tfoot>
                         </table>
@@ -136,7 +133,7 @@
                 </div>
                 <div class="form-group col-12">
                     <b>Total en letras: </b>
-                    <span id="modaltotalLetras"></span>
+                    <span id="idModalletraImporteTotal"></span>
                 </div>
                 <input type="submit" hidden id="inputFacturar">
             </form>
