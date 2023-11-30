@@ -23,6 +23,7 @@
             <thead class="text-center">
                 <tr>
                     <th>N° Caja</th>
+                    <th>Responsable</th>
                     <th>Fecha Inicio</th>
                     <th>Fecha Fin</th>
                     <th>Monto abonado</th>

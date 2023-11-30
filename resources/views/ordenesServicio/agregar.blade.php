@@ -87,10 +87,10 @@
                                     <th colspan="6">DESCUENTO</th>
                                     <th colspan="2" id="txtDescuento">- S/ 0.00</th>
                                 </tr>
-                                {{-- <tr>
+                                <tr>
                                     <th colspan="6">I.G.V</th>
                                     <th colspan="2" id="txtIGV">S/ 0.00</th>
-                                </tr> --}}
+                                </tr>
                                 <tr>
                                     <th colspan="6">COSTOS ADICIONALES</th>
                                     <th colspan="2" id="txtCostoAdicional">S/ 0.00</th>

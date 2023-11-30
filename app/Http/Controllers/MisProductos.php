@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportProductos;
 use App\Http\Controllers\Usuario;
 use App\Imports\UtilidadesProductos;
 use App\Models\Almacen;
+use App\Models\Configuracion;
 use App\Models\ProductoAlmacen;
 use App\Models\Productos;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Excel as ExcelExcel;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -31,6 +35,22 @@ class MisProductos extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         $almacenes = Almacen::where('estado',1)->get();
         return view("productos.productos",compact("modulos","almacenes"));
+    }
+    public function exportarProductos(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $productos = Productos::all();
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $titulo = "productos_" . date('d_m_Y');
+        if($request->has('pdf')){
+            return Pdf::loadView('productos.reportes.productosPDF',compact("productos","titulo","configuracion"))
+            ->setPaper("A4","landscape")->stream($titulo.'.pdf');
+        }else if($request->has('excel')){
+            return Excel::download(new ExportProductos($productos,'productos.reportes.productosEXCEL'), $titulo . '.xlsx');
+        }
+        return abort(404);
     }
     public function importarUtilidades() {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloProductos);

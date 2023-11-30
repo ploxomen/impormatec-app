@@ -443,20 +443,22 @@ class Cotizacion extends Controller
         try {
             $mCotizacion = ModelsCotizacion::create($cotizacion);
             foreach ($detalleCotizacion as $key => $coti) {
+                // dd($coti);
                 $importes['descuentoTotal'] += $coti->descuento;
                 if($incluirIgv){
-                    $importes['igvTotal'] += $coti->pTotal * 0.18;
+                    $importes['igvTotal'] += $coti->total * 0.18;
                 }
-                $importes['importeTotal'] += $coti->pTotal;
+                $importes['importeTotal'] += $coti->importeTotal;
+                $importes['total'] += $coti->total;
                 $coleccionDatos = [
                     'id_cotizacion' => $mCotizacion->id,
-                    'precio' => $coti->pUni,
+                    'precio' => $coti->precioUnitarioNormal,
                     'orden' => $key + 1,
                     'cantidad' => $coti->cantidad,
-                    'importe' => $coti->pImporte,
+                    'importe' => $coti->importeTotal,
                     'descuento' => $coti->descuento,
-                    'total' => $coti->pTotal,
-                    'igv' => $incluirIgv ? $coti->pTotal * 0.18 : 0,
+                    'total' => $coti->total,
+                    'igv' => $incluirIgv ? $coti->total * 0.18 : 0,
                     'estado' => 1
                 ];
                 if(empty($coti->idServicio) && !empty($coti->idProducto)){
@@ -470,16 +472,15 @@ class Cotizacion extends Controller
                     CotizacionServicioProducto::create([
                         'id_cotizacion_servicio' => $mCotiServ->id,
                         'id_producto' => $producto->idProducto,
-                        'costo' => $producto->pVentaConvertido,
+                        'costo' => $producto->precioUnitarioNormal,
                         'cantidad' => $producto->cantidad,
-                        'importe' => $producto->importe,
+                        'importe' => $producto->importeTotal,
                         'descuento' => $producto->descuento,
-                        'total' => $producto->pTotal
+                        'total' => $producto->total
                     ]);
                 }
             }
-            $importes['total'] = $incluirIgv ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
-            $importes['importeTotal'] = $importes['importeTotal'] + $importes['descuentoTotal'];
+            $importes['total'] = $importes['total'] + round($importes['igvTotal'],2);
             $mCotizacion->update($importes);
             $documentoCotizacion = $this->renderPdf($mCotizacion->id);
             if($request->has("archivoPdf")){

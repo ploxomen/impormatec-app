@@ -14,6 +14,7 @@ function loadPage(){
     tablaServicioProductos.addEventListener("click",function(e){
         if(e.target.classList.contains("btn-danger")){
             const tr = e.target.parentElement.parentElement;
+            const tablaBody = e.target.parentElement.parentElement.parentElement;
             const indexServicio = serviciosProductos.findIndex(s => s.idServicio == tr.dataset.servicio);
             if(indexServicio < 0){
                 return alertify.error("servicio no encontrado");
@@ -24,11 +25,12 @@ function loadPage(){
             serviciosProductos[indexServicio].productosLista = serviciosProductos[indexServicio].productosLista.filter(producto => producto.idProducto != tr.dataset.producto);
             $("#" + e.target.dataset.cbproducto)[0].querySelector('option[value="' + tr.dataset.producto + '"]').disabled = false;
             tr.remove();
+            cotizacionGeneral.calcularNumeroItem(tablaBody);
             cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
         }
     });
     $('#idModalincluirIGV').on("select2:select",async function(e){
-        cotizacionGeneral.ocultarMostrarIGV($(this).val());
+        cotizacionGeneral.ocultarMostrarIGV(serviciosProductos,$(this).val());
         cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
     });
     const txtDireccion = document.querySelector("#idModaldireccion");
@@ -54,7 +56,7 @@ function loadPage(){
                 }else{
                     $('#idModalincluirIGV').prop("disabled",false);
                 }
-                cotizacionGeneral.ocultarMostrarIGV($('#idModalincluirIGV').val());
+                cotizacionGeneral.ocultarMostrarIGV(serviciosProductos,$('#idModalincluirIGV').val());
                 cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
             }
         } catch (error) {
@@ -137,21 +139,23 @@ function loadPage(){
     tablaServicios.addEventListener("click",function (e) {  
         if (e.target.classList.contains("btn-danger")){
             const tr = e.target.parentElement.parentElement;
+            const tablaBody = tr.parentElement;
             const datosDetalle = {
                 tipo : !tr.dataset.servicio ? 'producto' : 'servicio',
                 idDetalle : tr.dataset.servicio || tr.dataset.producto
             };
             serviciosProductos = serviciosProductos.filter(function(detalle){
-                if(datosDetalle.tipo === "servicio" && detalle.idServicio === datosDetalle.idDetalle && !detalle.idProducto){
+                if(datosDetalle.tipo === "servicio" && detalle.idServicio === +datosDetalle.idDetalle && !detalle.idProducto){
                     return false;
                 }
-                if(datosDetalle.tipo === "producto" && detalle.idProducto === datosDetalle.idDetalle && !detalle.idServicio){
+                if(datosDetalle.tipo === "producto" && detalle.idProducto === +datosDetalle.idDetalle && !detalle.idServicio){
                     return false;
                 }
                 return true;
             });
             cotizacionGeneral.cbServiciosOpt(cbServicios,false,[{id:datosDetalle.idDetalle,tipo:datosDetalle.tipo}]);
             tr.remove();
+            cotizacionGeneral.calcularNumeroItem(tablaBody);
             if(datosDetalle.tipo === "servicio"){
                 const tablaProductoServicio = tablaServicioProductos.querySelector(`[data-domservicio="${datosDetalle.idDetalle}"]`);
                 if(tablaProductoServicio){
@@ -210,19 +214,21 @@ function loadPage(){
                         tablaServicios.innerHTML = valor.length ? "" : `<tr><td colspan="100%" class="text-center">No se seleccionaron servicios<td></tr>`;
                         tablaServicioProductos.innerHTML = valor.length ? "" : `<h5 class="col-12 text-primary text-center">Sin productos para mostrar</h5>`
                         valor.forEach((s,k) => {
-                            s.id_servicio = s.id;
-                            let total = 0;
                             serviciosCb.push({id:s.id,tipo:"servicio"});
-                            s.productos.forEach(p => {
-                                total += p.precioVenta * p.cantidadUsada;
+                            const serviciosCotizacion = cotizacionGeneral.asignarListaServiciosProductos(s,"servicio","nuevo");
+                            serviciosCotizacion.cantidad = 1;
+                            serviciosProductos.push(serviciosCotizacion);
+                            serviciosCotizacion.numeroItem = tablaServicios.children.length + 1;
+                            tablaServicios.append(cotizacionGeneral.agregarServicio(serviciosCotizacion));
+                            tablaServicios.children[tablaServicios.children.length - 1].querySelector(".cambio-detalle").addEventListener("change",function(){
+                                cotizacionGeneral.modificarCantidad(this,serviciosProductos,tablaServicios);
                             });
-                            s.cantidad = 1;
-                            s.costo = total;
-                            s.descuento = 0;
-                            s.total = total;
-                            serviciosProductos.push(cotizacionGeneral.asignarListaServiciosProductos(s));
-                            tablaServicios.append(cotizacionGeneral.agregarServicio(k+1,s.id,s.servicio,1,total,0,total,"servicio","nuevo"));
-                            tablaServicioProductos.append(cotizacionGeneral.agregarServicioProductos(s.id,s.servicio,s.productos));
+                            tablaServicioProductos.append(cotizacionGeneral.agregarServicioProductos(serviciosCotizacion));
+                            for (const cambio of tablaServicioProductos.children[tablaServicioProductos.children.length - 1].querySelectorAll(".cambio-detalle")) {
+                                cambio.addEventListener("change", function(){
+                                    cotizacionGeneral.modificarCantidad(cambio,serviciosProductos,tablaServicios);
+                                });
+                            }
                         });
                         $('#listaServiciosProductos .cb-servicios-productos').select2({
                             theme: 'bootstrap',
@@ -231,16 +237,7 @@ function loadPage(){
                         }).on("select2:select",function(e){
                             cotizacionGeneral.obtenerProducto($(this),serviciosProductos,tablaServicios);
                         });
-                        for (const cambio of tablaServicios.children[tablaServicios.children.length - 1].querySelectorAll(".cambio-detalle")) {
-                            cambio.addEventListener("change",function(){
-                                cotizacionGeneral.modificarCantidad(cambio,serviciosProductos,tablaServicios);
-                            });
-                        }
-                        for (const cambio of tablaServicioProductos.children[tablaServicioProductos.children.length - 1].querySelectorAll(".cambio-detalle")) {
-                            cambio.addEventListener("change", function(){
-                                cotizacionGeneral.modificarCantidad(cambio,serviciosProductos,tablaServicios);
-                            });
-                        }
+                        console.log(serviciosProductos);
                         cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
                         continue;
                     }

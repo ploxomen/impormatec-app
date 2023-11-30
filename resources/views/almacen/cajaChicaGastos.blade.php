@@ -40,11 +40,19 @@
                 <h5 class="text-center text-danger">Actualmente no se encuentra habilitada ninguna caja chica para usted</h5>
             @else
                 @if (strtotime($cajaChica->fecha_inicio) <= strtotime(now()) && strtotime($cajaChica->fecha_fin) >= strtotime(now()))
+                <div class="form-group d-flex justify-content-center" style="gap: 10px 30px;">
+                    <span><b>Fecha Inicio:</b> {{date('d/m/Y',strtotime($cajaChica->fecha_inicio))}}</span>
+                    <span><b>Fecha Fin:</b> {{date('d/m/Y',strtotime($cajaChica->fecha_fin))}}</span>
+                </div>
                 <div class="form-group">
                     <button class="btn btn-primary" id="btnCerrarCaja" data-toggle="modal" data-target="#agragarGastos">
                         <i class="fas fa-door-closed"></i>
                         <span>Registrar gastos</span>
                     </button>
+                    <a class="btn btn-danger" id="btnCerrarCaja" href="{{route('caja.chica.reporte.gastos.usuario',[$cajaChica->id])}}" target="_blank">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Reporte</span>
+                    </a>
                 </div>
                 <div class="form-group contenido-informacion">
                     <div class="informacion">

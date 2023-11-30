@@ -8,6 +8,7 @@ use App\Models\CotizacionProductos;
 use App\Models\CotizacionSeguimiento;
 use App\Models\CotizacionServicio;
 use App\Models\OrdenServicioCotizacionServicio;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -33,22 +34,29 @@ class Seguimiento extends Controller
         $fechaInicio = date('Y-m-d',strtotime($fechaFin . ' - 90 days'));
         $meses = (new Utilitarios)->obtenerNombresMeses();
         $modulos = $this->usuarioController->obtenerModulos();
-        return view("cotizacion.seguimiento",compact("modulos","fechaFin","fechaInicio","meses","clientes"));
+        $usuarios = User::obtenerUsuariosNoSonClientes();
+        return view("cotizacion.seguimiento",compact("usuarios","modulos","fechaFin","fechaInicio","meses","clientes"));
     }
     public function all(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
         if(isset($verif['session'])){
             return response()->json($verif);
         }
-        $seguimientos = Cotizacion::obtenerCotizacion()->where('fechaCotizacion','>=',$request->fechaInicio)->where('fechaCotizacion','<=',$request->fechaFin)->where('cotizacion.porcentaje_actual','>=',$request->porcentaje)->where('cotizacion.estado',1)->get();
-        return DataTables::of($seguimientos)->toJson();
+        $seguimientos = Cotizacion::obtenerCotizacion()->where('fechaCotizacion','>=',$request->fechaInicio)->where('fechaCotizacion','<=',$request->fechaFin)->where('cotizacion.estado',1);
+        if($request->porcentaje !== 'todos'){
+            $seguimientos = $seguimientos->where('cotizacion.porcentaje_actual',$request->porcentaje);
+        }
+        if($request->responsable !== 'todos'){
+            $seguimientos = $seguimientos->where('cotizacion.cotizadorUsuario',$request->responsable);
+        }
+        return DataTables::of($seguimientos->get())->toJson();
     }
     public function allGarantia(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
         if(isset($verif['session'])){
             return response()->json($verif);
         }
-        $seguimientosGarantia = Cotizacion::obtenerGarantiasFechas($request->mes,$request->year,$request->cliente);
+        $seguimientosGarantia = Cotizacion::obtenerGarantiasFechas($request->mes,$request->year,$request->cliente,$request->estado);
         return DataTables::of($seguimientosGarantia)->toJson();
     }
     public function showHistorialSeguimiento(Cotizacion $cotizacion) {

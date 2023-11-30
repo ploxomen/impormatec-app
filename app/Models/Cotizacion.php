@@ -19,9 +19,10 @@ class Cotizacion extends Model
         ->join("clientes","cotizacion.id_cliente","=","clientes.id")
         ->join("usuarios","cotizacion.cotizadorUsuario","=","usuarios.id");
     }
-    public static function obtenerGarantiasFechas($mes,$year,$cliente) {
+    public static function obtenerGarantiasFechas($mes,$year,$cliente,$estado) {
+        $diaActual = date('Y-m-d');
         $productos = CotizacionProductos::select("cotizacion_productos.id","cotizacion_productos.fecha_fin_garantia","clientes.nombreCliente","nombreProducto","cotizacion_productos.cantidad")
-        ->selectRaw("DATE_FORMAT(cotizacion_productos.fecha_fin_garantia,'%d/%m/%Y') AS fechaFinGarantia,LPAD(cotizacion.id,5,'0') AS nroCotizacion,LPAD(orden_servicio_cotizacion_producto.id_orden_servicio,5,'0') AS nroOs,'Producto' AS tipo")
+        ->selectRaw("DATE_FORMAT(cotizacion_productos.fecha_fin_garantia,'%d/%m/%Y') AS fechaFinGarantia,IF(cotizacion_productos.fecha_fin_garantia < CURDATE(),'vencida','vigente') AS vencimientoEstado,LPAD(cotizacion.id,5,'0') AS nroCotizacion,LPAD(orden_servicio_cotizacion_producto.id_orden_servicio,5,'0') AS nroOs,'Producto' AS tipo")
         ->join("cotizacion","cotizacion.id","=","cotizacion_productos.id_cotizacion")
         ->join("productos","productos.id","=","cotizacion_productos.id_producto")
         ->join("clientes","cotizacion.id_cliente","=","clientes.id")
@@ -29,19 +30,25 @@ class Cotizacion extends Model
         if($cliente !== '0'){
             $productos = $productos->where('clientes.id',$cliente);
         }
+        if($estado !== 'todos'){
+            $productos = $productos->where('cotizacion_productos.fecha_fin_garantia',$estado === 'vigentes' ? '>=' : '<',$diaActual);
+        }
         $productos = $productos->whereRaw("YEAR(cotizacion_productos.fecha_fin_garantia) = ?",[$year]);
         if($mes !== '0'){
             $productos = $productos->whereRaw('MONTH(cotizacion_productos.fecha_fin_garantia) = ?',[$mes]);
         }
         $productos = $productos->groupBy("cotizacion_productos.id");
         $servicios = OrdenServicioCotizacionServicio::select("orden_servicio_cotizacion_servicio.id","orden_servicio_cotizacion_servicio.fecha_fin_garantia","clientes.nombreCliente","servicio","cotizacion_servicios.cantidad")
-        ->selectRaw("DATE_FORMAT(orden_servicio_cotizacion_servicio.fecha_fin_garantia,'%d/%m/%Y') AS fechaFinGarantia,LPAD(cotizacion.id,5,'0') AS nroCotizacion,LPAD(orden_servicio_cotizacion_servicio.id_orden_servicio,5,'0') AS nroOs,'Servicio' AS tipo")
+        ->selectRaw("DATE_FORMAT(orden_servicio_cotizacion_servicio.fecha_fin_garantia,'%d/%m/%Y') AS fechaFinGarantia,IF(orden_servicio_cotizacion_servicio.fecha_fin_garantia < CURDATE(),'vencida','vigente') AS vencimientoEstado,LPAD(cotizacion.id,5,'0') AS nroCotizacion,LPAD(orden_servicio_cotizacion_servicio.id_orden_servicio,5,'0') AS nroOs,'Servicio' AS tipo")
         ->join("cotizacion_servicios","cotizacion_servicios.id","=","orden_servicio_cotizacion_servicio.id_cotizacion_servicio")
         ->join("cotizacion","cotizacion.id","=","cotizacion_servicios.id_cotizacion")
         ->join("servicios","servicios.id","=","cotizacion_servicios.id_servicio")
         ->join("clientes","cotizacion.id_cliente","=","clientes.id");
         if($cliente !== '0'){
             $servicios = $servicios->where('clientes.id',$cliente);
+        }
+        if($estado !== 'todos'){
+            $servicios = $servicios->where('orden_servicio_cotizacion_servicio.fecha_fin_garantia',$estado === 'vigentes' ? '>=' : '<',$diaActual);
         }
         $servicios = $servicios->whereRaw("YEAR(orden_servicio_cotizacion_servicio.fecha_fin_garantia) = ?",[$year]);
         if($mes !== '0'){

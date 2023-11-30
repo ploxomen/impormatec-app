@@ -97,6 +97,8 @@ function loadPage(){
             gen.cargandoPeticion(btnModalSave, 'fas fa-save', false);
         }
     });
+    const fileImagen = document.querySelector("#customFileLang");
+    const prevImagen = document.querySelector("#imgPrevio");
     tablaGastos.addEventListener("click",async function(e){
         if(e.target.classList.contains("btn-outline-info")){
             try {
@@ -113,6 +115,9 @@ function loadPage(){
                     if (Object.hasOwnProperty.call(response.gasto, key)) {
                         const valor = response.gasto[key];
                         const dom = document.querySelector("#agragarGastos #idModal" + key);
+                        if(key === 'url_imagen'){
+                            prevImagen.src = window.origin + "/intranet/storage/imgGastosCaja/" + valor;
+                        }
                         if(key === 'id_os' && !valor){
                             dom.value = 'NINGUNO';
                             continue;
@@ -158,20 +163,56 @@ function loadPage(){
                     alertify.error("error al eliminar el gasto");
                 }
             },()=>{})
-            
         }
     });
+    fileImagen.onchange = function(e){
+        let reader = new FileReader();
+        reader.onload = function(){
+            prevImagen.src = reader.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    }
     document.querySelector("#idModalmonto_total").oninput = e => {
         let valor = Number.parseFloat(e.target.value);
         if(isNaN(valor)){
             valor = 0;
         }
-        document.querySelector("#idModaligv").value = (valor * 0.18).toFixed(2);
+        document.querySelector("#idModaligv").value = (valor - (valor / 1.18)).toFixed(2);
     }
     $('#agragarGastos').on("hidden.bs.modal",function(e){
         formCajaChica.reset();
+        prevImagen.src = window.origin + "/img/imgprevproduc.png";
         $('#agragarGastos .select2-simple').trigger("change");
         idDetalleGasto = null;
     });
+    const btnElimiarImagen = document.querySelector("#btnEliminarImagen");
+    btnElimiarImagen.addEventListener("click",function(e){
+        e.preventDefault();
+        if(!idDetalleGasto && fileImagen.files.length){
+            fileImagen.value = "";
+            prevImagen.src = window.origin + "/img/imgprevproduc.png";
+        }else if(idDetalleGasto){
+            alertify.confirm("Mensaje","¿Deseas eliminar la imagen asociada a este costo?",async ()=>{
+                gen.cargandoPeticion(e.target, gen.claseSpinner, true);
+                try {
+                    let response = await gen.funcfetch("gastos/eliminar/imagen/" + idDetalleGasto, null, "DELETE");
+                    if (response.session) {
+                        return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Mensaje",response.alerta);
+                    }
+                    fileImagen.value = "";
+                    prevImagen.src = window.origin + "/img/imgprevproduc.png";
+                    alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al eliminar la imagen asociada a este costo");
+                }finally{
+                    gen.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
+                }
+            },()=>{})
+        }
+    })
 }
 window.addEventListener("DOMContentLoaded",loadPage);

@@ -19,10 +19,7 @@
         </div>
        <div class="bg-white p-3 border">
         <div class="form-group text-right">
-            <a href="{{route('descargarArchivo',['FORMATO_UNICO_DE_VISITAS.pdf'])}}" download="FORMATO_UNICO_DE_VISITAS" class="btn btn-sm btn-primary">
-                <i class="fas fa-download"></i>
-                <span>Descargar formato de visitas</span>
-            </a>
+            @include('preCotizacion.botonDescargaVisita')
         </div>
         <table class="table table-sm table-bordered" id="tablaPreCotizaciones">
             <thead class="text-center">

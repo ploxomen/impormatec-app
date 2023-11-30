@@ -38,6 +38,11 @@
                 $total = 0;
                 $igv = 0;
             @endphp
+            @if($detalleGastos->isEmpty())
+                <tr>
+                    <td colspan="11" class="text-center">No se asignaron gastos para esta caja</td>
+                </tr>
+            @endif
             @foreach ($detalleGastos as $key => $gasto)
             @php
                  $total += $gasto->monto_total_cambio;

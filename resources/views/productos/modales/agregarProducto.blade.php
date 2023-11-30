@@ -113,7 +113,7 @@
                         <i class="fas fa-trash-alt"></i>
                     </button>
                     <div>
-                        <img src="/img/imgprevproduc.png" id="imgPrevio" alt="Imagen del producto" width="80px">
+                        <img src="/img/imgprevproduc.png" class="img-vistas-pequena" id="imgPrevio" alt="Imagen del producto">
                     </div>
                 </div>
                 <div class="col-12 producto-tangible">

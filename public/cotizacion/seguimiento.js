@@ -12,7 +12,8 @@ function loadPage(){
             data: function (d) {
                 d.fechaFin = $("#txtFechaFin").val();
                 d.fechaInicio = $("#txtFechaInicio").val();
-                d.porcentaje = isNaN(Number.parseFloat($("#txtPorcentaje").val())) ? 0 : $("#txtPorcentaje").val();
+                d.porcentaje = $("#cbPorcentaje").val();
+                d.responsable = $("#cbCotizador").val();
             }
         },
         columns: [
@@ -102,6 +103,7 @@ function loadPage(){
                 d.year = $("#cbYearFinGarantia").val();
                 d.mes = $("#cbMesFinGarantia").val();
                 d.cliente = $("#cbClientes").val();
+                d.estado = $("#cbEstadoGarantia").val();
             }
         },
         visible : true,
@@ -131,7 +133,7 @@ function loadPage(){
             data: 'id',
             render : function(data,type,row){
                 return `
-                <button class="btn btn-sm btn-outline-success p-1" data-id="${data}" data-tipo="${row.tipo}">
+                <button class="btn btn-sm btn-success p-1" data-id="${data}" data-tipo="${row.tipo}">
                     <small>
                         <i class="fab fa-whatsapp"></i>
                         <span>Notificar</span>
@@ -140,7 +142,12 @@ function loadPage(){
                 `
             }
         },
-        ]
+        ],
+        fnCreatedRow : function (nRow, aData, iDataIndex) {
+            if(aData.vencimientoEstado === "vencida"){
+                $(nRow).addClass("table-danger");
+            }
+        }
     });
     if(document.querySelector("#tablaFinGarantia_wrapper")){
         document.querySelector("#tablaFinGarantia_wrapper").hidden = true;

@@ -142,25 +142,28 @@ class OrdenServicio extends Controller
         $detalleTotal = OrdenServicioCotizacionProducto::mostrarProductosOrdenServicio($serviciosOS,$idOrdenServicio)->toArray();
         list($importeTotal,$igvTotal,$operacionGravada) = [0,0,0];
         foreach ($detalleTotal as $detalle) {
+            // dd($detalle);
             $operacionGravada += $detalle['total'];
             if($incluirIgv){
                 $igvTotal += $detalle['igv'];
             }
+            $importeTotal += $detalle['total'] + $detalle['igv'];
         }
-        $importeTotal = $operacionGravada + $igvTotal;
-        dd($detalleTotal,$importeTotal);
+        // $importeTotal = $operacionGravada - $igvTotal;
+        // dd($detalleTotal,$importeTotal);
         $montoPagado = PagoCuotas::where('id_orden_servicio',$idOrdenServicio)->sum('monto_pagado');
         if($montoPagado !== 0 && $montoPagado > $importeTotal){
             $adiconal = $montoPagado - $importeTotal;
-            $baseAdicional = $incluirIgv ? round($adiconal/1.18,6) : $adiconal;
-            $igvAdicional = $incluirIgv ? round($baseAdicional * 0.18,6) : 0;
+            // dd($adiconal);
+            $baseAdicional = $incluirIgv ? round($adiconal/1.18,2) : $adiconal;
+            $igvAdicional = $incluirIgv ? round($baseAdicional * 0.18,2) : 0;
             $igvTotal += $igvAdicional;
             $operacionGravada += $baseAdicional;
-            $importeTotal += $baseAdicional + $igvAdicional;
+            $importeTotal += $adiconal;
             $detalleTotal[] = [
                 'idOsCotizacion' => 1,
                 'cantidad' => 1,
-                'descuento' => "0.00",
+                'descuento' => "0",
                 'igv' => $igvAdicional,
                 'importe' => $baseAdicional,
                 'precio' => $baseAdicional,
@@ -169,6 +172,7 @@ class OrdenServicio extends Controller
                 'total' => $baseAdicional
             ];
         }
+        // dd($detalleTotal);
         $letraNumero = (new RapiFac)->numeroAPalabras($importeTotal,$moneda);
         return ['detalle' => $detalleTotal,'tipoMoneda' => $moneda, 'igvTotal' => $igvTotal, 'importeTotal' => $importeTotal, 'operacionGravada' => $operacionGravada,'letraImporteTotal' => $letraNumero];
     }

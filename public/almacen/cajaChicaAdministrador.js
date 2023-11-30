@@ -15,6 +15,9 @@ function loadPage(){
             data: 'nroCaja'
         },
         {
+            data:'nombreResponsable'
+        },
+        {
             data: 'fechaInicio'
         },
         {

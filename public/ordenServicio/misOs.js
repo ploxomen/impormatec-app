@@ -380,9 +380,9 @@ function loadPage() {
                         <td>${key + 1}</td>
                         <td>${detalleVenta.servicio}</td>
                         <td>${detalleVenta.cantidad}</td>
-                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.precio) + parseFloat(detalleVenta.igv),tipoMonedaFacturacion)}</td>
+                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.precio),tipoMonedaFacturacion)}</td>
                         <td>${gen.resetearMoneda(detalleVenta.descuento,tipoMonedaFacturacion)}</td>
-                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.total) + parseFloat(detalleVenta.igv),tipoMonedaFacturacion)}</td>
+                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.total),tipoMonedaFacturacion)}</td>
                     <tr>
                     `
                 });

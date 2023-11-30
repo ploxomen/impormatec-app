@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Configuracion;
 use App\Models\CotizacionPreSecciones;
 use App\Models\PreCotizacionServicios;
 use App\Models\PreCotizaion;
@@ -28,7 +29,9 @@ class Tecnico extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         $idTecnico = empty(Auth::user()->tecnico) ? null : Auth::user()->tecnico->id;
         $servicios = Servicio::where('estado',1)->get();
-        return view("tecnico.primeraVisita",compact("modulos","servicios"));
+        $archivoVisitaUrl = Configuracion::where(['descripcion' => 'formato_unico_visitas_url'])->first();
+        $archivoVisitaNombre = Configuracion::where(['descripcion' => 'formato_unico_visitas'])->first();
+        return view("tecnico.primeraVisita",compact("modulos","servicios","archivoVisitaUrl","archivoVisitaNombre"));
     }
     public function obtenerInformePreCotizacion($idPreCotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloPrimVisiPreCoti);

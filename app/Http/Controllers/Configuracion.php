@@ -6,6 +6,7 @@ use App\Models\Configuracion as ModelsConfiguracion;
 use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Configuracion extends Controller
 {
@@ -32,11 +33,22 @@ class Configuracion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
-        $datos = $request->all();
+        $datos = $request->except('formatoVisita');
         DB::beginTransaction();
         try {
             foreach ($datos as $key => $dato) {
                 ModelsConfiguracion::where(['descripcion' => $key])->update(['valor' => $dato]);
+            }
+            if($request->has('formatoVisita')){
+                $archivoAntiguo = ModelsConfiguracion::where(['descripcion' => 'formato_unico_visitas'])->first();
+                if(Storage::disk('public')->exists($archivoAntiguo->valor)){
+                    Storage::disk('public')->delete($archivoAntiguo->valor);
+                }
+                $archivo = $request->file('formatoVisita');
+                $nombreGuardar = time().'_'.$archivo->getClientOriginalName();
+                $archivo->storeAs('public',$nombreGuardar);
+                $archivoAntiguo->update(['valor' => $archivo->getClientOriginalName()]);
+                ModelsConfiguracion::where(['descripcion' => 'formato_unico_visitas_url'])->update(['valor' => $nombreGuardar]);
             }
             DB::commit();
             return response()->json(['success' => 'datos modificados correctamente']);

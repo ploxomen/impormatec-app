@@ -56,7 +56,7 @@ function loadPage() {
             detalleCotizaciones.forEach(productoServicio => {
                 productoServicio.detalleCotizacion.forEach(detalle => {
                     index++
-                    const {id,tipo,cantidad,importe,descuento,total,nombreDescripcion} = detalle
+                    const {id,tipo,cantidad,precio,descuento,total,nombreDescripcion} = detalle
                     const valores = {
                         index,
                         nroCotizacion : productoServicio.nroCotizacion,
@@ -66,7 +66,7 @@ function loadPage() {
                         tipoServicioProducto : tipo,
                         tipoMoneda : $tipoMoneda.value,
                         cantidad,
-                        importe,
+                        precio,
                         descuento,
                         total
                     }

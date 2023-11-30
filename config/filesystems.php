@@ -67,6 +67,11 @@ return [
             'root' => storage_path('app/cotizacion/documentos'),
             'url' => env('APP_URL').'/storage/cotizacion/documentos',
         ],
+        'imgGastosCaja' => [
+            'driver' => 'local',
+            'root' => storage_path('app/imgGastosCaja'),
+            'url' => env('APP_URL').'/storage/imgGastosCaja',
+        ],
         'informeImgSeccion' => [
             'driver' => 'local',
             'root' => storage_path('app/informeImgSeccion'),

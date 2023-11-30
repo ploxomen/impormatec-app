@@ -537,15 +537,18 @@ class RapiFac extends Controller
         $detalles = [];
         $item = 0;
         $totalGeneral = 0;
-        $totalSinIgv = 0;
+        // $totalSinIgv = 0;
         $impuestoTotal = 0;
+        $totalDescuentos = 0;
+        $descuentoMontoBase = 0;
         foreach ($detallesComprobante as $detalle) {
             $item++;
             // dd($detalle);
-            $precioUnitario = round($detalle['precio'] + ($detalle['precio'] * 0.18),6);
+            $precioUnitario = round($detalle['precio'] * 1.18,6);
             $valorUnitario = round($precioUnitario/1.18,6);
+            // dd($precioUnitario,$valorUnitario);
             $valorVenta = round($detalle['cantidad'] * $valorUnitario,6);
-            $porcentajeDescuento = round($detalle['descuento'] * 100 / $valorVenta,6);
+            $porcentajeDescuento = round(($detalle['descuento']/$valorVenta)*100,6);
             $valorVentaItem = round($valorVenta - $detalle['descuento'],6);
             $igv = round($valorVentaItem*0.18,6);
             $totalPrecioVentaItem = round($valorVentaItem + $igv,6);
@@ -556,7 +559,7 @@ class RapiFac extends Controller
                 "ProductoCodigoSUNAT" => "",
                 'TipoSistemaISCCodigo' => '00',
                 'UnidadMedidaCodigo' => 'NIU',
-                'PrecioUnitarioItem' => $precioUnitario,
+                'PrecioUnitarioItem' => $precioUnitarioNeto,
                 'PrecioVentaCodigo' => '01',
                 'ICBPER' => 0,
                 'DescuentoCargoCodigo' => '00',
@@ -568,7 +571,7 @@ class RapiFac extends Controller
                 'DescuentoGlobal' => 0,
                 'Descuento' => $detalle['descuento'],
                 'ValorUnitario' => $valorUnitario,
-                'ValorUnitarioNeto' => $detalle['total'],
+                'ValorUnitarioNeto' => $valorVentaItem,
                 'ValorVentaItem' => $valorVentaItem,
                 'ValorVentaItemXML' => $valorVentaItem,
                 'ValorVentaNeto' => $valorVentaItem,
@@ -596,14 +599,17 @@ class RapiFac extends Controller
                 'IGVNeto' => $igv,
                 'ImporteTotal' => $totalPrecioVentaItem,
             ];
+            $descuentoMontoBase += $valorVentaItem;
             $totalGeneral += $totalPrecioVentaItem;
             $impuestoTotal += $igv;
+            $totalDescuentos += $detalle['descuento'];
         }
-        $totalSinIgv = round($totalGeneral - $impuestoTotal,6);
-        return [$detalles,$totalSinIgv,round($totalGeneral,6),round($impuestoTotal,6)];
+        // $totalSinIgv = round($totalGeneral - $impuestoTotal,6);
+        return [$detalles,$descuentoMontoBase,round($totalGeneral,6),round($impuestoTotal,6),$totalDescuentos];
     }
     function generarComprobanteAgrabadoSUNAT($datosGenerales,$detalleComprobante,$tipoMoneda){
-        list($detalles,$totalSinIgv,$totalGeneral,$impuestoTotal) = $this->detalleComprobanteAgrabadoSUNAT($detalleComprobante);
+        list($detalles,$descuentoMontoBase,$totalGeneral,$impuestoTotal,$totalDescuentos) = $this->detalleComprobanteAgrabadoSUNAT($detalleComprobante);
+        $tipoFactura = !isset($datosGenerales['tipoFactura']) ? 'Contado' : $datosGenerales['tipoFactura'];
         $fechaEmision = date('d/m/Y',strtotime($datosGenerales['fechaEmision']));
         $parametros = [
             "Usuario" => env('API_RAPIFAC_USER'),
@@ -614,21 +620,22 @@ class RapiFac extends Controller
             "CanalVenta" => 2,
             // "OrigenSistema" => 7,
             "Vendedor" => env('API_RAPIFAC_USER'),
-            "CondicionPago" => !isset($datosGenerales['tipoFactura']) ? 'Contado' : $datosGenerales['tipoFactura'],
+            "CondicionPago" => $tipoFactura,
             "SituacionPagoCodigo" => 2,
             "Ubigeo" => "150135",
             "ClienteNumeroDocIdentidad" => $datosGenerales['numeroDocumentoCliente'],
             // "ClienteUbigeo" => "150135",
             "ClientePaisDocEmisor" => "PE",
+            // "TotalDescuentos" => $totalDescuentos,
             "CorreoElectronicoSecundario" => "prueba@gmail.com",
             'ClienteTipoDocIdentidadCodigo' => $datosGenerales['tipoDocumentoCliente'],
             "FechaConsumo" => $fechaEmision,
             "ListaDetalles" => $detalles,
             "ImporteTotalTexto" => $this->numeroAPalabras($totalGeneral,$tipoMoneda),
-            "DescuentoGlobalMontoBase" => $totalSinIgv,
-            "CargoGlobalMontoBase" => $totalSinIgv,
+            "DescuentoGlobalMontoBase" => $descuentoMontoBase,
+            "CargoGlobalMontoBase" => $descuentoMontoBase,
             "TotalPrecioVenta" => $totalGeneral,
-            "TotalValorVenta" => $totalSinIgv,
+            "TotalValorVenta" => $descuentoMontoBase,
             "NOMBRE_UBIGEOLLEGADA" => " -  - ",
             "NOMBRE_UBIGEOPARTIDA" => "LIMA - LIMA - LA SAN MARTIN",
             "CONTADOR_CLICKEMITIR" => 1,
@@ -649,7 +656,7 @@ class RapiFac extends Controller
             "ClienteNombreRazonSocial" => $datosGenerales['nombreCliente'],
             "ClienteDireccion" => empty($datosGenerales['direccionCliente']) ? '' : $datosGenerales['direccionCliente'],
             "CorreoElectronicoPrincipal" => "no-send@rapifac.com",
-            "Gravado" => $totalSinIgv,
+            "Gravado" => $descuentoMontoBase,
             "IGV" => $impuestoTotal,
             "ImpuestoTotal" => $impuestoTotal,
             "TotalImporteVenta" => $totalGeneral,
@@ -660,12 +667,14 @@ class RapiFac extends Controller
             "Bultos" => 1,
             "BultosCelular" => 1,
             "DocAdicionalCodigo" => 1,
-            "PendientePago" => $totalGeneral,
         ];
-        if(isset($datosGenerales['cuotasFacturaFecha']) && $datosGenerales['tipoFactura'] === 'Credito' && $datosGenerales['tipoComprobante'] == '01'){
+        if(isset($datosGenerales['cuotasFacturaFecha']) && $tipoFactura === 'Credito' && $datosGenerales['tipoComprobante'] == '01'){
             $listaCuotas = $this->cuotasComprobantes($datosGenerales['cuotasFacturaFecha'],$datosGenerales['cuotasFacturaMonto'],$datosGenerales['fechaEmision']);
             $parametros['ListaCuotas'] = $listaCuotas;
             $parametros['PermitirCuotas'] = count($listaCuotas);
+            $parametros['CreditoTotal'] = $totalGeneral;
+            $parametros['TotalCuotas'] = $totalGeneral;
+            $parametros["PendientePago"] = $totalGeneral;
         }
         try {
             $token = $this->obtenerToken();
@@ -675,7 +684,7 @@ class RapiFac extends Controller
                 'Content-Type' => 'application/json'
             ];
             $body = json_encode($parametros);
-            dd($body);
+            // dd($body);
             $response = $client->post($this->urlComprobante,[
                 'headers' => $headers,
                 'body' => $body

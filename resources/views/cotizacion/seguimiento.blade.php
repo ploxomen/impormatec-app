@@ -32,9 +32,25 @@
                     <label for="txtFechaFin">Fecha Fin</label>
                     <input type="date" value="{{$fechaFin}}" class="form-control" required name="fecha_fin" id="txtFechaFin">
                 </div>
+                <div class="form-group col-12 col-md-6 col-lg-4 col-xl-2 filtro-aprobar">
+                    <label for="cbPorcentaje">Porcentaje</label>
+                    <select name="porcentaje" required class="select2-simple" id="cbPorcentaje">
+                        <option value="todos" selected>Todos</option>
+                       <option value="95">95%</option>
+                       <option value="75">75%</option>
+                       <option value="50">50%</option>
+                       <option value="30">30%</option>
+                       <option value="10">10%</option>
+                    </select>
+                </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-aprobar">
-                    <label for="txtPorcentaje">Porcentaje</label>
-                    <input type="number" step="0.01" value="0" class="form-control" required name="porcentaje" id="txtPorcentaje">
+                    <label for="cbCotizador">Responsable</label>
+                    <select name="cotizador" required class="select2-simple" id="cbCotizador">
+                        <option value="todos" selected>Todos</option>
+                        @foreach ($usuarios as $usuario)
+                            <option value="{{$usuario->id}}">{{$usuario->nombres . ' ' . $usuario->apellidos}}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-garantia" hidden>
                     <label for="cbYearFinGarantia">Año</label>
@@ -62,6 +78,14 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="form-group col-12 col-md-6 col-lg-4 col-xl-2 filtro-garantia" hidden>
+                    <label for="cbEstadoGarantia">Estado</label>
+                    <select name="vigencia" required class="select2-simple" id="cbEstadoGarantia">
+                        <option value="todos" selected>Todos</option>
+                       <option value="vigentes">Vigentes</option>
+                       <option value="vencidas">Vencidas</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <button class="btn btn-sm btn-primary" type="button" data-toggle="tooltip" data-placement="top" title="Aplicar filtros" id="btnAplicarFiltros">
                         <i class="fas fa-search"></i>
@@ -78,7 +102,7 @@
                         <th>Fecha Vencimiento</th>
                         <th>Porcentaje</th>
                         <th>Cliente</th>
-                        <th>Cotizador</th>
+                        <th>Responsable</th>
                         <th>Importe</th>
                         <th>Desc.</th>
                         <th>I.G.V</th>

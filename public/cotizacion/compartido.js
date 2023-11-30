@@ -83,7 +83,8 @@ class Cotizacion extends General{
         }
         return productos;
     }
-    filaProducto({idProducto,idServicio,index,urlImagen,nombreProducto,cantidadUsada,pVentaConvertido,precioTotal,descuento,tipo = "nuevo"}){
+    filaProducto({idProducto,idServicio,index,urlImagen,descripcion:nombreProducto,cantidad,precioUnitarioConIgv,precioUnitarioNormal,total,descuento,tipo = "nuevo"}){
+        const precioVenta = false ? precioUnitarioConIgv.toFixed(2) : precioUnitarioNormal.toFixed(2)
         const tr = document.createElement("tr");
         tr.dataset.producto = idProducto;
         tr.dataset.servicio = idServicio;
@@ -91,10 +92,10 @@ class Cotizacion extends General{
             <td>${index}</td>
             <td><img class="img-vistas-pequena" src="${urlImagen}" alt="Imagen del producto"></td>
             <td>${nombreProducto}</td>
-            <td><input type="number" step="0.01" value="${cantidadUsada}" class="form-control form-control-sm cambio-detalle" data-tipo="cantidad"></td>
-            <td><input type="number" step="0.01" value="${pVentaConvertido}" class="form-control form-control-sm cambio-detalle" data-tipo="precioVenta"></td>
+            <td><input type="number" step="0.01" value="${cantidad}" class="form-control form-control-sm cambio-detalle" data-tipo="cantidad"></td>
+            <td><input type="number" step="0.01" value="${precioVenta}" class="form-control form-control-sm cambio-detalle" data-tipo="precioVenta"></td>
             <td><input type="number" step="0.01" value="${descuento}" class="form-control form-control-sm cambio-detalle" data-tipo="descuento"></td>
-            <td><span class="costo-subtota">${this.resetearMoneda(precioTotal,this.$cbTipoMoneda.value)}</span></td>
+            <td><span class="costo-subtota">${this.resetearMoneda(total,this.$cbTipoMoneda.value)}</span></td>
             <td class="text-center"><button type="button" data-tipo="${tipo}" class="btn btn-sm btn-danger p-2" data-cbproducto="servicioProductoLista${
             idServicio}"><i class="fas fa-trash-alt"></i></button></td>        
         `
@@ -151,25 +152,18 @@ class Cotizacion extends General{
         </div>`
         return servicio;
     }
-    agregarServicioProductos(idServicio,nombreServicio,listaProducto,tipo) {
+    agregarServicioProductos({idServicio,descripcion,productosLista}) {
         const servicio = document.createElement("div");
         servicio.className = "col-12";
         servicio.dataset.domservicio = idServicio;
         let templateBody = "";
-        listaProducto.forEach((p,k) => {
-            const precioVentaConvertido = this.convertirPrecioVenta(p.precioVenta,p.tipoMoneda);
+        productosLista.forEach((p,k) => {
             p.index = k + 1;
-            p.pVentaConvertido = precioVentaConvertido;
-            p.precioTotal = precioVentaConvertido * p.cantidadUsada;
-            p.urlImagen = this.urlProductos + p.urlImagen;
-            p.idServicio = idServicio;
-            p.tipo = tipo;
-            p.descuento = 0;
             templateBody += this.filaProducto(p).outerHTML;
         });
         const cbClonadoProductos = document.querySelector("#cbProductos").cloneNode(true);
         for (const opt of cbClonadoProductos.querySelectorAll("option")) {
-            opt.disabled = listaProducto.findIndex( p => p.idProducto == opt.value) >= 0 ? true : false;
+            opt.disabled = productosLista.findIndex( p => p.idProducto == opt.value) >= 0 ? true : false;
         }
         cbClonadoProductos.setAttribute("id","servicioProductoLista" + idServicio);
         cbClonadoProductos.hidden = false;
@@ -179,7 +173,7 @@ class Cotizacion extends General{
         servicio.innerHTML = `
         <div class="d-flex flex-wrap justify-content-between align-items-center">
             <h5 class="text-primary">
-                <i class="fas fa-concierge-bell"></i> ${nombreServicio}  
+                <i class="fas fa-concierge-bell"></i> ${descripcion}  
             </h5>
             <div class="form-group" style="width:300px;">
                 <label>Productos</label>
@@ -206,23 +200,25 @@ class Cotizacion extends General{
         </div>`
         return servicio;
     }
-    agregarServicio(nroItem,idServicio,nombreServicio,cantidad,precioUni,descuento,total,tipoServicioProducto,tipo="nuevo") {
+    agregarServicio({numeroItem,idServicio,idProducto,descripcion,cantidad,precioUnitarioConIgv,precioUnitarioNormal,descuento,total,tipo="nuevo"}) {
         const valorTipoMoneda = this.$cbTipoMoneda.value;
+        const precioUnitario = false ? precioUnitarioConIgv : precioUnitarioNormal;
+        const tipoServicioProducto = !idServicio ? 'producto' : 'servicio'; 
         const tr = document.createElement("tr");
-        let txtPrecioUnitario = `<span class="costo-precio">${this.resetearMoneda(precioUni,valorTipoMoneda)}</span>`;
+        let txtPrecioUnitario = `<span class="costo-precio">${this.resetearMoneda(precioUnitario,valorTipoMoneda)}</span>`;
         let txtDescuento =  `<span class="costo-descuento">-${this.resetearMoneda(descuento,valorTipoMoneda)}</span>`;
         if(tipoServicioProducto === "producto"){
-            txtPrecioUnitario = `<input type="number" step="0.01" value="${Number.parseFloat(precioUni).toFixed(2)}" class="form-control form-control-sm cambio-detalle" data-tipo="precio-servicio-producto">`
+            txtPrecioUnitario = `<input type="number" step="0.01" value="${Number.parseFloat(precioUnitario).toFixed(2)}" class="form-control form-control-sm cambio-detalle" data-tipo="precio-servicio-producto">`
             txtDescuento = `<input type="number" step="0.01" value="${Number.parseFloat(descuento).toFixed(2)}" class="form-control form-control-sm cambio-detalle" data-tipo="descuento-servicio-producto">`
         }
-        tr.dataset[tipoServicioProducto] = idServicio;
+        tr.dataset[tipoServicioProducto] = tipoServicioProducto === "producto" ? idProducto : idServicio;
         tr.innerHTML = `
-        <td>${nroItem}</td>
-        <td>${nombreServicio}</td>
+        <td>${numeroItem}</td>
+        <td>${descripcion}</td>
         <td><input type="number" value="${cantidad}" class="form-control form-control-sm cambio-detalle" data-tipo="${tipoServicioProducto === "producto" ? 'cantidad-servicio-producto' : 'cantidad-servicio'}"></td>
         <td>${txtPrecioUnitario}</td>
         <td>${txtDescuento}</td>
-        <td><span class="costo-subtotal">${this.resetearMoneda(total,valorTipoMoneda)}</span></td>
+        <td><span class="costo-subtotal">${this.resetearMoneda(total.toFixed(2),valorTipoMoneda)}</span></td>
         <td class="text-center"><button class="btn btn-sm btn-danger" data-tipo="${tipo}" type="button"><i class="fas fa-trash-alt"></i></button></td>
         `;
         return tr;
@@ -263,28 +259,36 @@ class Cotizacion extends General{
             productosLista
         };
     }
-    asignarListaServiciosProductos(servicio,tipo){
-        const incluirIGV = +this.$cbIncluirIGV.value;
+    asignarListaServiciosProductos(servicio,tipo,condicion){
+        const incluirIGV = false;
         let productosLista = [];
         let precioUnitarioNormal = 0;
         let precioUnitarioConIgv = 0;
         let importeTotal = 0;
         let descuento = 0;
+        let idServicio = servicio.id;
+        let idProducto = null;
         if(tipo === "producto"){
             precioUnitarioNormal = this.convertirPrecioVenta(servicio.precioVenta,servicio.tipoMoneda);
-            precioUnitarioConIgv = incluirIGV ? precioUnitarioNormal * this.igvTotal : precioUnitarioNormal;
-            importeTotal = precioUnitarioConIgv * servicio.cantidad;
+            precioUnitarioConIgv = precioUnitarioNormal * this.igvTotal;
+            importeTotal = incluirIGV ? precioUnitarioConIgv * servicio.cantidad : precioUnitarioNormal * servicio.cantidad;
+            idProducto = servicio.id;
+            idServicio = null;
         }
         if(servicio.productos){
             servicio.productos.forEach(p => {
                 const descuentoProducto = !p.descuentoProducto ? 0  : p.descuentoProducto;
                 const precioVentaConvertido = this.convertirPrecioVenta(p.precioVenta,p.tipoMoneda);
-                const precioVentaIgvProducto = incluirIGV ? precioVentaConvertido * this.igvTotal : precioVentaConvertido; 
-                const importeTotalProducto = precioVentaIgvProducto * p.cantidadUsada; 
+                const precioVentaIgvProducto = precioVentaConvertido * this.igvTotal; 
+                const importeTotalProducto = incluirIGV ? precioVentaIgvProducto * p.cantidadUsada : precioVentaConvertido * p.cantidadUsada; 
                 productosLista.push({
+                    idServicio : p.id_servicio,
+                    tipo : condicion,
                     tipoPoneada : p.tipoMoneda,
                     idProducto : p.idProducto,
+                    descripcion : p.nombreProducto,
                     cantidad : p.cantidadUsada,
+                    urlImagen : this.urlProductos + p.urlImagen,
                     precioUnitarioNormal : precioVentaConvertido,
                     precioUnitarioConIgv : precioVentaIgvProducto,
                     importeTotal: importeTotalProducto,
@@ -299,9 +303,11 @@ class Cotizacion extends General{
         }
         let total = importeTotal - descuento;
         return {
-            idServicio : servicio.id_servicio,
-            idProducto : servicio.id_producto,
+            idServicio,
+            idProducto,
             cantidad : servicio.cantidad,
+            descripcion : servicio.servicio||servicio.nombreProducto,
+            tipo : condicion,
             precioUnitarioNormal,
             precioUnitarioConIgv,
             importeTotal,
@@ -312,9 +318,11 @@ class Cotizacion extends General{
     }
     async obtenerProducto($cb,serviciosProductos,tablaServicios){
         const valor = $cb.val();
+        const incluirIGV = false;
         const idTablaServicio = $cb.attr("data-tabla-productos");
         const idServicio = $cb.attr("data-servicio");
-        const tablaServicio = document.querySelector("#listaServiciosProductos #" + idTablaServicio); 
+        const tablaServicio = document.querySelector("#listaServiciosProductos #" + idTablaServicio);
+        console.log($cb,serviciosProductos,tablaServicios);
         try {
             let response = await this.funcfetch("obtener/producto/" + valor,null,"GET");
             const indexServicio = serviciosProductos.findIndex(s => s.idServicio == idServicio);
@@ -328,26 +336,26 @@ class Cotizacion extends General{
             if(!serviciosProductos[indexServicio].productosLista.length){
                 tablaServicio.innerHTML = "";
             }
-            const precioConvertido = this.convertirPrecioVenta(response.precioVenta,response.tipoMoneda);
-            serviciosProductos[indexServicio].productosLista.push({
+            const precioUnitarioConvertido = this.convertirPrecioVenta(response.precioVenta,response.tipoMoneda);
+            const precioUnitarioConIgv = precioUnitarioConvertido * this.igvTotal;
+            const importeTotal = incluirIGV ? precioUnitarioConIgv : precioUnitarioConvertido;
+            const nuevoProducto = {
+                index : tablaServicio.children.length + 1,
                 idProducto : response.id,
+                importeTotal,
+                total : importeTotal,
+                tipo : "nuevo",
+                precioUnitarioConIgv,
+                precioUnitarioNormal : precioUnitarioConvertido,
+                descripcion : response.nombreProducto,
+                idServicio,
                 cantidad : 1,
                 tipoPoneada : response.tipoMoneda,
-                pVenta : response.precioVenta,
-                pVentaConvertido : precioConvertido,
-                importe : precioConvertido,
                 descuento : 0,
-                pTotal : precioConvertido
-            });
-            response.index = tablaServicio.children.length + 1;
-            response.precioTotal = precioConvertido;
-            response.idServicio = idServicio;
-            response.idProducto = response.id;
-            response.cantidadUsada = 1;
-            response.pVentaConvertido = precioConvertido;
-            response.urlImagen = this.urlProductos + response.urlImagen;
-            response.descuento = 0;
-            let tr = this.filaProducto(response);
+                urlImagen : this.urlProductos + response.urlImagen
+            }
+            serviciosProductos[indexServicio].productosLista.push(nuevoProducto);
+            let tr = this.filaProducto(nuevoProducto);
             tablaServicio.append(tr);
             for (const cambio of tablaServicio.children[tablaServicio.children.length - 1].querySelectorAll(".cambio-detalle")) {
                 cambio.addEventListener("change", (e) => {
@@ -373,58 +381,95 @@ class Cotizacion extends General{
         });
         this.calcularServiciosTotales(serviciosProductos,tablaServicios);
     }
-    calcularServiciosTotales(serviciosProductos,tablaServicios){
-        let subtotal = 0;
-        let descuento = 0;
-        let total = 0;
+    calcularServiciosTotales(listaServicios,tablaServicios){
+        console.log(listaServicios);
+        let subTotal = 0;
+        let descuentoTotal = 0;
+        let generalTotal = 0;
         const valorTipoDocumento = this.$cbTipoMoneda.value;
-        const incluirIGV = this.$cbIncluirIGV.value;
-        serviciosProductos.forEach(cp => {
-            let dsubtotal = 0;
-            let ddescuento = 0;
+        const incluirIGV = false;
+        const incluirIGV2 = +this.$cbIncluirIGV.value;
+        listaServicios.forEach(cp => {
+            let subTotalDetalle = 0;
+            let descuentoTotalDetalle = 0;
+            let generalTotalDetalle = 0;
             const tr = tablaServicios.querySelector(`[data-servicio="${cp.idServicio}"]`) || tablaServicios.querySelector(`[data-producto="${cp.idProducto}"]`);
             if(!cp.idServicio && cp.idProducto){
-                dsubtotal = Number.parseFloat(cp.pImporte);
-                ddescuento = Number.parseFloat(cp.descuento);
+                subTotalDetalle = cp.importeTotal;
+                descuentoTotalDetalle = cp.descuento;
+                generalTotalDetalle = cp.total;
             }
             cp.productosLista.forEach(p => {
-                dsubtotal+= parseFloat(p.importe);
-                ddescuento += parseFloat(p.descuento);
+                subTotalDetalle += p.importeTotal;
+                descuentoTotalDetalle += p.descuento;
+                generalTotalDetalle += p.total;
             });
-            cp.descuento = ddescuento;
-            cp.pTotal = dsubtotal - ddescuento;
+            cp.total = generalTotalDetalle;
+            cp.importeTotal = subTotalDetalle;
+            cp.descuento = descuentoTotalDetalle;
             if(cp.idServicio && !cp.idProducto){
-                cp.pUni = dsubtotal / cp.cantidad;
-                cp.pImporte = dsubtotal;
-                tr.querySelector(".costo-precio").textContent = this.resetearMoneda(cp.pUni,valorTipoDocumento);
+                tr.querySelector(".costo-precio").textContent = this.resetearMoneda(!incluirIGV ? cp.precioUnitarioNormal.toFixed(2) : cp.precioUnitarioConIgv.toFixed(2),valorTipoDocumento);
                 tr.querySelector(".costo-descuento").textContent = "-" + this.resetearMoneda(cp.descuento,valorTipoDocumento);
             }
-            tr.querySelector(".costo-subtotal").textContent = this.resetearMoneda(cp.pTotal,valorTipoDocumento);
-            subtotal += dsubtotal;
-            descuento += cp.descuento;
-            total += cp.pTotal;
+            tr.querySelector(".costo-subtotal").textContent = this.resetearMoneda(cp.total.toFixed(2),valorTipoDocumento);
+            subTotal += cp.importeTotal;
+            descuentoTotal += cp.descuento;
+            generalTotal += cp.total;
         });
-        const igv = total * 0.18;
-        document.querySelector("#idModalimporteTotal").textContent = this.resetearMoneda(subtotal,valorTipoDocumento);
-        document.querySelector("#idModaldescuentoTotal").textContent = "- " + this.resetearMoneda(descuento,valorTipoDocumento);
-        document.querySelector("#idModaligvTotal").textContent = this.resetearMoneda(igv,valorTipoDocumento);
-        document.querySelector("#idModaltotal").textContent = this.resetearMoneda(+incluirIGV === 0 ? total : total + igv,valorTipoDocumento);
+        const igvTotal = !incluirIGV2 ? 0 : parseFloat(generalTotal * this.igv);
+        document.querySelector("#idModalimporteTotal").textContent = this.resetearMoneda(subTotal.toFixed(2),valorTipoDocumento);
+        document.querySelector("#idModaldescuentoTotal").textContent = "- " + this.resetearMoneda(descuentoTotal,valorTipoDocumento);
+        document.querySelector("#idModaligvTotal").textContent = this.resetearMoneda(igvTotal,valorTipoDocumento);
+        document.querySelector("#idModaltotal").textContent = this.resetearMoneda(parseFloat(generalTotal + igvTotal).toFixed(2),valorTipoDocumento);
     }
-    ocultarMostrarIGV(valor){
-        console.log(valor);
-        document.querySelector("#idModaligvTotal").parentElement.hidden = +valor === 0 ? true : false;
+    ocultarMostrarIGV(serviciosProductos,valor){
+        const incluirIGV = false;
+        const incluirIGV2 = +valor;
+        document.querySelector("#idModaligvTotal").parentElement.hidden = incluirIGV2 === 0 ? true : false;
+        serviciosProductos.map(servicio => {
+            let importeTotal = 0;
+            if(servicio.idProducto && !servicio.idServicio){
+                importeTotal = !incluirIGV ? servicio.precioUnitarioNormal * servicio.cantidad : servicio.precioUnitarioConIgv * servicio.cantidad;
+                servicio.importeTotal = importeTotal;
+                servicio.total = importeTotal - servicio.descuento;
+            }else if(!servicio.idProducto && servicio.idServicio){
+                importeTotal = 0;
+                let descuentoTotal = 0;
+                servicio.productosLista.map(producto => {
+                    const tr = document.querySelector(`[data-producto="${producto.idProducto}"][data-servicio="${producto.idServicio}"]`);
+                    const importeTotalProducto = !incluirIGV ? producto.precioUnitarioNormal * producto.cantidad : producto.precioUnitarioConIgv * producto.cantidad;
+                    producto.importeTotal = importeTotalProducto;
+                    producto.total = importeTotalProducto - producto.descuento;
+                    importeTotal += importeTotalProducto;
+                    descuentoTotal += producto.descuento;
+                    tr.querySelector("[data-tipo='precioVenta']").value = incluirIGV ? producto.precioUnitarioConIgv.toFixed(2) : producto.precioUnitarioNormal.toFixed(2);
+                    tr.querySelector(".costo-subtota").textContent = this.resetearMoneda(producto.total,this.$cbTipoMoneda.value);
+                });
+                servicio.importeTotal = importeTotal;
+                servicio.descuento = descuentoTotal;
+                servicio.total = importeTotal - descuentoTotal;
+                const valorUnitario = servicio.importeTotal / servicio.cantidad;
+                servicio.precioUnitarioNormal = incluirIGV ? valorUnitario - (valorUnitario * this.igv) : valorUnitario;
+                servicio.precioUnitarioConIgv = !incluirIGV ? valorUnitario * this.igvTotal  : valorUnitario;
+                
+            }
+        })
+        console.log(serviciosProductos);
+
     }
     modificarCantidad(e,serviciosProductos,tablaServicios){
+        console.log(e,serviciosProductos,tablaServicios);
         const tr = e.parentElement.parentElement;
+        const incluirIGV = false;
         const datosDetalle = {
             tipo : !tr.dataset.servicio ? 'producto' : 'servicio',
             idDetalle : tr.dataset.servicio || tr.dataset.producto
         };
         const indexServicio = serviciosProductos.findIndex(function(detalle){
-            if(datosDetalle.tipo === "servicio" && detalle.idServicio === datosDetalle.idDetalle && !detalle.idProducto){
+            if(datosDetalle.tipo === "servicio" && detalle.idServicio === +datosDetalle.idDetalle && !detalle.idProducto){
                 return true;
             }
-            if(datosDetalle.tipo === "producto" && detalle.idProducto === datosDetalle.idDetalle && !detalle.idServicio){
+            if(datosDetalle.tipo === "producto" && detalle.idProducto === +datosDetalle.idDetalle && !detalle.idServicio){
                 return true;
             }
             return false;
@@ -439,26 +484,34 @@ class Cotizacion extends General{
         const tipo = e.dataset.tipo;
         if(tipo == "cantidad-servicio-producto"){
             serviciosProductos[indexServicio].cantidad = valor;
-            serviciosProductos[indexServicio].pImporte = valor * serviciosProductos[indexServicio].pUni;
+            serviciosProductos[indexServicio].importeTotal = incluirIGV ? valor * serviciosProductos[indexServicio].precioUnitarioConIgv : valor * serviciosProductos[indexServicio].precioUnitarioNormal;
+            serviciosProductos[indexServicio].total = serviciosProductos[indexServicio].importeTotal - serviciosProductos[indexServicio].descuento;
             this.calcularServiciosTotales(serviciosProductos,tablaServicios);
             return false;
         }
         if(tipo == "cantidad-servicio"){
+            const valorUnitario = serviciosProductos[indexServicio].importeTotal / valor;
             serviciosProductos[indexServicio].cantidad = valor;
+            serviciosProductos[indexServicio].precioUnitarioConIgv = incluirIGV ? valorUnitario : valorUnitario * this.igvTotal;
+            serviciosProductos[indexServicio].precioUnitarioNormal = incluirIGV ? valorUnitario - (valorUnitario * this.igv) : valorUnitario;
             this.calcularServiciosTotales(serviciosProductos,tablaServicios);
             return false;
         }
         if(tipo == "precio-servicio-producto"){
-            serviciosProductos[indexServicio].pUni = valor;
-            serviciosProductos[indexServicio].pImporte = serviciosProductos[indexServicio].cantidad * valor;
+            serviciosProductos[indexServicio].precioUnitarioConIgv = valor * this.igvTotal;
+            serviciosProductos[indexServicio].precioUnitarioNormal = valor;
+            serviciosProductos[indexServicio].importeTotal = incluirIGV ? serviciosProductos[indexServicio].precioUnitarioConIgv * serviciosProductos[indexServicio].cantidad : serviciosProductos[indexServicio].precioUnitarioNormal * serviciosProductos[indexServicio].cantidad;
+            serviciosProductos[indexServicio].total = serviciosProductos[indexServicio].importeTotal - serviciosProductos[indexServicio].descuento;
             this.calcularServiciosTotales(serviciosProductos,tablaServicios);
             return false;
         }
         if(tipo == "descuento-servicio-producto"){
             serviciosProductos[indexServicio].descuento = valor;
-            if(serviciosProductos[indexServicio].pImporte < valor){
+            serviciosProductos[indexServicio].total = serviciosProductos[indexServicio].importeTotal - serviciosProductos[indexServicio].descuento;
+            if(serviciosProductos[indexServicio].total < valor){
                 serviciosProductos[indexServicio].descuento = 0;                
                 e.value = "0.00";
+                serviciosProductos[indexServicio].total = serviciosProductos[indexServicio].importeTotal;
             }
             this.calcularServiciosTotales(serviciosProductos,tablaServicios);
             return false;
@@ -471,32 +524,40 @@ class Cotizacion extends General{
             }
             const listaPro = serviciosProductos[indexServicio].productosLista[indexProducto];
             if(tipo == "precioVenta"){
-                listaPro.pVentaConvertido = valor;
-                listaPro.importe = listaPro.cantidad * valor;
-                listaPro.pTotal = listaPro.importe - listaPro.descuento;
+                listaPro.precioUnitarioConIgv = valor * this.igvTotal;
+                listaPro.precioUnitarioNormal = valor;
+                listaPro.importeTotal = incluirIGV ? listaPro.precioUnitarioConIgv * listaPro.cantidad : listaPro.precioUnitarioNormal * listaPro.cantidad;
+                listaPro.total = listaPro.importeTotal - listaPro.descuento;
             }
             else if(tipo == "cantidad"){
                 listaPro.cantidad = valor;
-                listaPro.importe = listaPro.pVentaConvertido * valor;
-                listaPro.pTotal = listaPro.pVentaConvertido * valor - listaPro.descuento;
+                listaPro.importeTotal = incluirIGV ? listaPro.precioUnitarioConIgv * valor : listaPro.precioUnitarioNormal * valor;
+                listaPro.total = listaPro.importeTotal - listaPro.descuento;
             }else if(tipo == "descuento"){
                 listaPro.descuento = valor;
-                listaPro.pTotal = listaPro.importe - listaPro.descuento;
-                if(listaPro.importe < listaPro.descuento){
+                listaPro.total = listaPro.importeTotal - listaPro.descuento;
+                if(listaPro.importeTotal < listaPro.descuento){
                     listaPro.descuento = 0;
                     e.value = "0.00";
                 }
             }
-            if(listaPro.pTotal < 0){
-                listaPro.cantidad = 0;
-                listaPro.importe = listaPro.pVentaConvertido;
+            if(listaPro.total < 0){
+                listaPro.cantidad = 1;
+                listaPro.importeTotal = incluirIGV ? listaPro.precioUnitarioConIgv : listaPro.precioUnitarioNormal;
                 listaPro.descuento = 0;
-                listaPro.pTotal = 0;
+                listaPro.total = 0;
                 tr.querySelector(`[data-tipo="cantidad"]`).value = "0";
                 tr.querySelector(`[data-tipo="descuento"]`).value = "0.00";
             }
-            txtSubTotal.textContent = this.resetearMoneda(listaPro.pTotal.toFixed(2),this.$cbTipoMoneda.value);
+            txtSubTotal.textContent = this.resetearMoneda(listaPro.total.toFixed(2),this.$cbTipoMoneda.value);
             this.calcularServiciosTotales(serviciosProductos,tablaServicios);
+        }
+    }
+    calcularNumeroItem(tabla){
+        let numeroFila = 1;
+        for (const tr of tabla.children) {
+            tr.querySelector("td").textContent = numeroFila;
+            numeroFila++;
         }
     }
     async obtenerServicios(cbServicios,idServicoProducto,serviciosProductos,tablaServicios,tablaServicioProductos,tipoProductoServicio = "servicio"){
@@ -507,27 +568,26 @@ class Cotizacion extends General{
                 return alertify.alert([...this.alertaSesion],() => {window.location.reload()});
             }
             let servicioJSON = response.servicio||response.producto;
-            servicioJSON.id_servicio = tipoProductoServicio === "servicio" ? idServicoProducto : null;
-            servicioJSON.id_producto = tipoProductoServicio === "producto" ? idServicoProducto : null;
             servicioJSON.cantidad = 1;
             servicioJSON.descuento = 0;
             if(!serviciosProductos.length){
                 tablaServicios.innerHTML = "";
                 tablaServicioProductos.innerHTML = "";
             }
-            const listaServicioProducto = this.asignarListaServiciosProductos(servicioJSON,tipoProductoServicio);
+            const listaServicioProducto = this.asignarListaServiciosProductos(servicioJSON,tipoProductoServicio,"nuevo");
             console.log(listaServicioProducto);
             // return false;
-            const {total} = listaServicioProducto;
+            // const {total} = listaServicioProducto;
             serviciosProductos.push(listaServicioProducto);
-            tablaServicios.append(this.agregarServicio(tablaServicios.children.length + 1,servicioJSON.id,servicioJSON.servicio||servicioJSON.nombreProducto,1,pTotal,0,pTotal,tipoProductoServicio));
+            listaServicioProducto.numeroItem = tablaServicios.children.length + 1;
+            tablaServicios.append(this.agregarServicio(listaServicioProducto));
             for (const cambio of tablaServicios.children[tablaServicios.children.length - 1].querySelectorAll(".cambio-detalle")) {
                 cambio.addEventListener("change",()=>{
                     this.modificarCantidad(cambio,serviciosProductos,tablaServicios);
                 });
             }
             if(tipoProductoServicio === "servicio"){
-                let contenidoProducto = this.agregarServicioProductos(servicioJSON.id,servicioJSON.servicio,servicioJSON.productos);
+                let contenidoProducto = this.agregarServicioProductos(listaServicioProducto);
                 tablaServicioProductos.append(contenidoProducto);
                 for (const cambio of tablaServicioProductos.children[tablaServicioProductos.children.length - 1].querySelectorAll(".cambio-detalle")) {
                     cambio.addEventListener("change", ()=>{

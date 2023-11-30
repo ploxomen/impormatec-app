@@ -12,13 +12,13 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class CajaChica extends Controller
 {
     private $moduloCajaChica = "admin.caja.chica.index";
     private $moduloCajaChicaGasto = "trabajador.caja.chica.index";
-
     private $usuarioController;
     
     function __construct()
@@ -65,13 +65,8 @@ class CajaChica extends Controller
         $tituloPdf = 'REPORTE_GASTOS_'.str_pad($cajaChica->id,5,'0',STR_PAD_LEFT).'.pdf';
         $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
         return Pdf::loadView('almacen.reportes.cajaChicaGastos',compact("detalleGastos","cajaChica","configuracion","tituloPdf","monedaTipo"))->setPaper('a4', 'landscape')->stream($tituloPdf);
-
-        // $modulos = $this->usuarioController->obtenerModulos();
-        // $fechaLarga = (new Utilitarios)->obtenerFechaLarga(strtotime(date('Y-m-d')));
-        // $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
-        // $ordenesServicios = OrdenServicio::select("id")->get();
-        // return view("almacen.cajaChicaGastosAdmin",compact("modulos","cajaChica","fechaLarga","monedaTipo","ordenesServicios"));
     }
+
     public function index()
     {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
@@ -118,6 +113,20 @@ class CajaChica extends Controller
         $aumentos = CajaChicaAumento::where('id_caja_chica',$cajaChica->id)->select('id','fecha_deposito','banco','nro_operacion','monto_abonado')->get();
         return response()->json(['aumentos' => $aumentos]);
     }
+    public function reporteGastosUsuario(ModelsCajaChica $cajaChica) {
+        $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChicaGasto);
+        if(isset($accessModulo['session'])){
+            return redirect()->route('home');
+        }
+        if($cajaChica->responsable_caja !== Auth::id()){
+            return abort(404);
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $detalleGastos = CajaChicaDetalle::where(['id_caja_chica' => $cajaChica->id])->get();
+        $tituloPdf = 'REPORTE_GASTOS_'.str_pad($cajaChica->id,5,'0',STR_PAD_LEFT).'.pdf';
+        $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
+        return Pdf::loadView('almacen.reportes.cajaChicaGastos',compact("detalleGastos","cajaChica","configuracion","tituloPdf","monedaTipo"))->setPaper('a4', 'landscape')->stream($tituloPdf);
+    }
     public function update(ModelsCajaChica $cajaChica,Request $request){
         $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
         if(isset($accessModulo['session'])){
@@ -143,7 +152,10 @@ class CajaChica extends Controller
         if(isset($accessModulo['session'])){
             return response()->json($accessModulo);
         }
-        $cajaChica = ModelsCajaChica::select("id","monto_abonado","monto_gastado","estado","tipo_moneda")->selectRaw("DATE_FORMAT(fecha_inicio,'%d/%m/%Y') AS fechaInicio,DATE_FORMAT(fecha_fin,'%d/%m/%Y') AS fechaFin,(monto_abonado - monto_gastado) AS montoRestante,LPAD(id,5,'0') AS nroCaja")->get();
+        $cajaChica = ModelsCajaChica::select("caja_chica.id","monto_abonado","monto_gastado","caja_chica.estado","tipo_moneda")
+        ->selectRaw("DATE_FORMAT(fecha_inicio,'%d/%m/%Y') AS fechaInicio,DATE_FORMAT(fecha_fin,'%d/%m/%Y') AS fechaFin,(monto_abonado - monto_gastado) AS montoRestante,LPAD(caja_chica.id,5,'0') AS nroCaja,CONCAT(usuarios.nombres,' ',usuarios.apellidos) AS nombreResponsable")
+        ->join("usuarios","usuarios.id","=","caja_chica.responsable_caja")
+        ->get();
         return DataTables::of($cajaChica)->toJson();
     }
     public function store(Request $request){
@@ -245,7 +257,7 @@ class CajaChica extends Controller
         if(empty($modeloCaja)){
             return response()->json(['alerta' => 'No se encontró ninguna caja chica disponible para usted, por favor intentelo más tarde']);
         }
-        $detalle = CajaChicaDetalle::select('id','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv')->where(['id_caja_chica'=>$modeloCaja->id,'id' => $gasto])->first();
+        $detalle = CajaChicaDetalle::select('id','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','url_imagen','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv')->where(['id_caja_chica'=>$modeloCaja->id,'id' => $gasto])->first();
         if(empty($detalle)){
             return response()->json(['alerta' => 'No se encontró el gasto seleccionado, por favor intentelo nuevamente']);
         }
@@ -256,7 +268,7 @@ class CajaChica extends Controller
         if(isset($accessModulo['session'])){
             return response()->json($accessModulo);
         }
-        $detalle = CajaChicaDetalle::select('id','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv')->where(['id_caja_chica'=>$cajaChica->id,'id' => $gasto])->first();
+        $detalle = CajaChicaDetalle::select('id','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','url_imagen','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv')->where(['id_caja_chica'=>$cajaChica->id,'id' => $gasto])->first();
         if(empty($detalle)){
             return response()->json(['alerta' => 'No se encontró el gasto seleccionado, por favor intentelo nuevamente']);
         }
@@ -275,14 +287,19 @@ class CajaChica extends Controller
     }
     public function eliminarGasto($gasto,$cajaChica) {
         $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChicaGasto);
-        if(isset($accessModulo['session'])){
+        $accessModulo2 = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
+        if(isset($accessModulo['session']) && isset($accessModulo2['session'])){
             return response()->json($accessModulo);
         }
         $modeloCaja = ModelsCajaChica::where(['id'=>$cajaChica,'estado' => 1,'responsable_caja' => Auth::id()])->first();
         if(empty($modeloCaja)){
             return response()->json(['alerta' => 'No se encontró ninguna caja chica disponible para usted, por favor intentelo más tarde']);
         }
-        CajaChicaDetalle::where(['id_caja_chica'=>$modeloCaja->id,'id'=>$gasto])->delete();
+        $detalleGasto = CajaChicaDetalle::where(['id_caja_chica'=>$modeloCaja->id,'id'=>$gasto])->first();
+        if(!empty($detalleGasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($detalleGasto->url_imagen)){
+            Storage::disk('imgGastosCaja')->delete($detalleGasto->url_imagen);
+        }
+        $detalleGasto->delete();
         $totalDetalle = CajaChicaDetalle::where('id_caja_chica',$modeloCaja->id)->sum('monto_total_cambio');
         $modeloCaja->update(['monto_gastado' => $totalDetalle]);
         $modeloCaja->refresh();
@@ -313,6 +330,15 @@ class CajaChica extends Controller
             if($totalDetalle > $cajaChica->monto_abonado){
                 DB::rollBack();
                 return response()->json(['alerta' => 'El monto gastano supera al monto abonado, por favor verificar los montos']);
+            }
+            if(!empty($gasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($gasto->url_imagen)){
+                Storage::disk('imgGastosCaja')->delete($gasto->url_imagen);
+            }
+            if($request->has('urlImagen')){
+                $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
+                $datos['url_imagen'] = time().'_'.$nombreArchivo;
+                $request->file('urlImagen')->storeAs('imgGastosCaja/', $datos['url_imagen']);
+                $gasto->update(['url_imagen' => $datos['url_imagen']]);
             }
             $cajaChica->update(['monto_gastado' => $totalDetalle]);
             $cajaChica->refresh();
@@ -347,6 +373,15 @@ class CajaChica extends Controller
             if($totalDetalle > $cajaChica->monto_abonado){
                 DB::rollBack();
                 return response()->json(['alerta' => 'El monto gastano supera al monto abonado, por favor verificar los montos']);
+            }
+            if(!empty($gasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($gasto->url_imagen)){
+                Storage::disk('imgGastosCaja')->delete($gasto->url_imagen);
+            }
+            if($request->has('urlImagen')){
+                $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
+                $datos['url_imagen'] = time().'_'.$nombreArchivo;
+                $request->file('urlImagen')->storeAs('imgGastosCaja/', $datos['url_imagen']);
+                $gasto->update(['url_imagen' => $datos['url_imagen']]);
             }
             $cajaChica->update(['monto_gastado' => $totalDetalle]);
             $cajaChica->refresh();
@@ -384,12 +419,19 @@ class CajaChica extends Controller
         $datos['monto_total_cambio'] = $montoConvertido;
         DB::beginTransaction();
         try {
-            CajaChicaDetalle::create($datos);
+            $cajaChicaDetalle = CajaChicaDetalle::create($datos);
             $totalDetalle = CajaChicaDetalle::where('id_caja_chica',$cajaChica->id)->sum('monto_total_cambio');
             if($totalDetalle > $cajaChica->monto_abonado){
                 DB::rollBack();
                 return response()->json(['alerta' => 'El monto gastano supera al monto abonado, por favor verificar los montos']);
             }
+            $comprobanteNombre = null;
+            if($request->has('urlImagen')){
+                $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
+                $comprobanteNombre = time().'_'.$nombreArchivo;
+                $request->file('urlImagen')->storeAs('imgGastosCaja/', $comprobanteNombre);
+            }
+            $cajaChicaDetalle->update(['url_imagen' => $comprobanteNombre]);
             $cajaChica->update(['monto_gastado' => $totalDetalle]);
             $cajaChica->refresh();
             DB::commit();
@@ -398,6 +440,18 @@ class CajaChica extends Controller
             DB::rollBack();
             return response()->json(['error' => $th->getMessage()]);
         }
+    }
+    public function eliminarImagenDetalleGastos(CajaChicaDetalle $gasto) {
+        $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChicaGasto);
+        $accessModulo2 = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
+        if(isset($accessModulo['session']) && isset($accessModulo2['session'])){
+            return response()->json($accessModulo);
+        }
+        if(!empty($gasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($gasto->url_imagen)){
+            Storage::disk('imgGastosCaja')->delete($gasto->url_imagen);
+            $gasto->update(['url_imagen' => null]);
+        }
+        return response()->json(['success' => 'imagen eliminada correctamente']);
     }
     public function agregarGastosAdmin(ModelsCajaChica $cajaChica,Request $request){
         $accessModulo = $this->usuarioController->validarXmlHttpRequest($this->moduloCajaChica);
@@ -419,12 +473,19 @@ class CajaChica extends Controller
         $datos['monto_total_cambio'] = $montoConvertido;
         DB::beginTransaction();
         try {
-            CajaChicaDetalle::create($datos);
+            $cajaChicaDetalle = CajaChicaDetalle::create($datos);
             $totalDetalle = CajaChicaDetalle::where('id_caja_chica',$cajaChica->id)->sum('monto_total_cambio');
             if($totalDetalle > $cajaChica->monto_abonado){
                 DB::rollBack();
                 return response()->json(['alerta' => 'El monto gastano supera al monto abonado, por favor verificar los montos']);
             }
+            $comprobanteNombre = null;
+            if($request->has('urlImagen')){
+                $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
+                $comprobanteNombre = time().'_'.$nombreArchivo;
+                $request->file('urlImagen')->storeAs('imgGastosCaja/', $comprobanteNombre);
+            }
+            $cajaChicaDetalle->update(['url_imagen' => $comprobanteNombre]);
             $cajaChica->update(['monto_gastado' => $totalDetalle]);
             $cajaChica->refresh();
             DB::commit();

@@ -207,7 +207,9 @@ class PreCotizacion extends Controller
         $tecnicos = Tecnico::obtenerTecnicosActivos();
         $tiposDocumentos = TipoDocumento::where('estado',1)->get();
         $modulos = $this->usuarioController->obtenerModulos();
-        return view("preCotizacion.misPreCotizaciones",compact("modulos","servicios","clientes","tecnicos","tiposDocumentos"));
+        $archivoVisitaUrl = Configuracion::where(['descripcion' => 'formato_unico_visitas_url'])->first();
+        $archivoVisitaNombre = Configuracion::where(['descripcion' => 'formato_unico_visitas'])->first();
+        return view("preCotizacion.misPreCotizaciones",compact("modulos","servicios","clientes","tecnicos","tiposDocumentos","archivoVisitaUrl","archivoVisitaNombre"));
     }
     public function obtenerPreCotizacionEditar($precotizacion){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);

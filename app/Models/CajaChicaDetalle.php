@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CajaChicaDetalle extends Model
 {
     public $table = "caja_chica_detalles";
-    protected $fillable = ['id_caja_chica','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv','monto_total_cambio'];
+    protected $fillable = ['id_caja_chica','url_imagen','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv','monto_total_cambio'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
 }

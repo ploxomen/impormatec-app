@@ -57,6 +57,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('editar/{cajaChica}', [CajaChica::class, 'update']);
             Route::post('crear', [CajaChica::class, 'store']);
             Route::get('listar', [CajaChica::class, 'all']);
+           
             Route::get('listar-aumentos/{cajaChica}', [CajaChica::class, 'aumentosCajaChica']);
             Route::delete('eliminar/{cajaChica}', [CajaChica::class, 'destroy']);
             Route::post('agregar-aumento', [CajaChica::class, 'agregarAumento']);
@@ -66,9 +67,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('listar-gastos', [CajaChica::class, 'listarGastosTrabajadores']);
             Route::get('listar-gasto/{gasto}/{cajaChica}', [CajaChica::class, 'listarGasto']);
             Route::prefix('gastos')->group(function () {
+                Route::get('reporte/usuario/{cajaChica}', [CajaChica::class, 'reporteGastosUsuario'])->name('caja.chica.reporte.gastos.usuario');
                 Route::get('/', [CajaChica::class, 'indexGastos'])->name('trabajador.caja.chica.index');
                 Route::get('modificar/{cajaChica}', [CajaChica::class, 'indexGastosAdministrador']);
-                Route::get('reporte/{cajaChica}', [CajaChica::class, 'indexGastosReporte']);
+                Route::get('reporte/{cajaChica}', [CajaChica::class, 'indexGastosReporte'])->name('caja.chica.reporte.gastos');
                 Route::get('modificar/listar-gastos/{cajaChica}', [CajaChica::class, 'listarGastosTrabajadoresAdmin']);
                 Route::post('modificar/actualizar-gasto/{cajaChica}/{gasto}', [CajaChica::class, 'editarGastoAdmin']);
                 Route::post('modificar/agregar-gasto/{cajaChica}', [CajaChica::class, 'agregarGastosAdmin']);
@@ -76,6 +78,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
                 Route::delete('modificar/eliminar/{gasto}/{cajaChica}', [CajaChica::class, 'eliminarGasto']);
                 Route::post('editar/{gasto}', [CajaChica::class, 'editarGasto']);
                 Route::post('agregar', [CajaChica::class, 'agregarGastos']);
+                Route::delete('eliminar/imagen/{gasto}', [CajaChica::class, 'eliminarImagenDetalleGastos']);
                 Route::delete('eliminar/{gasto}/{cajaChica}', [CajaChica::class, 'eliminarGasto']);
             });
            
@@ -116,6 +119,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::prefix('producto')->group(function () {
             Route::get('/', [MisProductos::class, 'index'])->name('admin.producto.index');
             Route::post('listar', [MisProductos::class, 'listar']);
+            Route::get('reportes/exportar', [MisProductos::class, 'exportarProductos'])->name('exportar.productos');
             Route::post('importar/utilidades',[MisProductos::class,'importarUtilidades']);
             Route::post('importar/utilidades/actualizar',[MisProductos::class,'actualizarUtilidades']);
             Route::get('listar/{producto}', [MisProductos::class, 'show']);

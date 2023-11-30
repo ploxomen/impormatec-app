@@ -51,7 +51,7 @@ class OrdenServicio extends General {
         `;
         return tr;
     }
-    agregarDetallServicios = ({idOsCotizacion,index,nroCotizacion,servicio,cantidad,importe,descuento,total,idCotizacionServicio,tipoServicioProducto,tipoMoneda}) => {
+    agregarDetallServicios = ({idOsCotizacion,index,nroCotizacion,servicio,cantidad,precio,descuento,total,idCotizacionServicio,tipoServicioProducto,tipoMoneda}) => {
         let tr = document.createElement("tr");
         if(idOsCotizacion){
             tr.dataset.ordenServicioCotizacion = idOsCotizacion;
@@ -62,30 +62,30 @@ class OrdenServicio extends General {
             <td>${nroCotizacion}</td>
             <td>${servicio}</td>
             <td>${cantidad}</td>
-            <td>${this.resetearMoneda(importe,tipoMoneda)}</td>
-            <td>${this.resetearMoneda(descuento,tipoMoneda)}</td>
+            <td>${this.resetearMoneda(precio,tipoMoneda)}</td>
+            <td>- ${this.resetearMoneda(descuento,tipoMoneda)}</td>
             <td>${this.resetearMoneda(total,tipoMoneda)}</td>
             <td class="text-center"><button class="btn btn-sm btn-danger" type="button" data-cotizacion-servicio="${idCotizacionServicio}" data-tipo="${tipoServicioProducto}"><i class="fas fa-trash-alt"></i></button></td>
         </tr>
         `
         return tr;
     }
+    $igv = document.querySelector("#idModalincluirIGV")
     calcularServiciosTotales = (listaServicios,tablaServiciosAdicionales,tipoMoneda) => {
         let descuento = 0;
         let total = 0;
+        let importe = 0;
+        const incluirIGV = +this.$igv.value;
         listaServicios.forEach((cp) => {
             descuento += parseFloat(cp.descuento);
             total += parseFloat(cp.total);
+            importe += cp.cantidad * cp.precio;
         });
-        document.querySelector("#txtSubTotal").textContent = this.resetearMoneda(
-            // total - total * 0.18
-            total,tipoMoneda
-        );
-        document.querySelector("#txtDescuento").textContent =
-            "-" + this.resetearMoneda(descuento,tipoMoneda);
-        // document.querySelector("#txtIGV").textContent = this.resetearMoneda(
-        //     total * 0.18,tipoMoneda
-        // );
+        let igv = incluirIGV ? total * 0.18 : 0;
+        document.querySelector("#txtSubTotal").textContent = this.resetearMoneda(importe,tipoMoneda);
+        document.querySelector("#txtDescuento").textContent = "- " + this.resetearMoneda(descuento,tipoMoneda);
+        document.querySelector("#txtIGV").textContent = this.resetearMoneda(igv,tipoMoneda);
+        document.querySelector("#txtIGV").parentElement.hidden = incluirIGV ? false : true;
         let totalDetalle = 0;
         for (const tr of tablaServiciosAdicionales.children) {
             const cantidad = tr.querySelector(".cantidad-servicios");
@@ -98,7 +98,7 @@ class OrdenServicio extends General {
             totalDetalle += subTotal;
         }
         document.querySelector("#txtCostoAdicional").textContent = this.resetearMoneda(totalDetalle,tipoMoneda);
-        document.querySelector("#txtTotal").textContent = this.resetearMoneda(total - descuento + totalDetalle,tipoMoneda);
+        document.querySelector("#txtTotal").textContent = this.resetearMoneda(total + totalDetalle + igv,tipoMoneda);
     }
     calcularMonto = ({e,listaServicios,tablaServiciosAdicionales,tipoMoneda}) => {
         const step = !e.target.step ? 1 : parseFloat(e.target.step);

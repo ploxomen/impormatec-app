@@ -47,5 +47,17 @@ function loadPage() {
             general.cargandoPeticion(btnActualizarDatos, 'fas fa-pencil-alt', false);
         }
     })
+    const documentoVisita = document.querySelector("#archivoFormatoVisita");
+    document.querySelector("#subirFormatoVisita").onclick = e => documentoVisita.click();
+    const documentoVisitaPdf = document.querySelector("#documentoVisita");
+    documentoVisita.addEventListener("change",e => {
+        const documento = e.target;
+        if(documento.value === ""){
+            // documentoVisitaPdf.querySelector("span").textContent = "Sin formato de visita";
+            return
+        }
+        let archivo = documento.files[0];
+        documentoVisitaPdf.querySelector("span").textContent = archivo.name;
+    })
 }
 window.addEventListener("DOMContentLoaded",loadPage);

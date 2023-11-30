@@ -53,10 +53,6 @@
                         <option value="OTRO">OTRO</option>
                     </select>
                 </div>
-                <div class="col-12 form-group">
-                    <label for="idModaldescripcion_producto">Descripción del producto</label>
-                    <textarea required maxlength="500" name="descripcion_producto" id="idModaldescripcion_producto"  class="form-control" rows="3"></textarea>
-                </div>
                 <div class="col-12 form-group col-12 col-md-6">
                     <label for="idModaltipo_moneda">Tipo moneda</label>
                     <select name="tipo_moneda" required id="idModaltipo_moneda" class="select2-simple" data-placeholder="Seleccionar un tipo moneda">
@@ -65,15 +61,32 @@
                         <option value="USD" {{$cajaChica->tipo_moneda === "USD" ? 'selected' : ''}}>Dolares</option>
                     </select>
                 </div>
-                <div class="col-12 form-group col-md-6">
+                <div class="form-group col-12 col-md-8">
+                    <label for="customFileLang">Imagen del comprobante</label>
+                    <input type="file" name="urlImagen" class="form-control-file form-control-sm" accept="image/*" id="customFileLang">
+                </div>
+                <div class="form-group col-12 col-md-4">
+                    <label>Imagen Previa</label>
+                    <button class="btn btn-sm btn-light" type="button" id="btnEliminarImagen" title="Eliminar imagen">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <div>
+                        <img src="/img/imgprevproduc.png" class="img-vistas-pequena" id="imgPrevio" alt="Imagen del producto">
+                    </div>
+                </div>
+                <div class="col-12 form-group">
+                    <label for="idModaldescripcion_producto">Descripción del producto</label>
+                    <textarea required maxlength="500" name="descripcion_producto" id="idModaldescripcion_producto"  class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-12 form-group col-md-6 col-lg-4">
                     <label for="idModaltipo_cambio">Tipo de cambio</label>
                     <input type="number" step="0.01" value="3.8" min="0.01" id="idModaltipo_cambio" class="form-control" name="tipo_cambio">
                 </div>
-                <div class="col-12 form-group col-md-6">
+                <div class="col-12 form-group col-md-6 col-lg-4">
                     <label for="idModalmonto_total">Monto total</label>
                     <input type="number" required step="0.01" min="0.01" id="idModalmonto_total" class="form-control" name="monto_total">
                 </div>
-                <div class="col-12 form-group col-md-6">
+                <div class="col-12 form-group col-md-6 col-lg-4">
                     <label for="idModaligv">I.G.V</label>
                     <input type="number" value="0.00" step="0.01" min="0.01" id="idModaligv" class="form-control" name="igv">
                 </div>
