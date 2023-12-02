@@ -12,6 +12,7 @@ use App\Models\OrdenServicioCotizacionServicio;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DOMDocument;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,15 +35,17 @@ class Informes extends Controller
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
+        $fechaFin = date('Y-m-d',strtotime(date('Y-m-d') . ' + 90 days'));
+        $fechaInicio = date('Y-m-d',strtotime(date('Y-m-d') . ' - 90 days'));
         $modulos = $this->usuarioController->obtenerModulos();
-        return view("ordenesServicio.misInformes",compact("modulos"));
+        return view("ordenesServicio.misInformes",compact("modulos","fechaFin","fechaInicio"));
     }
-    public function listarInformes() {
+    public function listarInformes(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
-        $listaDeInformes = OrdenServicioCotizacionServicio::obtenerInformesGenerados();
+        $listaDeInformes = OrdenServicioCotizacionServicio::obtenerInformesGenerados($request->fechaInicio . ' 00:00:00',$request->fechaFin . ' 00:00:00')->get();
         return DataTables::of($listaDeInformes)->toJson();
     }
     public function visualizarInforme(Request $request) {
@@ -144,7 +147,7 @@ class Informes extends Controller
             return abort(404,'No se encontro el informe');
         }
         $tituloPdf = empty($idServicio) ? "INFORME GENERAL - OS " .  $nroOrdenServicio : "INFORME DEL SERVICIO - " .  str_pad($ordenServicio->first()->id,5,'0',STR_PAD_LEFT);
-        return Pdf::loadView('ordenesServicio.reportes.informe',compact("utilitarios","ordenServicio","tituloPdf","nroOrdenServicio","configuracion","ordenServicioDetalle"))->stream($tituloPdf);
+        return Pdf::loadView('ordenesServicio.reportes.informe',compact("utilitarios","ordenServicio","tituloPdf","nroOrdenServicio","configuracion","ordenServicioDetalle"))->stream($tituloPdf . '.pdf');
     }
     public function actualizarServiciosDescripciones(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloGenerarInforme);
@@ -256,6 +259,13 @@ class Informes extends Controller
         $ordenServicio = OrdenServicio::where(['id' => $request->os,'estado' => 1])->first();
         if(empty($ordenServicio)){
             return response()->json(['alerta' => 'No se puede actualizar la orden de servicio debido a que no exite o se haya actualizado de estado']);
+        }
+        $verificarFechaFinOFirmante = OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id])->where(function ($query){
+            $query->whereNull('fecha_termino');
+            $query->orWhereNull('id_firma_profesional');
+        })->count();
+        if($verificarFechaFinOFirmante > 0){
+            return response()->json(['alerta' => 'Por favor verifique que todos los informes tengan establecido la fecha termino y la firma profesional']);
         }
         OrdenServicioCotizacionServicio::where(['id_orden_servicio' => $ordenServicio->id, 'estado' => 1])->update(['estado' => 2,'responsable_usuario' => Auth::id()]);
         $ordenServicio->update(['estado' => 2]);

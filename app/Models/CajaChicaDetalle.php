@@ -11,4 +11,9 @@ class CajaChicaDetalle extends Model
     protected $fillable = ['id_caja_chica','url_imagen','id_os','fecha_gasto','tipo_comprobante','nro_comprobante','proveedor','proveedor_ruc','area_costo','descripcion_producto','tipo_moneda','tipo_cambio','monto_total','igv','monto_total_cambio'];
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
+    
+    public function cajaChica()
+    {
+        return $this->belongsTo(CajaChica::class,'id_caja_chica');
+    }
 }

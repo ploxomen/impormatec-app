@@ -1,14 +1,9 @@
 <?php
-
-// use App\Http\Controllers\Caja;
-// use App\Http\Controllers\Compras\Compras;
-// use App\Http\Controllers\Compras\Proveedores;
 use App\Http\Controllers\Configuracion;
 use App\Http\Controllers\Modulos;
 use App\Http\Controllers\Categoria;
 use App\Http\Controllers\Marca;
 use App\Http\Controllers\MisProductos;
-// use App\Http\Controllers\Producto\Perecedero;
 use App\Http\Controllers\Almacenes;
 use App\Http\Controllers\CajaChica;
 use App\Http\Controllers\Usuario;
@@ -17,6 +12,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\Clientes;
 use App\Http\Controllers\Cotizacion;
+use App\Http\Controllers\FacturacionElectronica;
 use App\Http\Controllers\Informes;
 use App\Http\Controllers\OrdenServicio;
 use App\Http\Controllers\PreCotizacion;
@@ -26,26 +22,8 @@ use App\Http\Controllers\Seguimiento;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;
 use App\Http\Controllers\Utilitarios;
-use App\Models\PreCotizaion;
-// use App\Http\Controllers\Ventas\Comprobantes;
-// use App\Http\Controllers\Ventas\Cotizacion;
-// use App\Http\Controllers\Ventas\Ventas;
-// use Illuminate\Support\Facades\File;
-// use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
 Route::middleware('auth')->prefix('intranet')->group(function(){
     Route::prefix('inicio')->group(function () {
         Route::get('/', [Usuario::class, 'index'])->name('home');
@@ -57,7 +35,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::post('editar/{cajaChica}', [CajaChica::class, 'update']);
             Route::post('crear', [CajaChica::class, 'store']);
             Route::get('listar', [CajaChica::class, 'all']);
-           
             Route::get('listar-aumentos/{cajaChica}', [CajaChica::class, 'aumentosCajaChica']);
             Route::delete('eliminar/{cajaChica}', [CajaChica::class, 'destroy']);
             Route::post('agregar-aumento', [CajaChica::class, 'agregarAumento']);
@@ -81,7 +58,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
                 Route::delete('eliminar/imagen/{gasto}', [CajaChica::class, 'eliminarImagenDetalleGastos']);
                 Route::delete('eliminar/{gasto}/{cajaChica}', [CajaChica::class, 'eliminarGasto']);
             });
-           
         });
         Route::prefix('servicio')->group(function () {
             Route::get('/', [Servicio::class, 'index'])->name('admin.servicios');
@@ -131,35 +107,6 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         });
        
     });
-//     Route::prefix('compras')->group(function () {
-//         Route::prefix('proveedores')->group(function () {
-//             Route::get('/', [Proveedores::class, 'index'])->name("admin.compras.proveedores");
-//             Route::post('contacto/eliminar', [Proveedores::class, 'eliminarContacto']);
-//             Route::post('listar', [Proveedores::class, 'listar']);
-//             Route::get('listar/{proveedor}', [Proveedores::class, 'show']);
-//             Route::post('crear', [Proveedores::class, 'store']);
-//             Route::delete('eliminar/{proveedor}', [Proveedores::class, 'destroy']);
-//         });
-//         Route::prefix('registrar')->group(function () {
-//             Route::get('/', [Compras::class, 'indexNuevaCompra'])->name("admin.compras.nueva.compra");
-//             Route::get('consultar/{producto}', [Compras::class, 'consultarProductos']);
-//             Route::post('crear', [Compras::class, 'storeCompra']);
-//         });
-//         Route::prefix('listar')->group(function () {
-//             Route::get('/', [Compras::class, 'listaComprasIndex'])->name("admin.compras.mis.compras");
-//             Route::post('mostrar', [Compras::class, 'listaComprasTotales']);
-//             Route::get('mostrar/{compra}', [Compras::class, 'obtenerEditar']);
-//             Route::post('agregar', [Compras::class, 'agregarModificarCompra']);
-//             Route::post('eliminar', [Compras::class, 'eliminarProductoCompra']);
-//             Route::get('eliminar/compra/{compra}', [Compras::class, 'eliminarCompraCompleta']);
-
-//         });
-//         Route::prefix('historial')->group(function () {
-//             Route::get('/', [Compras::class, 'indexHistorialProducto'])->name("admin.compras.historial");
-//             Route::post('listar', [Compras::class, 'obtenerHistorial']);
-//         });
-
-//     });
     Route::prefix('configuracion')->group(function () {
         Route::prefix('mi-negocio')->group(function () {
             Route::get('/', [Configuracion::class, 'indexConfiguracionNegocio'])->name("admin.configuracion.negocio");
@@ -195,15 +142,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::put('actualizar/{publicidad}', [Publicidades::class, 'update']);
         Route::delete('eliminar/{publicidad}', [Publicidades::class, 'destroy']);
         Route::delete('documento/{publicidad}/{documento}', [Publicidades::class, 'eliminarDocumentoPublicidad']);
-
-        // Route::get('listar', [Programacion::class, 'all']);
-        // Route::get('{programacion}', [Programacion::class, 'show']);
-        // Route::put('{programacion}', [Programacion::class, 'update']);
-        // Route::delete('{programacion}', [Programacion::class, 'destroy']);
-        // Route::get('reporte/pdf', [Programacion::class, 'reporteProgramacion'])->name('reporte.programacion');
     });
     Route::prefix('cotizaciones')->group(function () {
         Route::get('ver/pdf/{idCotizacion}', [Cotizacion::class, 'verPdfCotizacion'])->name("ver.cotizacion.pdf");
+        Route::get('reportes', [Cotizacion::class, 'reportesCotizaciones'])->name("cotizacion.reportes");
         Route::get('obtener/{cotizacion}', [Cotizacion::class, 'obtenerCotizacion']);
         Route::post('aprobar', [Cotizacion::class, 'aprobarCotizacion']);
         Route::post('acciones', [Cotizacion::class, 'accionesCotizacion']);
@@ -248,12 +190,12 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('/', [Seguimiento::class, 'index'])->name('admin.cotizacion.seguimiento');
             Route::get('listar', [Seguimiento::class, 'all']);
             Route::get('listar-garantia', [Seguimiento::class, 'allGarantia']);
-            Route::get('historial/{cotizacion}', [Seguimiento::class, 'showHistorialSeguimiento']);
+            Route::get('reporte/cotizacion/{tipo}', [Seguimiento::class, 'reporteCotizaciones']);
+            Route::get('reporte/garantia/{tipo}', [Seguimiento::class, 'reporteGarantias']);
             Route::post('agregar', [Seguimiento::class, 'store']);
             Route::put('editar/{cotizacion}', [Seguimiento::class, 'update']);
             Route::get('notificar/{tipo}/{id}', [Seguimiento::class, 'notificacion']);
             Route::delete('eliminar/{seguimiento}/{cotizacion}', [Seguimiento::class, 'destroy']);
-
         });
     });
     Route::prefix('informe')->group(function () {
@@ -277,7 +219,18 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('lista', [Informes::class, 'indexGenerarInforme'])->name("admin.informe.index");
         Route::get('obtener', [Informes::class, 'listarInformes']);
     });
+    Route::prefix('comprobantes')->group(function () {
+        Route::get('facturar', [FacturacionElectronica::class, 'indexFactura'])->name('admin.comprobantes.sunat');
+        Route::get('interno/{comprobante}', [OrdenServicio::class, 'comprobanteInterno'])->name('comprobante.interno');
+        Route::post('facturar/eliminar', [FacturacionElectronica::class, 'eliminarFacturaElectronica']);
+        Route::prefix('rapifac')->group(function () {
+            Route::get('token', [RapiFac::class, 'obtenerToken']);
+        });
+    });
     Route::prefix('ordenes-servicio')->group(function () {
+        Route::get('mis-comprobantes/{ordenServicio}', [OrdenServicio::class, 'misComprobantes']);
+        Route::post('mis-comprobantes/anular/{comprobante}', [OrdenServicio::class, 'anularComprobanteInterno']);
+        Route::get('reportes', [OrdenServicio::class, 'reportesOrdenesServicios'])->name('ordenes.servicios.reportes');
         Route::get('probar/{ordenServicio}', [OrdenServicio::class, 'probarBoloeta']);
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
@@ -303,6 +256,24 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('acta-entrega/{ordenServicio}', [OrdenServicio::class, 'obtenerDatosActa']);
         Route::get('acta-entrega/reporte/{entregaActa}', [OrdenServicio::class, 'reporteEntregaActa']);
         Route::post('acta-entrega/guardar', [OrdenServicio::class, 'guardarDatosActa']);
+    });
+    Route::prefix('general')->group(function(){
+        Route::get('cotizaciones', [Clientes::class, 'cotizacionesIndex'])->name('cliente.cotizaciones.index');
+        Route::post('cotizaciones/listar', [Clientes::class, 'obtenerCotizaciones']);
+        Route::get('cotizacion/ver/pdf/{idCotizacion}', [Clientes::class, 'verPdfCotizacion']);
+        Route::get('visitas', [Clientes::class, 'visitasIndex'])->name('cliente.precotizaciones.index');
+        Route::post('visitas/listar', [Clientes::class, 'obtenerVisitas']);
+        Route::get('visita/ver/pdf/{preCotizacion}', [Clientes::class, 'visualizacionPdfReporte']);
+        Route::get('comprobantes', [Clientes::class, 'misComprobantes'])->name('cliente.comprobantes.index');
+        Route::post('comprobantes/listar', [Clientes::class, 'obtenerComprobantes']);
+        Route::get('comprobante/ver/pdf/cuota/{cuota}', [Clientes::class, 'verComprobanteCuota']);
+        Route::get('comprobante/ver/pdf/facturacion/{comprobante}', [Clientes::class, 'verComprobanteFacturacion']);
+        Route::get('informes', [Clientes::class, 'misInformesIndex'])->name('cliente.informes.index');
+        Route::post('informes/listar', [Clientes::class, 'obtenerInformes']);
+        Route::get('informe/ver/pdf/{idOrdenServicio}/{idServicio}', [Clientes::class, 'reportePrevioInforme'])->name("reporte.previo.informe");
+        Route::get('certificados', [Clientes::class, 'misCertificados'])->name('cliente.certificados.index');
+        Route::post('certificados/listar', [Clientes::class, 'obtenerCertificados']);
+        Route::get('certificado/ver/pdf/{certificado}', [Clientes::class, 'visualizarCertificado'])->name("reporte.previo.informe");
     });
     Route::prefix('usuarios')->group(function(){
         Route::post('accion',[Usuario::class,'usuarioAccion']);

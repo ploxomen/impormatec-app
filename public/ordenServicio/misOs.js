@@ -11,14 +11,6 @@ function loadPage() {
             class:"badge badge-success",
             value: "Informado"
         },
-        {
-            class:"badge badge-info",
-            value: "Facturado"
-        },
-        {
-            class:"badge badge-primary",
-            value: "Con OS"
-        }
     ];
     const tablaDataOs = $(tablaOs).DataTable({
         ajax: {
@@ -26,9 +18,10 @@ function loadPage() {
             method: 'POST',
             headers: gen.requestJson,
             data: function (d) {
-                // d.acciones = 'obtener';
-                // d.area = $("#cbArea").val();
-                // d.rol = $("#cbRol").val();
+                d.fecha_inicio = $("#txtFechaInicio").val();
+                d.fecha_fin = $("#txtFechaFin").val();
+                d.cliente = $("#cbClientes").val();
+                d.estado = $("#cbEstados").val();
             }
         },
         columns: [
@@ -62,11 +55,29 @@ function loadPage() {
         {
             data : 'adicional',
             render : function(data,type,row){
-                return gen.resetearMoneda(data,row.tipoMoneda);
+                return "-" + gen.resetearMoneda(data,row.tipoMoneda);
+            }
+        },
+        {
+            data : 'gasto_caja',
+            render : function(data,type,row){
+                return "-" + gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'total',
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda);
+            }
+        },
+        {
+            data : 'costo_total',
+            render : function(data,type,row){
+                return "-" + gen.resetearMoneda(data,row.tipoMoneda);
+            }
+        },
+        {
+            data : 'utilidad',
             render : function(data,type,row){
                 return gen.resetearMoneda(data,row.tipoMoneda);
             }
@@ -125,6 +136,10 @@ function loadPage() {
                             <i class="fas fa-box-open text-warning"></i>
                             <span>Guía de remisión</span>
                         </a>
+                        <a href="javascript:void(0)" class="dropdown-item mis-comprobantes" data-orden-servicio="${data}">
+                            <i class="far fa-file-code text-info"></i>
+                            <span>Mis comprobantes</span>
+                        </a>
                         ${opcionInfomePdf}
                         <a href="reporte/${data}" target="_blank" class="dropdown-item">
                             <i class="fas fa-file-pdf text-danger"></i>                        
@@ -140,6 +155,7 @@ function loadPage() {
         },
         ]
     });
+    document.querySelector("#btnAplicarFiltros").onclick = e => tablaDataOs.draw();
     tinymce.init({
         selector: '#observacionesOrdenServicio',
         language: 'es',
@@ -244,6 +260,7 @@ function loadPage() {
     const tablaCuotasPagos = document.querySelector("#generarPagos #contenidoPagosCuotas")
     const linkReporteActas = document.querySelector("#verReporteActas");
     const detalleFactura = document.querySelector("#generarFactura #tablaProductos");
+    const tablaVerComprobantes = document.querySelector("#verComprobantes #tablaComprobantes");
     let totalFacturar = 0;
     let tipoMonedaFacturacion = null;
     tablaOs.addEventListener("click",async (e)=>{
@@ -362,6 +379,21 @@ function loadPage() {
                 alertify.error("error al obtener los datos de la orden de servicio");
             }
         }
+        if(e.target.classList.contains("mis-comprobantes")){
+            try {
+                const response = await gen.funcfetch("mis-comprobantes/" + e.target.dataset.ordenServicio,null,"GET");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => {
+                        window.location.reload();
+                    });
+                }
+                renderizarComprobanes(response.comprobantesSunat,response.urlSunat);
+                $('#verComprobantes').modal("show");
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener los datos de los comprobantes");
+            }
+        }
         if(e.target.classList.contains("generar-comprobante")){
             try {
                 const response = await gen.funcfetch("pago/generar/" + e.target.dataset.ordenServicio,null,"GET");
@@ -405,6 +437,42 @@ function loadPage() {
             }
         }
     });
+    document.querySelector("#verComprobantes #tablaComprobantes").addEventListener("click", e => {
+        if(e.target.classList.contains("eliminar-comprobante")){
+            alertify.confirm("Alerta",'¿Desea eliminar el comprobante interno?.<br>Una vez anulado no se podra activar nuevamente',async ()=>{
+                try {
+                    const response = await gen.funcfetch("mis-comprobantes/anular/" + e.target.dataset.comprobante,null,"POST");
+                    if (response.session) {
+                        return alertify.alert([...gen.alertaSesion], () => {
+                            window.location.reload();
+                        });
+                    }
+                    renderizarComprobanes(response.comprobantesSunat,response.urlSunat);
+                    return alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al obtener los datos de los comprobantes");
+                }
+            },()=>{})
+        }
+    })
+    function renderizarComprobanes(comprobantesSunat,urlSunat) {
+        let template = "";
+        comprobantesSunat.forEach((comprobante,key) => {
+            const urlComprobante = comprobante.tipo_comprobante === "00" ? '../comprobantes/interno/' + comprobante.id : urlSunat + '?key=' + comprobante.repositorio;
+            const btnEliminarComprobante = comprobante.tipo_comprobante === "00" && +comprobante.estado === 1 ? `<button class="btn btn-sm eliminar-comprobante btn-danger" data-comprobante="${comprobante.id}" type="button"><i class="fas fa-trash-alt"></i></button>` : ''
+            template += `
+            <tr>
+                <td>${key + 1}</td>
+                <td>${comprobante.numero_comprobante}</td>
+                <td>${gen.obtenerNombreComprobante(comprobante.tipo_comprobante).nombre}</td>
+                <td>${+comprobante.estado === 1 ? `<span class="badge badge-success">Aprobado</span>` : `<span class="badge badge-danger">Anulado</span>`}</td>
+                <td><a class="btn btn-sm btn-success mr-1" href="${urlComprobante}" target="_blank" title="Ver comprobante"><i class="fas fa-eye"></i></a>${btnEliminarComprobante}</td>
+            <tr>
+            `
+        });
+        tablaVerComprobantes.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se encontraron comprobantes</td></tr>` : template;
+    }
     const $detalleCriditoFacturacion = document.querySelector("#generarFactura #bloqueCredito");
     const $txtFechaEmision = document.querySelector("#generarFactura #modalFechaEmision");
     const $tablaCreditosFactura = document.querySelector("#generarFactura #tablaCreditos");
@@ -557,7 +625,6 @@ function loadPage() {
                     document.body.removeChild(pdf);
                 }
                 $('#generarFactura').modal("hide");
-                tablaKardexDatatable.draw();
                 return alertify.alert("Mensaje",response.success);
             } catch (error) {
                 alertify.alert("Alerta","Ocurrió un error al generar la factura, por favor intentelo nuevamente más tarde");

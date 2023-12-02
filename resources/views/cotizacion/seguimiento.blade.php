@@ -26,21 +26,21 @@
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-aprobar">
                     <label for="txtFechaInicio">Fecha Inicio</label>
-                    <input type="date" value="{{$fechaInicio}}" class="form-control" required name="fecha_inicio" id="txtFechaInicio">
+                    <input type="date" value="{{$fechaInicio}}" class="form-control" required name="fecha_inicio_cotizacion" id="txtFechaInicio">
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-aprobar">
                     <label for="txtFechaFin">Fecha Fin</label>
-                    <input type="date" value="{{$fechaFin}}" class="form-control" required name="fecha_fin" id="txtFechaFin">
+                    <input type="date" value="{{$fechaFin}}" class="form-control" required name="fecha_fin_cotizacion" id="txtFechaFin">
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-2 filtro-aprobar">
                     <label for="cbPorcentaje">Porcentaje</label>
                     <select name="porcentaje" required class="select2-simple" id="cbPorcentaje">
                         <option value="todos" selected>Todos</option>
-                       <option value="95">95%</option>
-                       <option value="75">75%</option>
-                       <option value="50">50%</option>
-                       <option value="30">30%</option>
-                       <option value="10">10%</option>
+                        <option value="10">10% cotizado</option>
+                        <option value="30">30% en consultas</option>
+                        <option value="50">50% en evaluación</option>
+                        <option value="75">75% oferta elegida</option>
+                        <option value="95">95% pre aprobado</option>
                     </select>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-aprobar">
@@ -63,15 +63,15 @@
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-garantia" hidden>
                     <label for="cbMesFinGarantia">Mes</label>
                     <select name="mes_fin_garantia" required class="select2-simple" id="cbMesFinGarantia">
-                        <option value="0">Todos</option>
+                        <option value="0" selected>Todos</option>
                         @foreach ($meses as $keyMes => $mes)
-                            <option value="{{$keyMes + 1}}" {{($keyMes + 1 ) == date('n') ? 'selected' : ''}}>{{ucfirst($mes)}}</option>
+                            <option value="{{$keyMes + 1}}">{{ucfirst($mes)}}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4 col-xl-3 filtro-garantia" hidden>
                     <label for="cbClientes">Clientes</label>
-                    <select name="id_cliente" id="cbClientes" class="form-control select2-simple" required data-placeholder="Seleccione un cliente">
+                    <select name="cliente" id="cbClientes" class="form-control select2-simple" required data-placeholder="Seleccione un cliente">
                         <option value="0">Todos</option>
                         @foreach ($clientes as $cliente)
                             <option value="{{$cliente->id}}">{{$cliente->nombreCliente}}</option>
@@ -91,6 +91,24 @@
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
+            </div>
+            <div class="form-group">
+                <button type="button" data-accion="cotizacion" data-tipo="excel" class="btn btn-sm btn-success reporte-filtro filtro-aprobar">
+                    <i class="far fa-file-excel"></i>
+                    <span>Exportar EXCEL</span>
+                </button>
+                <button type="button" data-accion="cotizacion" data-tipo="pdf" class="btn btn-sm btn-danger reporte-filtro filtro-aprobar">
+                    <i class="far fa-file-pdf"></i>
+                    <span>Exportar PDF</span>
+                </button>
+                <button type="button" data-accion="garantia" data-tipo="excel" class="btn btn-sm btn-success reporte-filtro filtro-garantia" hidden>
+                    <i class="far fa-file-excel"></i>
+                    <span>Exportar EXCEL</span>
+                </button>
+                <button type="button" data-accion="garantia" data-tipo="pdf" class="btn btn-sm btn-danger reporte-filtro filtro-garantia" hidden>
+                    <i class="far fa-file-pdf"></i>
+                    <span>Exportar PDF</span>
+                </button>
             </div>
         </form>
        <div class="bg-white p-3 border">

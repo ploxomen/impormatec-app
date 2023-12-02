@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\OrdenServicio as ControllersOrdenServicio;
 use App\Models\CajaChica as ModelsCajaChica;
 use App\Models\CajaChicaAumento;
 use App\Models\CajaChicaDetalle;
@@ -334,6 +335,14 @@ class CajaChica extends Controller
             if(!empty($gasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($gasto->url_imagen)){
                 Storage::disk('imgGastosCaja')->delete($gasto->url_imagen);
             }
+            if(!empty($datos['id_os'])){
+                $ordenServicioControler = new ControllersOrdenServicio();
+                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
+                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
+                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
+                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $ordenServicioModelo->update($utilidadTotal);
+            }
             if($request->has('urlImagen')){
                 $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
                 $datos['url_imagen'] = time().'_'.$nombreArchivo;
@@ -376,6 +385,14 @@ class CajaChica extends Controller
             }
             if(!empty($gasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($gasto->url_imagen)){
                 Storage::disk('imgGastosCaja')->delete($gasto->url_imagen);
+            }
+            if(!empty($datos['id_os'])){
+                $ordenServicioControler = new ControllersOrdenServicio();
+                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
+                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
+                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
+                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $ordenServicioModelo->update($utilidadTotal);
             }
             if($request->has('urlImagen')){
                 $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
@@ -424,6 +441,14 @@ class CajaChica extends Controller
             if($totalDetalle > $cajaChica->monto_abonado){
                 DB::rollBack();
                 return response()->json(['alerta' => 'El monto gastano supera al monto abonado, por favor verificar los montos']);
+            }
+            if(!empty($datos['id_os'])){
+                $ordenServicioControler = new ControllersOrdenServicio();
+                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
+                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
+                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
+                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $ordenServicioModelo->update($utilidadTotal);
             }
             $comprobanteNombre = null;
             if($request->has('urlImagen')){
@@ -478,6 +503,14 @@ class CajaChica extends Controller
             if($totalDetalle > $cajaChica->monto_abonado){
                 DB::rollBack();
                 return response()->json(['alerta' => 'El monto gastano supera al monto abonado, por favor verificar los montos']);
+            }
+            if(!empty($datos['id_os'])){
+                $ordenServicioControler = new ControllersOrdenServicio();
+                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
+                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
+                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
+                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $ordenServicioModelo->update($utilidadTotal);
             }
             $comprobanteNombre = null;
             if($request->has('urlImagen')){

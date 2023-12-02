@@ -65,68 +65,189 @@
             </tr>
         </tbody>
     </table>
-    <table border="1" class="tabla-precio">
+    <h2>DESCRIPCION DE SERVICIOS Y/O PRODUCTOS</h2>
+    <table border="1" class="tabla-precio" style="width: 100%;">
         <thead>
             <tr>
-                <th>CANTIDAD</th>
+                <th>ITEM</th>
                 <th>DESCRIPCION</th>
-                <th>PRECIO</th>
+                <th>CANT.</th>
+                <th>P. VENTA</th>
+                <th>DESC.</th>
+                <th>V. TOTAL</th>
+                <th>P. COMPRA</th>
+                <th>C. TOTAL</th>
             </tr>
         </thead>
         <tbody>
             @php
-                $total = 0;
+                $calculosGenerales = [
+                    'totalImporte' => 0,
+                    'totalDescuento' => 0,
+                    'totalVenta' => 0,
+                    'totalCosto' => 0,
+                    'totalIgv' => 0,
+                    'utilidad' => 0,
+                    'totalGastoAdicional' => 0,
+                    'totalGastoCaja' => 0,
+                ]
             @endphp
-            @foreach ($ordenServicioDetalle as $detalle)
-                
+            @foreach ($ordenServicioDetalle as $keyDetalle => $detalle)
                 @php
-                    if($detalle->tipoServicioProducto === "producto"){
-                        $cantidad = $detalle->cotizacionOsProductos->cantidad;
-                        $descripcion = $detalle->cotizacionOsProductos->productos->nombreProducto;
-                        $subtotal = $detalle->cotizacionOsProductos->total;
-                    }else{
-                        $cantidad = $detalle->cotizacionOsServicios->cantidad;
-                        $descripcion = $detalle->cotizacionOsServicios->servicios->servicio;
-                        $subtotal = $detalle->cotizacionOsServicios->total;
-                    }
-                    $total += $subtotal;
+                    $precioCompra = round($detalle->costo_total / $detalle->cantidad,2);
+                    $calculosGenerales['totalImporte'] += $detalle->importe;
+                    $calculosGenerales['totalDescuento'] += $detalle->descuento;
+                    $calculosGenerales['totalIgv'] += $detalle->igv;
+                    $calculosGenerales['totalCosto'] += $detalle->costo_total;
                 @endphp
                 <tr>
-                    <td>{{$cantidad}}</td>
-                    <td>{{$descripcion}}</td>
-                    <td>{{$moneda . '' .number_format($subtotal,2)}}</td>
+                    <td>{{$keyDetalle + 1}}</td>
+                    <td>{{$detalle->servicio}}</td>
+                    <td>{{$detalle->cantidad}}</td>
+                    <td>{{$moneda . ' ' .number_format($detalle->precio,2)}}</td>
+                    <td>{{'-'.$moneda . ' ' .number_format($detalle->descuento,2)}}</td>
+                    <td>{{$moneda . ' ' .number_format($detalle->total,2)}}</td>
+                    <td>{{$moneda . ' ' .number_format($precioCompra,2)}}</td>
+                    <td>{{$moneda . ' ' .number_format($detalle->costo_total,2)}}</td>
                 </tr>
             @endforeach
-            @foreach ($ordenServicio->costosAdicionales as $costoAdicional)
-            @php
-                $total += $costoAdicional->total;
-            @endphp
-            <tr>
-                <td>{{$costoAdicional->cantidad}}</td>
-                <td style="width: 500px;">{{$costoAdicional->descripcion}}</td>
-                <td style="width: 105px;">{{$moneda . '' .number_format($costoAdicional->total,2)}}</td>
-            </tr>
-            @endforeach
         </tbody>
+        @php
+            $calculosGenerales['totalVenta'] = $calculosGenerales['totalImporte'] - $calculosGenerales['totalDescuento'] + $calculosGenerales['totalIgv'];
+        @endphp
         <tfoot>
-            @php
-                $igv = $total * 0.18;
-                $subtotal = $total - $igv;
-            @endphp
             <tr>
-                <th colspan="2" class="text-right">SUBTOTAL</th>
-                <th>{{$moneda . '' . number_format($subtotal,2) }}</th>
+                <th colspan="7" class="text-right">SUBTOTAL VENTA</th>
+                <th>{{$moneda . ' ' . number_format($calculosGenerales['totalImporte'],2) }}</th>
             </tr>
             <tr>
-                <th colspan="2" class="text-right">IGV 18%</th>
-                <th>{{$moneda . '' . number_format($igv,2) }}</th>
+                <th colspan="7" class="text-right">DESC.</th>
+                <th>{{'-'.$moneda . ' ' . number_format($calculosGenerales['totalDescuento'],2) }}</th>
             </tr>
             <tr>
-                <th colspan="2" class="text-right">TOTAL</th>
-                <th>{{$moneda . '' . number_format($total,2) }}</th>
+                <th colspan="7" class="text-right">I.G.V 18%</th>
+                <th>{{$moneda . ' ' . number_format($calculosGenerales['totalIgv'],2) }}</th>
+            </tr>
+            <tr>
+                <th colspan="7" class="text-right">TOTAL VENTA</th>
+                <th>{{$moneda . ' ' . number_format($calculosGenerales['totalVenta'],2) }}</th>
+            </tr>
+            <tr>
+                <th colspan="7" class="text-right">TOTAL COMPRA</th>
+                <th>{{$moneda . ' ' . number_format($calculosGenerales['totalCosto'],2)}}</th>
             </tr>
         </tfoot>
     </table>
+    <div style="page-break-inside:avoid;">
+        <h2>GASTOS ADICIONALES</h2>
+        <table class="tabla-precio" border="1" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>ITEM</th>
+                    <th>DESCRIPCION</th>
+                    <th>CANTIDAD</th>
+                    <th>PRECIO</th>
+                    <th>TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!$ordenServicio->costosAdicionales->count())
+                    <tr>
+                        <td colspan="5" class="text-center">No se encontraron gastos adicionales</td>
+                    </tr>
+                @endif
+                @foreach ($ordenServicio->costosAdicionales as $keyAdicional => $costoAdicional)
+                @php
+                    $calculosGenerales['totalGastoAdicional'] += $costoAdicional->total;
+                @endphp
+                <tr>
+                    <td>{{$keyAdicional + 1}}</td>
+                    <td>{{$costoAdicional->descripcion}}</td>
+                    <td>{{$costoAdicional->cantidad}}</td>
+                    <td>{{$moneda . ' ' .number_format($costoAdicional->precio,2)}}</td>
+                    <td>{{$moneda . ' ' .number_format($costoAdicional->total,2)}}</td>
+                </tr>
+                @endforeach
+            </tbody>
+            <tbody>
+                <tr>
+                    <td colspan="4" class="text-right">TOTAL</td>
+                    <td>{{$moneda . ' ' .number_format($calculosGenerales['totalGastoAdicional'],2)}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="page-break-inside:avoid;">
+        <h2>GASTOS CAJA CHICA</h2>
+        <table class="tabla-precio" border="1" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>ITEM</th>
+                    <th>N° GASTO</th>
+                    <th>N° CAJA</th>
+                    <th>F. GASTO</th>
+                    <th>DESCRIPCION</th>
+                    <th>TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!$ordenServicio->cajaChicaCostos->count())
+                    <tr>
+                        <td colspan="6" class="text-center">No se encontraron gastos de caja chica</td>
+                    </tr>
+                @endif
+                @foreach ($ordenServicio->cajaChicaCostos as $keyCajaChica => $costoCajaChica)
+                @php
+                    $costoTotal = $costoCajaChica->monto_total;
+                    if($ordenServicio->tipoMoneda !== $costoCajaChica->tipo_moneda){
+                        $costoTotal = $ordenServicio->tipoMoneda === 'PEN' ? round($costoCajaChica->monto_total * $costoCajaChica->tipo_cambio,2) : round($costoCajaChica->monto_total/$costoCajaChica->tipo_cambio,2);
+                    }
+                    $calculosGenerales['totalGastoCaja'] += $costoTotal;
+                @endphp
+                <tr>
+                    <td>{{$keyCajaChica + 1}}</td>
+                    <td>{{str_pad($costoCajaChica->id,5,'0',STR_PAD_LEFT)}}</td>
+                    <td>{{str_pad($costoCajaChica->cajaChica->id,5,'0',STR_PAD_LEFT)}}</td>
+                    <td>{{date('d/m/Y',strtotime($costoCajaChica->fecha_gasto))}}</td>
+                    <td>{{$costoCajaChica->descripcion_producto}}</td>
+                    <td>{{$moneda . ' ' .number_format($costoTotal,2)}}</td>
+                </tr>
+                @endforeach
+            </tbody>
+            <tbody>
+                <tr>
+                    <td colspan="5" class="text-right">TOTAL</td>
+                    <td>{{$moneda . ' ' .number_format($calculosGenerales['totalGastoCaja'],2)}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="page-break-inside:avoid;">
+        <h2>INFORMACION TOTAL</h2>
+        <table class="tabla-precio" border="1" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>VENTA</th>
+                    <th>GASTO ADICIONAL</th>
+                    <th>GASTO CAJA CHICA</th>
+                    <th>COMPRA</th>
+                    <th>UTILIDAD</th>
+                </tr>
+            </thead>
+            @php
+                $calculosGenerales['utilidad'] = round($calculosGenerales['totalVenta'] - $calculosGenerales['totalGastoAdicional'] - $calculosGenerales['totalGastoCaja'] - $calculosGenerales['totalCosto'],2);
+            @endphp
+            <tbody>
+                <tr>
+                    <td class="text-center">{{$moneda . ' ' . number_format($calculosGenerales['totalVenta'],2)}}</td>
+                    <td class="text-center">{{$moneda . ' ' . number_format($calculosGenerales['totalGastoAdicional'],2)}}</td>
+                    <td class="text-center">{{$moneda . ' ' . number_format($calculosGenerales['totalGastoCaja'],2)}}</td>
+                    <td class="text-center">{{$moneda . ' ' . number_format($calculosGenerales['totalCosto'],2)}}</td>
+                    <td class="text-center">{{$moneda . ' ' . number_format($calculosGenerales['utilidad'],2)}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     <strong>OBSERVACIONES:</strong>
     <div>
         {!! str_replace(['../../imagenesEditorOs/'],'imagenesEditorOs/',$ordenServicio->observaciones)  !!}

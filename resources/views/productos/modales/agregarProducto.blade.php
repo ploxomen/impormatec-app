@@ -47,7 +47,7 @@
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
-                        <input type="number" value="0.00" name="precioCompra" min="0" step="0.01" class="form-control" id="idModalprecioCompra">
+                        <input type="number" required value="0.00" name="precioCompra" min="0" step="0.01" class="form-control" id="idModalprecioCompra">
                         <div class="input-group-prepend">
                             <button type="button" class="btn btn-sm btn-outline-info cambiar-cantidad" data-number="#idModalprecioCompra" data-accion="aumentar">
                                 <i class="fas fa-plus"></i>

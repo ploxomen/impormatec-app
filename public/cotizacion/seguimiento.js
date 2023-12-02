@@ -29,7 +29,7 @@ function loadPage(){
         {
             data: 'porcentaje_actual',
             render : function(data){
-                return !data ? "0 %" : Number.parseFloat(data).toFixed(2).toString() + " %";
+                return !data ? "10 %" : Number.parseFloat(data).toFixed(2).toString() + " %";
             }
         },
         {
@@ -152,20 +152,33 @@ function loadPage(){
     if(document.querySelector("#tablaFinGarantia_wrapper")){
         document.querySelector("#tablaFinGarantia_wrapper").hidden = true;
     }
+    const formularioFiltro = document.querySelector("#filtrosSeguimiento");
     document.querySelector("#filtrosSeguimiento").addEventListener("submit",function(e){
         e.preventDefault();
         aplicarFiltros();
     })
+    for (const filtro of document.querySelectorAll(".reporte-filtro")) {
+        filtro.addEventListener("click",e => {
+            let datos = new FormData(formularioFiltro);
+            const ruta = `seguimiento/reporte/${filtro.dataset.accion}/${filtro.dataset.tipo}?${new URLSearchParams(datos).toString()}`;
+            window.open(ruta);
+        })
+        
+    }
     function renderizarFiltros(e) {
         const filtroOcultar = document.querySelectorAll(`#filtrosSeguimiento .${e.target.dataset.filtrosOcultar}`);
         const filtroMostrar = document.querySelectorAll(`#filtrosSeguimiento .${e.target.dataset.filtrosMostrar}`);
         for (const filtro of filtroOcultar) {
             filtro.hidden = true;
-            filtro.querySelector("input, select").removeAttribute("required");
+            if(filtro.querySelector("input, select")){
+                filtro.querySelector("input, select").removeAttribute("required");
+            }
         }
         for (const filtro of filtroMostrar) {
             filtro.hidden = false;
-            filtro.querySelector("input, select").setAttribute("required","required");
+            if(filtro.querySelector("input, select")){
+                filtro.querySelector("input, select").setAttribute("required","required");
+            }
         }
         if(e.target.getAttribute("id") === "radioCotizacionesPendientes"){
             document.querySelector("#tablaFinGarantia_wrapper").hidden = true;
@@ -281,6 +294,7 @@ function loadPage(){
                 alertify.success(response.success);
                 frmAgregarSeguimiento.reset();
                 $('#egregarSeguimiento').modal("hide");
+                tablaDataSeguimiento.draw();
             }
         } catch (error) {
             alertify.error("error al agregar un nuevo seguimiento");
@@ -319,11 +333,6 @@ function loadPage(){
             general.cargandoPeticion(btnFrmAgregarSeguimiento, 'fas fa-save', false);
         }
     });
-    $('#egregarSeguimiento').on("hidden.bs.modal",function(e){
-        idCotizacion = null;
-        contenidoSeguientoHistorial.innerHTML = "";
-        frmAgregarSeguimiento.reset();
-    });
     contenidoSeguientoHistorialEditar.onclick = e => {
         if(e.target.classList.contains("btn-light")){
             alertify.confirm("Alerta","¿Desea eliminar este seguimiento de forma permanente?",async () => {
@@ -346,12 +355,25 @@ function loadPage(){
             },()=>{})
         }
     }
+    const cbPorcentajeSeguimiento = document.querySelector("#cbAgregarSeguimientoPorcentaje");
+    const radioAnular = document.querySelector("#opcionAnular");
     $('#editarSeguimiento').on("hidden.bs.modal",function(e){
         idCotizacion = null;
         contenidoSeguientoHistorialEditar.innerHTML = "";
         frmEditarSeguimiento.reset();
     });
-
-
+    $('#egregarSeguimiento').on("hidden.bs.modal",function(e){
+        idCotizacion = null;
+        contenidoSeguientoHistorial.innerHTML = "";
+        frmAgregarSeguimiento.reset();
+        cbPorcentajeSeguimiento.disabled = false;
+        $(cbPorcentajeSeguimiento).trigger("change");
+    });
+    radioAnular.addEventListener("change",e => {
+        if(e.target.checked){
+            $(cbPorcentajeSeguimiento).val("").trigger("change");
+        }
+        cbPorcentajeSeguimiento.disabled = e.target.checked;
+    })
 }
 window.addEventListener("DOMContentLoaded",loadPage);

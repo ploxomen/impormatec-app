@@ -97,8 +97,8 @@ class OrdenServicio extends General {
             tr.children[tr.children.length - 2].textContent = this.resetearMoneda(subTotal,tipoMoneda);
             totalDetalle += subTotal;
         }
-        document.querySelector("#txtCostoAdicional").textContent = this.resetearMoneda(totalDetalle,tipoMoneda);
-        document.querySelector("#txtTotal").textContent = this.resetearMoneda(total + totalDetalle + igv,tipoMoneda);
+        document.querySelector("#txtCostoAdicional").textContent = "-" + this.resetearMoneda(totalDetalle,tipoMoneda);
+        document.querySelector("#txtTotal").textContent = this.resetearMoneda(total + igv - totalDetalle,tipoMoneda);
     }
     calcularMonto = ({e,listaServicios,tablaServiciosAdicionales,tipoMoneda}) => {
         const step = !e.target.step ? 1 : parseFloat(e.target.step);

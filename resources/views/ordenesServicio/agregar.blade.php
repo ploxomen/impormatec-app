@@ -93,7 +93,7 @@
                                 </tr>
                                 <tr>
                                     <th colspan="6">COSTOS ADICIONALES</th>
-                                    <th colspan="2" id="txtCostoAdicional">S/ 0.00</th>
+                                    <th colspan="2" id="txtCostoAdicional">- S/ 0.00</th>
                                 </tr>
                                 <tr>
                                     <th colspan="6">TOTAL</th>

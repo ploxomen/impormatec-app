@@ -13,7 +13,7 @@ class Servicio extends Model
     {
         return $query->select("id","servicio","descripcion","estado")
         ->selectRaw("LPAD(id,5,'0') AS nroServicio")
-        ->get();
+        ->where('estado','>=',0)->get();
     }
     public function scopeObtenerServicioProductos($query,$idServicio){
         $servicio = $query->select("id","servicio","descripcion")
@@ -25,5 +25,9 @@ class Servicio extends Model
     }
     public function cotizacionServicio() {
         return $this->hasOne(CotizacionServicio::class,'id_servicio');
+    }
+    public function productos()
+    {
+        return $this->belongsToMany(Productos::class,'servicios_productos','id_servicio','id_producto');
     }
 }

@@ -13,8 +13,8 @@ function loadPage() {
             method: 'POST',
             headers: general.requestJson,
             data: function (d) {
-                // d.acciones = 'obtener';
-                // d.area = $("#cbArea").val();
+                d.fechaInicio = $('#txtFechaInicio').val();
+                d.fechaFin = $('#txtFechaFin').val();
                 // d.rol = $("#cbRol").val();
             }
         },
@@ -79,6 +79,7 @@ function loadPage() {
         },
         ]
     });
+    document.querySelector("#btnAplicarFiltros").onclick = e => tablaPreCotizacionDatatable.draw();
     tinymce.init({
         selector: '#sumernotePreCotizacion',
         language: 'es',

@@ -136,8 +136,8 @@ class Servicio extends Controller
         if(isset($accessModulo['session'])){
             return response()->json($accessModulo);
         }
-        ServicioProducto::where('id_servicio',$servicio->id)->delete();
-        $servicio->delete();
+        ServicioProducto::where('id_servicio',$servicio->id)->update(['estado' => 0]);
+        $servicio->update(['estado' => -1]);
         return response()->json(['success' => 'servicio eliminado correctamente']);
     }
 }

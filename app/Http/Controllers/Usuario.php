@@ -48,11 +48,11 @@ class Usuario extends Controller
         }
         return redirect(route('login'));
     }
-    public function logoauth(Request $request)
+    public function logoauth()
     {
         Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
         return redirect(route('login'));
     }
     public function autenticacion(Request $request)
@@ -84,6 +84,9 @@ class Usuario extends Controller
         $idUsuario = Auth::id();
         $usuario = User::where(['estado' => 1,'id' => $idUsuario])->first();
         if(empty($usuario)){
+            if(Auth::check()){
+                $this->logoauth();
+            }
             return ['session' => 'usuario no autorizado'];
         }
         $rol = User::find($idUsuario)->roles()->where('activo',1)->first();
@@ -206,9 +209,9 @@ class Usuario extends Controller
             case 'obtener' :
                 $usuarios = new User();
                 if($request->rol != 'todos'){
-                    $usuarios = Rol::find($request->rol)->usuarios()->select("nombres","apellidos","celular","estado","correo","usuarios.id");
+                    $usuarios = Rol::find($request->rol)->usuarios()->where('estado','>',0)->select("nombres","apellidos","celular","estado","correo","usuarios.id");
                 }else{
-                    $usuarios = User::select("nombres","apellidos","celular","estado","correo","usuarios.id");
+                    $usuarios = User::select("nombres","apellidos","celular","estado","correo","usuarios.id")->where('estado','>',0);
                 }
                 return DataTables::of($usuarios->get())->addColumn('apellidosNombres',function(User $usuario){
                     return $usuario->nombres . ' ' . $usuario->apellidos;
@@ -222,9 +225,12 @@ class Usuario extends Controller
                 $usuario = User::find($request->idUsuario);
                 DB::beginTransaction();
                 try {
-                    $usuario->roles()->detach();
-                    foreach ($request->roles as $rol) {
-                        $usuario->roles()->attach($rol);
+                    $usuario->roles()->sync($request->roles);
+                    $rolTecnico = 11;
+                    if($usuario->roles()->where('rolFk',$rolTecnico)->count() >= 1){
+                        Tecnico::updateOrCreate(['idUsuario' => $request->idUsuario],['estado' => 1]);
+                    }else{
+                        Tecnico::where('idUsuario',$request->idUsuario)->update(['estado' => 0]);
                     }
                     $datos = $request->all();
                     unset($datos['acciones']);
@@ -241,8 +247,7 @@ class Usuario extends Controller
                 $usuario = User::find($request->idUsuario);
                 DB::beginTransaction();
                 try {
-                    $usuario->roles()->detach();
-                    $usuario->delete();
+                    $usuario->update(['estado' => 0]);
                     DB::commit();
                     return response()->json(['success' => 'Usuario eliminado con éxito']);
                 } catch (\Throwable $th) {

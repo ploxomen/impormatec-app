@@ -31,6 +31,9 @@ function loadPage() {
             headers: general.requestJson,
             data: function (d) {
                 d.estado = $('#cbEstados').val();
+                d.fechaInicio = $('#txtFechaInicio').val();
+                d.fechaFin = $('#txtFechaFin').val();
+                d.cliente = $('#cbClientes').val();
             }
         },
         columns: [
@@ -79,7 +82,11 @@ function loadPage() {
         {
             data : 'estado',
             render : function(data,type,row){
-                return `<span class="${estadoCotizacion[+data].class}">${estadoCotizacion[+data].value}</span>`;
+                const nombreEstado = estadoCotizacion.find((estado,index) => index === +data);
+                if(!nombreEstado){
+                    return `<span class="badge badge-danger">Sin estado</span>`;
+                }
+                return `<span class="${nombreEstado.class}">${nombreEstado.value}</span>`;
             }
         },
         {
@@ -117,6 +124,7 @@ function loadPage() {
         },
         ]
     });
+    document.querySelector("#btnAplicarFiltros").onclick = e => tablatablaCotizacionDatatable.draw();
     $('#cbEstados').on("select2:select",function(e){
         tablatablaCotizacionDatatable.draw();
     });

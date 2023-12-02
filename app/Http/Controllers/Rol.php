@@ -69,7 +69,11 @@ class Rol extends Controller
                 DB::beginTransaction();
                 try {
                     if ($modeloRol->count() > 0) {
-                        return response()->json(['alerta' => 'No se puede eliminar el rol, primero elimine los usuarios asociados a el.']);
+                        return response()->json(['alerta' => 'No se puede eliminar el rol, primero elimine los usuarios asociados a el']);
+                    }
+                    $rolTecnico = 11;
+                    if ($request->rol == $rolTecnico) {
+                        return response()->json(['alerta' => 'Este rol no puede ser eliminado ya que cumple una función importante en el proceso del sistema']);
                     }
                     $moduloRol = ModelsRol::find($request->rol)->modulos();
                     $moduloRol->detach();

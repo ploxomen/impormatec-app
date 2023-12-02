@@ -10,7 +10,7 @@ class Tecnico extends Model
     public $table = "tecnicos";
     const UPDATED_AT = "fechaActualizada";
     const CREATED_AT = "fechaCreada";
-    protected $fillable = ['idUsuario'];
+    protected $fillable = ['idUsuario','estado'];
     public function scopeObtenerTecnicosActivos($query)
     {
         return $query->select("usuarios.nombres","usuarios.apellidos","tecnicos.id")->join("usuarios","usuarios.id","=","tecnicos.idUsuario")->where('tecnicos.estado',1)->get();

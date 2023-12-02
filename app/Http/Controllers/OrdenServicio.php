@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportOrdenesServicios;
+use App\Exports\ExportPagos;
 use App\Models\Clientes;
+use App\Models\ComprobanteInterno;
+use App\Models\ComprobanteInternoDetalle;
+use App\Models\Comprobantes;
 use App\Models\Configuracion;
 use App\Models\Cotizacion;
 use App\Models\CotizacionProductos;
@@ -22,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 use Intervention\Image\Facades\Image;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrdenServicio extends Controller
 {
@@ -140,10 +146,11 @@ class OrdenServicio extends Controller
     public function detalleComprobante($idOrdenServicio,$incluirIgv,$moneda) {
         $serviciosOS = OrdenServicioCotizacionServicio::mostrarServiciosOrdenServicio($idOrdenServicio);
         $detalleTotal = OrdenServicioCotizacionProducto::mostrarProductosOrdenServicio($serviciosOS,$idOrdenServicio)->toArray();
-        list($importeTotal,$igvTotal,$operacionGravada) = [0,0,0];
+        list($importeTotal,$igvTotal,$operacionGravada,$descuento) = [0,0,0,0];
         foreach ($detalleTotal as $detalle) {
             // dd($detalle);
             $operacionGravada += $detalle['total'];
+            $descuento += $detalle['descuento'];
             if($incluirIgv){
                 $igvTotal += $detalle['igv'];
             }
@@ -174,7 +181,7 @@ class OrdenServicio extends Controller
         }
         // dd($detalleTotal);
         $letraNumero = (new RapiFac)->numeroAPalabras($importeTotal,$moneda);
-        return ['detalle' => $detalleTotal,'tipoMoneda' => $moneda, 'igvTotal' => $igvTotal, 'importeTotal' => $importeTotal, 'operacionGravada' => $operacionGravada,'letraImporteTotal' => $letraNumero];
+        return ['detalle' => $detalleTotal,'descuentoTotal' => $descuento,'tipoMoneda' => $moneda, 'igvTotal' => $igvTotal, 'importeTotal' => $importeTotal, 'operacionGravada' => $operacionGravada,'letraImporteTotal' => $letraNumero];
     }
     public function agregarCuota(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
@@ -305,7 +312,7 @@ class OrdenServicio extends Controller
             return redirect()->route('home');
         }
         $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
-        $numeroPago = str_pad($cuota->id,6,'0',STR_PAD_LEFT);
+        $numeroPago = str_pad($cuota->id,4,'0',STR_PAD_LEFT);
         $titulo = "CUOTA - " . $numeroPago;
         $strFechaPago = strtotime($cuota->fecha_pagada);
         $fechaTexto = (new Utilitarios)->obtenerFechaLargaSinDia($strFechaPago);
@@ -319,6 +326,29 @@ class OrdenServicio extends Controller
             return response()->json(['session' => true]);
         }
         return response()->json(['cuota' => PagoCuotas::obtenerCuota($ordenServicio,$cuota),'imagenesPagos' => PagoCuotasImg::obtenerImagenes($cuota)]);
+    }
+    public function reportesOrdenesServicios(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return redirect()->route('home');
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio));
+        $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin));
+        $ordenesServicios = ModelsOrdenServicio::misOrdeneseServicio($request->fecha_inicio,$request->fecha_fin,$request->cliente,$request->estado);
+        $titulo = 'ordenes_servicios';
+        $tituloPagos = 'pagos';
+        if($request->has('exportarPdf')){
+            return Pdf::loadView('ordenesServicio.reportes.osPDF',compact("ordenesServicios","configuracion","fechaInicioReporte","fechaFinReporte"))
+            ->setPaper("A4","landscape")->stream($titulo.'.pdf');
+        }else if($request->has('exportarExcel')){
+            return Excel::download(new ExportOrdenesServicios($ordenesServicios,$fechaInicioReporte,$fechaFinReporte,'ordenesServicio.reportes.osEXCEL'),$titulo.'.xlsx');
+        }else if($request->has('exportarPdfPagos')){
+            return Pdf::loadView('ordenesServicio.reportes.pagosPDF',compact("ordenesServicios","configuracion","fechaInicioReporte","fechaFinReporte"))
+            ->setPaper("A4","landscape")->stream($tituloPagos.'.pdf');
+        }else if($request->has('exportarExcelPagos')){
+            return Excel::download(new ExportPagos($ordenesServicios,$fechaInicioReporte,$fechaFinReporte,'ordenesServicio.reportes.pagosEXCEL'),$tituloPagos.'.xlsx');
+        }
     }
     public function indexNuevaOs() {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);
@@ -336,22 +366,108 @@ class OrdenServicio extends Controller
         }
         $tiposComprobantes = ['Factura' => '01','Boleta' => '03', 'Comprobante' => '00'];
         $tipoComprobante = $tiposComprobantes[$request->modoFacturaChec];
-        if($tipoComprobante === '00'){
-            return response()->json(['comprobante' => 'comprobante interno correctamente']);
-        }
         $rapifact = new RapiFac();
         $ordenServicio = ModelsOrdenServicio::find($request->ordenServicio);
         $comprobanteExtranjero = $ordenServicio->cliente->id_pais === 165 ? false : true;
         $datosGenerales = $request->except("modoFacturaChec","modoFacturaChec");
         $datosGenerales['tipoComprobante'] = $tipoComprobante;
         $detalleComprobante = $this->detalleComprobante($ordenServicio->id,!$comprobanteExtranjero ? true : false,$ordenServicio->tipoMoneda);
-        if(!$comprobanteExtranjero){
-            dd($rapifact->generarComprobanteAgrabadoSUNAT($datosGenerales,$detalleComprobante['detalle'],$ordenServicio->tipoMoneda));
-        }else{
-            dd($rapifact->generarComprobanteExtrangeroSUNAT($datosGenerales,$detalleComprobante['detalle'],$ordenServicio->tipoMoneda));
-
+        DB::beginTransaction();
+        try {
+            if($tipoComprobante === '00'){
+                $comprobanteInterno = ComprobanteInterno::create([
+                    'fecha_emision' => $request->fechaEmision,
+                    'tipo_moneda' => $detalleComprobante['tipoMoneda'],
+                    'cliente' => $request->nombreCliente,
+                    'tipo_documento' => TipoDocumento::where('valor',$request->tipoDocumentoCliente)->first()->documento,
+                    'numero_documento' => $request->numeroDocumentoCliente,
+                    'direccion' => $request->direccionCliente,
+                    'observaciones' => $request->observaciones,
+                    'subtotal' => $detalleComprobante['operacionGravada'] + $detalleComprobante['descuentoTotal'],
+                    'descuento' => $detalleComprobante['descuentoTotal'],
+                    'igv_total' => $detalleComprobante['igvTotal'],
+                    'total' => $detalleComprobante['importeTotal'],
+                    'monto_letras' => $detalleComprobante['letraImporteTotal']
+                ]);
+                foreach ($detalleComprobante['detalle'] as $detalle) {
+                    ComprobanteInternoDetalle::create([
+                        'id_comprobante_interno' => $comprobanteInterno->id,
+                        'descripcion' => $detalle['servicio'],
+                        'cantidad' => $detalle['cantidad'],
+                        'precio' => $detalle['precio'],
+                        'descuento' => $detalle['descuento'],
+                        'igv' => $detalle['igv'],
+                        'total' => $detalle['precio'] + $detalle['igv']
+                    ]);
+                }
+                $comprobante = Comprobantes::create([
+                    'id_os_servicio' => $ordenServicio->id,
+                    'numero_comprobante' => 'GI001-'. str_pad($comprobanteInterno->id,4,'0',STR_PAD_LEFT),
+                    'estado' => 1,
+                    'tipo_moneda' => $ordenServicio->tipoMoneda,
+                    'monto_total' => $detalleComprobante['importeTotal'],
+                    'fecha_emision' => $request->fechaEmision,
+                    'tipo_comprobante' => $tipoComprobante
+                ]);
+                $comprobanteInterno->update(['id_comprobante' => $comprobante->id]);
+                DB::commit();
+                return response()->json(['success' => 'Comprobante interno generado correctamente','urlPdf' => route('comprobante.interno',['comprobante' => $comprobante->id])]);
+            }
+            $respuestaComprobante = null;
+            if(!$comprobanteExtranjero){
+                $respuestaComprobante = $rapifact->generarComprobanteAgrabadoSUNAT($datosGenerales,$detalleComprobante['detalle'],$ordenServicio->tipoMoneda);
+            }else{
+                $respuestaComprobante = $rapifact->generarComprobanteExtrangeroSUNAT($datosGenerales,$detalleComprobante['detalle'],$ordenServicio->tipoMoneda);
+            }
+            if(isset($respuestaComprobante->cdr) && isset($respuestaComprobante->xml_pdf)){
+                $numeroComprobante = explode("-",$respuestaComprobante->xml_pdf->Mensaje);
+                Comprobantes::create([
+                    'id_os_servicio' => $ordenServicio->id,
+                    'id_comprobante_rapifac' => $respuestaComprobante->xml_pdf->IDComprobante,
+                    'repositorio' => $respuestaComprobante->xml_pdf->IDRepositorio,
+                    'numero_comprobante' => $numeroComprobante[1] . '-' . $numeroComprobante[2],
+                    'estado' => 1,
+                    'tipo_moneda' => $ordenServicio->tipoMoneda,
+                    'monto_total' => $detalleComprobante['importeTotal'],
+                    'fecha_emision' => $request->fechaEmision,
+                    'tipo_comprobante' => $tipoComprobante
+                ]);
+                DB::commit();
+                return response()->json(['success' => $respuestaComprobante->cdr->Mensaje,'urlPdf' => $rapifact->urlPdfComprobantes .'?key=' . $respuestaComprobante->xml_pdf->IDRepositorio]);
+            }
+            return response()->json(['error' => 'No se puede procesar el comprobante']);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json(['error' => $th->getMessage()]);
         }
-        dd($request->all());
+    }
+    public function anularComprobanteInterno(Comprobantes $comprobante){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $comprobanteInterno = $comprobante->comprobanteInterno;
+        if(empty($comprobanteInterno)){
+            return response()->json(['alerta' => 'No se encontró el comprobante interno']);
+        }
+        $comprobante->update(['estado' => 0]);
+        $comprobanteInterno->update(['estado' => 0]);
+        return response()->json(['success' => 'comprobante interno anulado correctamente','comprobantesSunat' => $comprobante->ordenServicio->comprobantes, 'urlSunat' => (new RapiFac)->urlPdfComprobantes]);
+    }
+    public function comprobanteInterno(Comprobantes $comprobante) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $comprobanteInterno = $comprobante->comprobanteInterno;
+        if(empty($comprobanteInterno)){
+            return abort(404);
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $numeroPago = str_pad($comprobanteInterno->id,4,'0',STR_PAD_LEFT);
+        $titulo = "GUIA INTERNA - " . $numeroPago;
+        $strFechaPago = strtotime($comprobanteInterno->fecha_emision);
+        return Pdf::loadView('facturacion.comprobanteInterno',compact("comprobanteInterno","configuracion","numeroPago","titulo","strFechaPago"))->setPaper('A4','landscape')->stream($titulo.'.pdf');
     }
     public function obtenerCotizacionCliente($cliente,Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);
@@ -369,7 +485,9 @@ class OrdenServicio extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         $firmasUsuarios = User::firmasHabilitadas();
         $tiposDocumentos = TipoDocumento::where('estado',1)->get();
-        return view("ordenesServicio.misOrdenes",compact("modulos","clientes","firmasUsuarios","tiposDocumentos"));
+        $fechaFin = date('Y-m-d');
+        $fechaInicio = date('Y-m-d',strtotime($fechaFin . ' - 90 days'));
+        return view("ordenesServicio.misOrdenes",compact("modulos","clientes","fechaFin","fechaInicio","firmasUsuarios","tiposDocumentos"));
     }
     public function accionesOrdenServicio(Request $request)  {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
@@ -525,12 +643,12 @@ class OrdenServicio extends Controller
         $calculosTotales['total'] = $calculosTotales['importe'] - $calculosTotales['descuento'] + $calculosTotales['adicional'];
         return ModelsOrdenServicio::find($idOrdenServicio)->update($calculosTotales);
     }
-    public function obtenerOrdenServicio() {
+    public function obtenerOrdenServicio(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $ordenesServicios = ModelsOrdenServicio::misOrdeneseServicio();
+        $ordenesServicios = ModelsOrdenServicio::misOrdeneseServicio($request->fecha_inicio,$request->fecha_fin,$request->cliente,$request->estado);
         return DataTables::of($ordenesServicios)->toJson();
     }
     public function reporteEntregaActa(EntregaActa $entregaActa) {
@@ -632,6 +750,44 @@ class OrdenServicio extends Controller
         $ordenServicio->nombreCliente = $ordenServicio->cliente->nombreCliente;
         return response()->json(['ordenServicio' => $ordenServicio->makeHidden("cliente","fechaActualizada","fechaCreada")]);
     }
+    public function obtenerCostoServicio($idCotizacionServicio){
+        $cotizacionServicio = CotizacionServicio::find($idCotizacionServicio);
+        $productos = $cotizacionServicio->productos;
+        $costoTotal = 0;
+        foreach ($productos as $producto) {
+            $costoCompra = $producto->producto->precioCompra;
+            $costoTotal += $producto->cantidad * $costoCompra;
+        }
+        return $costoTotal;
+    }
+    public function obtenerCostoProducto($idCotizacionProducto){
+        $cotizacionProducto = CotizacionProductos::find($idCotizacionProducto);
+        $costoCompra = $cotizacionProducto->productos->precioCompra;
+        return $cotizacionProducto->cantidad * $costoCompra;
+    }
+    public function misComprobantes(ModelsOrdenServicio $ordenServicio){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        return response()->json(['comprobantesSunat' => $ordenServicio->comprobantes, 'urlSunat' => (new RapiFac)->urlPdfComprobantes]);
+    }
+    public function calcularGastosCajaChica($idOrdenServicio) {
+        $ordenServicio = ModelsOrdenServicio::find($idOrdenServicio);
+        $gastosCajaChica = 0;
+        foreach ($ordenServicio->cajaChicaCostos as $costoCajaChica) {
+            if($ordenServicio->tipoMoneda !== $costoCajaChica->tipo_moneda){
+                $gastosCajaChica += $ordenServicio->tipoMoneda === 'PEN' ? round($costoCajaChica->monto_total * $costoCajaChica->tipo_cambio,2) : round($costoCajaChica->monto_total/$costoCajaChica->tipo_cambio,2);
+            }
+        }
+        return $gastosCajaChica;
+    }
+    public function calculoGeneralOrdenServicio($idOrdenServicio) {
+        $ordenServicio = ModelsOrdenServicio::find($idOrdenServicio);
+        $total = round($ordenServicio->importe - $ordenServicio->descuento + $ordenServicio->igv - $ordenServicio->adicional - $ordenServicio->gasto_caja,2);
+        $utilidad = round($total - $ordenServicio->costo_total,2);
+        return ['utilidad' => $utilidad,'total' => $total];
+    }
     public function agregarOs(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);
         if(isset($verif['session'])){
@@ -656,7 +812,9 @@ class OrdenServicio extends Controller
                 'descuento' => 0,
                 'igv' => 0,
                 'adicional' => 0,
-                'total' => 0
+                'total' => 0,
+                'costo_total' => 0,
+                'utilidad' => 0
             ];
             foreach ($listaServiciosProductos as $key => $servicio) {
                 $calculosTotales['importe'] += $servicio['total'];
@@ -665,21 +823,27 @@ class OrdenServicio extends Controller
                     $calculosTotales['igv'] += $servicio['total'] * 0.18;
                 }
                 if($servicio['tipoServicioProducto'] === "servicio"){
+                    $costoServicio = $this->obtenerCostoServicio($servicio['idCotizacionServicio']);
                     OrdenServicioCotizacionServicio::create([
                         'id_orden_servicio' => $ordenServicio->id,
                         'id_cotizacion_servicio' => $servicio['idCotizacionServicio'],
+                        'costo_total' => $costoServicio,
                         'orden' => $key + 1,
                         'estado' => 1
                     ]);
+                    $calculosTotales['costo_total'] += $costoServicio;
                     CotizacionServicio::find($servicio['idCotizacionServicio'])->update(['estado' => 2]);
                     continue;
                 }
+                $costoProducto = $this->obtenerCostoProducto($servicio['idCotizacionServicio']);
                 OrdenServicioCotizacionProducto::create([
                     'id_orden_servicio' => $ordenServicio->id,
                     'id_cotizacion_producto' => $servicio['idCotizacionServicio'],
+                    'costo_total' => $costoProducto,
                     'orden' => $key + 1,
                     'estado' => 1
                 ]);
+                $calculosTotales['costo_total'] += $costoProducto;
                 CotizacionProductos::find($servicio['idCotizacionServicio'])->update(['estado' => 2]);
             }
             foreach ($cotizaciones->get() as $cotizacion) {
@@ -708,7 +872,8 @@ class OrdenServicio extends Controller
                     ]);
                 }
             }
-            $calculosTotales['total'] = $calculosTotales['importe'] - $calculosTotales['descuento'] + $calculosTotales['adicional'];
+            $calculosTotales['total'] = $calculosTotales['importe'] - $calculosTotales['descuento'] + $calculosTotales['igv'] - $calculosTotales['adicional'];
+            $calculosTotales['utilidad'] = $calculosTotales['total'] - $calculosTotales['costo_total'];
             $ordenServicio->update($calculosTotales);
             DB::commit();
             return response()->json(['success' => 'Orden de servicio generada de manera correcta']);

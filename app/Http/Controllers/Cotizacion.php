@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportCotizaciones;
 use App\Models\Clientes;
 use App\Models\ClientesContactos;
 use App\Models\Configuracion;
@@ -25,6 +26,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Webklex\PDFMerger\Facades\PDFMergerFacade as PDFMerger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Cotizacion extends Controller
 {
@@ -534,14 +536,42 @@ class Cotizacion extends Controller
         $preCotizaciones = PreCotizaion::where('estado','>=',1)->get();
         $servicios = Servicio::where('estado',1)->get();
         $productos =  Productos::where('estado',1)->get();
-        return view("cotizacion.misCotizaciones",compact("modulos","clientes","tiposDocumentos","preCotizaciones","servicios","productos"));
+        $fechaFin = date('Y-m-d');
+        $fechaInicio = date('Y-m-d',strtotime($fechaFin . ' - 90 days'));
+        return view("cotizacion.misCotizaciones",compact("modulos","fechaFin","fechaInicio","clientes","tiposDocumentos","preCotizaciones","servicios","productos"));
+    }
+    public function reportesCotizaciones(Request $request){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio));
+        $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin));
+        $cotizaciones = $this->listaCotizaciones($request->fecha_inicio,$request->fecha_fin,$request->cliente,$request->estado);
+        $titulo = 'cotizaciones';
+        if($request->has('exportarPdf')){
+            return Pdf::loadView('cotizacion.reportes.cotizacionPDF',compact("cotizaciones","configuracion","fechaInicioReporte","fechaFinReporte"))
+            ->setPaper("A4","landscape")->stream($titulo.'.pdf');
+        }else if($request->has('exportarExcel')){
+            return Excel::download(new ExportCotizaciones($cotizaciones,$fechaInicioReporte,$fechaFinReporte,'cotizacion.reportes.cotizacionEXCEL'),$titulo.'.xlsx');
+        }
     }
     public function datatableCotizaciones(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $cotizaciones = ModelsCotizacion::obtenerCotizacion();
-        return DataTables::of($request->estado !== 'TODOS' ? $cotizaciones->where('cotizacion.estado','=',$request->estado)->get()  : $cotizaciones->get())->toJson();
+        return DataTables::of($this->listaCotizaciones($request->fechaInicio,$request->fechaFin,$request->cliente,$request->estado))->toJson();
+    }
+    public function listaCotizaciones($fechaInicio,$fechaFin,$cliente,$estado) {
+        $cotizaciones = ModelsCotizacion::obtenerCotizacion()->whereBetween('cotizacion.fechaCotizacion',[$fechaInicio,$fechaFin]);
+        if($cliente !== 'TODOS'){
+            $cotizaciones = $cotizaciones->where('cotizacion.id_cliente','=',$cliente);
+        }
+        if($estado !== 'TODOS'){
+            $cotizaciones = $cotizaciones->where('cotizacion.estado','=',$estado);
+        }
+        return $cotizaciones->get();
     }
 }

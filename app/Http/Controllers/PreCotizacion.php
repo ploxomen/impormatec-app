@@ -41,7 +41,7 @@ class PreCotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->groupBy("cp.id")->get();
+        $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->whereBetween('cp.fecha_hr_visita',[$request->fechaInicio . ' 00:00:00',$request->fechaFin.' 00:00:00'])->groupBy("cp.id")->get();
         return DataTables::of($preCotizaciones)->toJson();
     }
     public function obtenerInformePreCotizacion($idPreCotizacion) {
@@ -209,7 +209,9 @@ class PreCotizacion extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         $archivoVisitaUrl = Configuracion::where(['descripcion' => 'formato_unico_visitas_url'])->first();
         $archivoVisitaNombre = Configuracion::where(['descripcion' => 'formato_unico_visitas'])->first();
-        return view("preCotizacion.misPreCotizaciones",compact("modulos","servicios","clientes","tecnicos","tiposDocumentos","archivoVisitaUrl","archivoVisitaNombre"));
+        $fechaFin = date('Y-m-d',strtotime(date('Y-m-d') . ' + 90 days'));
+        $fechaInicio = date('Y-m-d',strtotime(date('Y-m-d') . ' - 90 days'));
+        return view("preCotizacion.misPreCotizaciones",compact("fechaFin","fechaInicio","modulos","servicios","clientes","tecnicos","tiposDocumentos","archivoVisitaUrl","archivoVisitaNombre"));
     }
     public function obtenerPreCotizacionEditar($precotizacion){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);

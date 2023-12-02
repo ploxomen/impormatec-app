@@ -17,10 +17,27 @@
                 <h4 class="text-center text-primary my-2">Administración de Pre - Cotizaciones</h4>
             </div>
         </div>
-       <div class="bg-white p-3 border">
-        <div class="form-group text-right">
-            @include('preCotizacion.botonDescargaVisita')
+        <div class="bg-white mb-3 border p-3">
+            <form class="form-row">
+                <div class="form-group col-12 col-md-6 col-lg-3 col-xl-2">
+                    <label for="txtFechaInicio">Fecha Inicio</label>
+                    <input type="date" value="{{$fechaInicio}}" class="form-control" required name="fecha_inicio" id="txtFechaInicio">
+                </div>
+                <div class="form-group col-12 col-md-6 col-lg-3 col-xl-2">
+                    <label for="txtFechaFin">Fecha Fin</label>
+                    <input type="date" value="{{$fechaFin}}" class="form-control" required name="fecha_fin" id="txtFechaFin">
+                </div>
+                <div class="form-group col-12 col-lg-1 col-xl-3">
+                    <button class="btn btn-sm btn-primary" type="button" data-toggle="tooltip" data-placement="top" title="Aplicar filtros" id="btnAplicarFiltros">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            <div class="form-group text-right">
+                @include('preCotizacion.botonDescargaVisita')
+            </div>
         </div>
+       <div class="bg-white p-3 border mb-3">
         <table class="table table-sm table-bordered" id="tablaPreCotizaciones">
             <thead class="text-center">
                 <tr>

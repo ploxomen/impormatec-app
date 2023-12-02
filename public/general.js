@@ -79,6 +79,10 @@ class General{
         </li>
     </ol>
     `
+    tiposComprobantes = [{id : "00", nombre: 'Comprobante Interno'},{id : '01',nombre:'Factura'},{id:'03',nombre:'Boleta'},{id:'09',nombre:'Guia de Remisión'},{id : "10",nombre : 'Pago de Cuota'}]
+    obtenerNombreComprobante(id){
+        return this.tiposComprobantes.find(c => c.id == id);
+    }
     banerLoader = document.querySelector("#banerCargando")
     seleccionarCheckbox(claseSeleccionar,$selecionarTodo){
         let cantidadClase = 0;

@@ -21,9 +21,8 @@ function loadPage() {
             method: 'GET',
             headers: gen.requestJson,
             data: function (d) {
-                // d.acciones = 'obtener';
-                // d.area = $("#cbArea").val();
-                // d.rol = $("#cbRol").val();
+                d.fechaInicio = $('#txtFechaInicio').val();
+                d.fechaFin = $('#txtFechaFin').val();
             }
         },
         columns: [
@@ -102,5 +101,6 @@ function loadPage() {
         },
         ]
     });
+    document.querySelector("#btnAplicarFiltros").onclick = e => dataTablaMisInformes.draw();
 }
 window.addEventListener("DOMContentLoaded",loadPage);

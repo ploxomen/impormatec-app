@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportGarantiaProductosServicios;
+use App\Exports\ExportSeguimientoCotizacion;
 use App\Models\Clientes;
+use App\Models\Configuracion;
 use App\Models\Cotizacion;
 use App\Models\CotizacionProductos;
 use App\Models\CotizacionSeguimiento;
 use App\Models\CotizacionServicio;
 use App\Models\OrdenServicioCotizacionServicio;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class Seguimiento extends Controller
@@ -42,14 +47,53 @@ class Seguimiento extends Controller
         if(isset($verif['session'])){
             return response()->json($verif);
         }
-        $seguimientos = Cotizacion::obtenerCotizacion()->where('fechaCotizacion','>=',$request->fechaInicio)->where('fechaCotizacion','<=',$request->fechaFin)->where('cotizacion.estado',1);
-        if($request->porcentaje !== 'todos'){
-            $seguimientos = $seguimientos->where('cotizacion.porcentaje_actual',$request->porcentaje);
+        $seguimientos = $this->cotizacionSeguimiento($request->fechaInicio,$request->fechaFin,$request->porcentaje,$request->responsable);
+        return DataTables::of($seguimientos)->toJson();
+    }
+    public function reporteGarantias($tipo,Request $request){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
+        if(isset($verif['session'])){
+            return redirect()->route('home');
         }
-        if($request->responsable !== 'todos'){
-            $seguimientos = $seguimientos->where('cotizacion.cotizadorUsuario',$request->responsable);
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $garantias = Cotizacion::obtenerGarantiasFechas($request->mes_fin_garantia,$request->year_fin_garantia,$request->cliente,$request->vigencia);
+        $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio_cotizacion));
+        $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin_cotizacion));
+        if($tipo === 'pdf'){
+            return Pdf::loadView('cotizacion.reportes.garantiaPDF',compact("garantias","configuracion","fechaInicioReporte","fechaFinReporte"))
+            ->setPaper("A4","landscape")->stream('reporte_garantias_productos_servicios.pdf');
+        }else if($tipo === 'excel'){
+            return Excel::download(new ExportGarantiaProductosServicios($garantias,$fechaInicioReporte,$fechaFinReporte,'cotizacion.reportes.garantiaEXCEL'),'reporte_garantias_productos_servicios.xlsx');
         }
-        return DataTables::of($seguimientos->get())->toJson();
+        return abort(404);
+        // dd($seguimientosGarantia,$tipo);
+    }
+    public function cotizacionSeguimiento($fechaInicio,$fechaFin,$porcentaje,$responsable){
+        $seguimientos = Cotizacion::obtenerCotizacion()->where('fechaCotizacion','>=',$fechaInicio)->where('fechaCotizacion','<=',$fechaFin)->where('cotizacion.estado',1);
+        if($porcentaje !== 'todos'){
+            $seguimientos = $seguimientos->where('cotizacion.porcentaje_actual',$porcentaje);
+        }
+        if($responsable !== 'todos'){
+            $seguimientos = $seguimientos->where('cotizacion.cotizadorUsuario',$responsable);
+        }
+        return $seguimientos->get();
+    }
+    public function reporteCotizaciones($tipo,Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
+        if(isset($verif['session'])){
+            return redirect()->route('home');
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $cotizaciones = $this->cotizacionSeguimiento($request->fecha_inicio_cotizacion,$request->fecha_fin_cotizacion,$request->porcentaje,$request->cotizador);
+        $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio_cotizacion));
+        $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin_cotizacion));
+        if($tipo === 'pdf'){
+            return Pdf::loadView('cotizacion.reportes.seguimientoPDF',compact("cotizaciones","configuracion","fechaInicioReporte","fechaFinReporte"))
+            ->setPaper("A4","landscape")->stream('reporte_seguimineto_cotizaciones.pdf');
+        }else if($tipo === 'excel'){
+            return Excel::download(new ExportSeguimientoCotizacion($cotizaciones,$fechaInicioReporte,$fechaFinReporte,'cotizacion.reportes.seguimientoEXCEL'),'reporte_seguimineto_cotizaciones.xlsx');
+        }
+        return abort(404);
     }
     public function allGarantia(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloSeguimiento);
@@ -73,9 +117,14 @@ class Seguimiento extends Controller
         }
         DB::beginTransaction();
         try {
-            $datos = $request->all();
+            $datos = $request->except("anular");
+            if($request->has('anular')){
+                $datos['porcentaje'] = 0;
+                $datosCotizacion['estado'] = 0;
+            }
+            $datosCotizacion['porcentaje_actual'] = $datos['porcentaje'];
             $datos['id_usuario'] = Auth::id();
-            Cotizacion::find($request->id_cotizacion)->update(['porcentaje_actual' => $request->porcentaje]);
+            Cotizacion::find($request->id_cotizacion)->update($datosCotizacion);
             CotizacionSeguimiento::create($datos);
             DB::commit();
             return response()->json(['success' => 'seguimiento agregado correctamente']);

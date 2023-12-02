@@ -16,13 +16,21 @@
                 </h5>
             </div>
             <div class="form-group col-12">
-                <label for="txtAgregarPorcentaje">Porcentaje</label>
-                <div class="input-group mb-2">
-                    <input type="number" name="porcentaje" min="1" required max="100" step="0.01" class="form-control" id="txtAgregarPorcentaje">
-                    <div class="input-group-prepend">
-                        <div class="input-group-text">%</div>
-                    </div>
-                </div>
+                <label for="cbAgregarSeguimientoPorcentaje">Porcentaje</label>
+                <select name="porcentaje" data-placeholder="Seleccione un porcentaje" required class="select2-simple" id="cbAgregarSeguimientoPorcentaje">
+                  <option value=""></option>
+                  <option value="10" selected>10% cotizado</option>
+                  <option value="30">30% en consultas</option>
+                  <option value="50">50% en evaluación</option>
+                  <option value="75">75% oferta elegida</option>
+                  <option value="95">95% pre aprobado</option>
+                </select>
+            </div>
+            <div class="col-12 form-group">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" name="anular" class="custom-control-input" id="opcionAnular">
+                <label class="custom-control-label" for="opcionAnular">Anular cotización</label>
+              </div>
             </div>
             <div class="form-group col-12">
                 <label for="txtAgregarDescripcion">Descripción</label>

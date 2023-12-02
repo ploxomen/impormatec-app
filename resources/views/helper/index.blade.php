@@ -84,14 +84,6 @@
                     
                 </div>
                 <div class="box-my">
-                    <button class="btn-info-menu">
-                        <span class="material-icons">search</span>
-                    </button>
-                    <div>
-                        <button class="btn-info-menu">
-                            <span class="material-icons">notifications</span>
-                        </button>
-                    </div>
                     <div class="info-perfil">
                         <span class="d-block">{{auth()->user()->nombres}}</span>
                     </div>

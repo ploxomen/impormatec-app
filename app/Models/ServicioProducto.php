@@ -14,6 +14,6 @@ class ServicioProducto extends Model
     public function scopeObtenerProductos($query,$idServicio){
         return $query->select("servicios_productos.id_servicio","servicios_productos.cantidadUsada","productos.tipoMoneda","productos.precioVenta","productos.nombreProducto","productos.id AS idProducto","productos.urlImagen")
         ->join("productos","productos.id","=","servicios_productos.id_producto")
-        ->where(['servicios_productos.estado' => 1, 'servicios_productos.id_servicio' => $idServicio])->get();
+        ->where(['servicios_productos.id_servicio' => $idServicio,'productos.estado' => 1])->get();
     }
 }
