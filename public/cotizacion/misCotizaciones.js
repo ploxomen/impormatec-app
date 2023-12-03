@@ -286,7 +286,20 @@ function loadPage() {
                         }
                         if(key == "serviciosProductos"){
                             valor.forEach((servicioProducto,k) => {
-                                const {id_producto,nombreDescripcion,cantidad,precio,descuento,total,tipo} = servicioProducto;
+                                let parametros = {
+                                    cantidad : servicioProducto.cantidad,
+                                    id : servicioProducto.id_producto,
+                                    precioVenta : servicioProducto.precio,
+                                    descuento : servicioProducto.descuento,
+                                    tipoMoneda : response.cotizacion.tipoMoneda
+                                }
+                                const {id_producto: id,precio: precioVenta,cantidad,precio,descuento,total,tipo} = servicioProducto;
+                                servicioProducto.tipoMoneda = response.cotizacion.tipoMoneda;
+                                if(tipo === 'servicio'){
+                                    servicioProducto.servicio = nombreDescripcion
+                                }
+                                const serviciosCotizacion = cotizacionGeneral.asignarListaServiciosProductos(servicioProducto,tipo,"antiguo");
+
                                 tablaServicios.append(cotizacionGeneral.agregarServicio(k+1,id_producto,nombreDescripcion,cantidad,precio,descuento,total,tipo,"antiguo"));
                                 if(tipo === "servicio"){
                                     tablaServicioProductos.append(cotizacionGeneral.listarDetalleProductosDeServicios(id_producto,nombreDescripcion,servicioProducto.detalleProductos,"antiguo"));

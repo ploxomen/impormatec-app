@@ -41,7 +41,7 @@ class Configuracion extends Controller
             }
             if($request->has('formatoVisita')){
                 $archivoAntiguo = ModelsConfiguracion::where(['descripcion' => 'formato_unico_visitas'])->first();
-                if(Storage::disk('public')->exists($archivoAntiguo->valor)){
+                if(!empty($archivoAntiguo->valor) && Storage::disk('public')->exists($archivoAntiguo->valor)){
                     Storage::disk('public')->delete($archivoAntiguo->valor);
                 }
                 $archivo = $request->file('formatoVisita');

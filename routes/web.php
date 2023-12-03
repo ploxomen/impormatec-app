@@ -190,6 +190,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('/', [Seguimiento::class, 'index'])->name('admin.cotizacion.seguimiento');
             Route::get('listar', [Seguimiento::class, 'all']);
             Route::get('listar-garantia', [Seguimiento::class, 'allGarantia']);
+            Route::get('historial/{cotizacion}', [Seguimiento::class, 'showHistorialSeguimiento']);
             Route::get('reporte/cotizacion/{tipo}', [Seguimiento::class, 'reporteCotizaciones']);
             Route::get('reporte/garantia/{tipo}', [Seguimiento::class, 'reporteGarantias']);
             Route::post('agregar', [Seguimiento::class, 'store']);

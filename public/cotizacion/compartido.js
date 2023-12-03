@@ -269,6 +269,9 @@ class Cotizacion extends General{
         let idServicio = servicio.id;
         let idProducto = null;
         if(tipo === "producto"){
+            if(servicio.descuento){
+                descuento += servicio.descuento;
+            }
             precioUnitarioNormal = this.convertirPrecioVenta(servicio.precioVenta,servicio.tipoMoneda);
             precioUnitarioConIgv = precioUnitarioNormal * this.igvTotal;
             importeTotal = incluirIGV ? precioUnitarioConIgv * servicio.cantidad : precioUnitarioNormal * servicio.cantidad;
@@ -302,6 +305,7 @@ class Cotizacion extends General{
             precioUnitarioConIgv += !incluirIGV ? importeTotal * this.igvTotal  : importeTotal;
         }
         let total = importeTotal - descuento;
+        console.log(descuento);
         return {
             idServicio,
             idProducto,
