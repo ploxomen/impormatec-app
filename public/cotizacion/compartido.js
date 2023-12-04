@@ -233,33 +233,6 @@ class Cotizacion extends General{
         }
         return Number.parseFloat(precioVentaConvertido);
     }
-    asignarListaServiciosProductosEditar(servicio){
-        let productosLista = [];
-        if(servicio.detalleProductos){
-            servicio.detalleProductos.forEach(p => {
-                productosLista.push({
-                    tipoPoneada : p.tipoMoneda,
-                    idProducto : p.idProducto,
-                    cantidad : p.cantidadUsada,
-                    pVentaConvertido : p.pVentaConvertido,
-                    pVenta : p.precioVenta,
-                    importe : p.importe,
-                    descuento : p.descuento,
-                    pTotal : p.precioTotal
-                });
-            });
-        }
-        return {
-            idServicio : servicio.tipo === "producto" ? null : servicio.id_producto,
-            idProducto : servicio.tipo === "producto" ? servicio.id_producto : null,
-            cantidad : servicio.cantidad,
-            pUni : servicio.precio,
-            pImporte : servicio.importe,
-            descuento: servicio.descuento,
-            pTotal : servicio.total,
-            productosLista
-        };
-    }
     asignarListaServiciosProductos(servicio,tipo,condicion){
         const incluirIGV = false;
         let productosLista = [];
@@ -281,7 +254,7 @@ class Cotizacion extends General{
         }
         if(servicio.productos){
             servicio.productos.forEach(p => {
-                const descuentoProducto = !p.descuentoProducto ? 0 : p.descuentoProducto;
+                const descuentoProducto = !p.descuentoProducto ? 0 : parseFloat(p.descuentoProducto);
                 const precioVentaConvertido = this.convertirPrecioVenta(p.precioVenta,p.tipoMoneda);
                 const precioVentaIgvProducto = precioVentaConvertido * this.igvTotal; 
                 const importeTotalProducto = incluirIGV ? precioVentaIgvProducto * p.cantidadUsada : precioVentaConvertido * p.cantidadUsada; 

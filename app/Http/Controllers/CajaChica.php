@@ -337,11 +337,7 @@ class CajaChica extends Controller
             }
             if(!empty($datos['id_os'])){
                 $ordenServicioControler = new ControllersOrdenServicio();
-                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
-                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
-                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
-                $ordenServicioModelo->update($utilidadTotal);
+                $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
             }
             if($request->has('urlImagen')){
                 $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
@@ -388,11 +384,7 @@ class CajaChica extends Controller
             }
             if(!empty($datos['id_os'])){
                 $ordenServicioControler = new ControllersOrdenServicio();
-                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
-                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
-                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
-                $ordenServicioModelo->update($utilidadTotal);
+                $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
             }
             if($request->has('urlImagen')){
                 $nombreArchivo = $request->file('urlImagen')->getClientOriginalName();
@@ -444,11 +436,7 @@ class CajaChica extends Controller
             }
             if(!empty($datos['id_os'])){
                 $ordenServicioControler = new ControllersOrdenServicio();
-                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
-                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
-                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
-                $ordenServicioModelo->update($utilidadTotal);
+                $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
             }
             $comprobanteNombre = null;
             if($request->has('urlImagen')){
@@ -506,11 +494,7 @@ class CajaChica extends Controller
             }
             if(!empty($datos['id_os'])){
                 $ordenServicioControler = new ControllersOrdenServicio();
-                $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
-                $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
-                $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
-                $ordenServicioModelo->update($utilidadTotal);
+                $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
             }
             $comprobanteNombre = null;
             if($request->has('urlImagen')){

@@ -687,6 +687,9 @@ class OrdenServicio extends Controller
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
+        if($entregaActa->estado === 0){
+            return abort(404); 
+        }
         $utilitarios = new Utilitarios();
         $tituloPdf = "ENTREGA ACTAS - " . str_pad($entregaActa->id,5,'0',STR_PAD_LEFT);
         $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
@@ -700,7 +703,7 @@ class OrdenServicio extends Controller
         }
         $entregaActa = EntregaActa::select("id","id_responsable_firmante","nombre_representante","dni_representante","firma_representante","fecha_entrega")->where('id_orden_servicio',$ordenServicio->id)->first();
         if(empty($entregaActa)){
-            $entregaActa = EntregaActa::create(['id_orden_servicio' => $ordenServicio->id,'estado' => 1]);
+            $entregaActa = EntregaActa::create(['id_orden_servicio' => $ordenServicio->id,'estado' => 0]);
         }
         return response()->json(['actas' => $entregaActa]);
     }
@@ -741,6 +744,7 @@ class OrdenServicio extends Controller
             $imagenRecortada->save($rutaRecortada);
             $datos['firma_representante'] = $nombreArchivo;
             $datos['firma_representante_cortado'] = $nombreArchivoCortado;
+            $datos['estado'] = 1;
             if(!$request->has('idEntregaActa')){
                 $datos['id_orden_servicio'] = $request->ordenServicio;
                 EntregaActa::create($datos);
