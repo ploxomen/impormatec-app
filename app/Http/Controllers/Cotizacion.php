@@ -338,7 +338,7 @@ class Cotizacion extends Controller
             return response()->json(['session' => true]);
         }
         $mensaje = ['alerta' => 'No se puede eliminar la cotizacion porque esta asociada con una orden de servicio'];
-        if($cotizacion->estado >= 0){
+        if($cotizacion->estado <= 2){
             $mensaje = ['success' => 'cotizacion eliminada correctamente'];
             $cotizacion->update(['estado' => -1]);
         }
