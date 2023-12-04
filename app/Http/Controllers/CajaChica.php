@@ -340,7 +340,7 @@ class CajaChica extends Controller
                 $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
                 $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
                 $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
                 $ordenServicioModelo->update($utilidadTotal);
             }
             if($request->has('urlImagen')){
@@ -391,7 +391,7 @@ class CajaChica extends Controller
                 $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
                 $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
                 $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
                 $ordenServicioModelo->update($utilidadTotal);
             }
             if($request->has('urlImagen')){
@@ -447,7 +447,7 @@ class CajaChica extends Controller
                 $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
                 $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
                 $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
                 $ordenServicioModelo->update($utilidadTotal);
             }
             $comprobanteNombre = null;
@@ -509,7 +509,7 @@ class CajaChica extends Controller
                 $gastoTotal = $ordenServicioControler->calcularGastosCajaChica($datos['id_os']);
                 $ordenServicioModelo = OrdenServicio::find($datos['id_os']);
                 $ordenServicioModelo->update(['gasto_caja' => $gastoTotal]);
-                $utilidadTotal = $ordenServicioControler->calculoGeneralOrdenServicio($datos['id_os']);
+                $utilidadTotal = $ordenServicioControler->actualizarMontosOrdenServicio($datos['id_os']);
                 $ordenServicioModelo->update($utilidadTotal);
             }
             $comprobanteNombre = null;

@@ -441,6 +441,18 @@ class OrdenServicio extends Controller
             return response()->json(['error' => $th->getMessage()]);
         }
     }
+    public function eliminarOrdenServicio(ModelsOrdenServicio $ordenServicio){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        if($ordenServicio->comprobantes()->count() > 0){
+            return response()->json(['alerta' => 'Para eliminar la orden de servicio debe primero anular los comprobantes y/o guías de remisión asociados a ella']);
+        }
+        $this->devolverEstadosCotizacion($ordenServicio->id);
+        $ordenServicio->update(['estado' => -1]);
+        return response()->json(['success' => 'orden de servicio eliminada correctamente']);
+    }
     public function anularComprobanteInterno(Comprobantes $comprobante){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
         if(isset($verif['session'])){
@@ -547,17 +559,21 @@ class OrdenServicio extends Controller
                             continue;
                         }
                         if($servicio->tipo === "servicio"){
+                            $costoServicio = $this->obtenerCostoServicio($servicio->id);
                             $datos = OrdenServicioCotizacionServicio::updateOrCreate([
                                 'id_orden_servicio' => $request->idOrdenServicio,
                                 'id_cotizacion_servicio' => $servicio->id,
+                                'costo_total' => $costoServicio,
                                 'orden' => $key + 1
                             ],['estado' => 1]);
                             $nombreDetalle = $servicio->servicios->servicio;
                             CotizacionServicio::find($servicio->id)->update(['estado' => 2]);
                         }else{
+                            $costoProducto = $this->obtenerCostoProducto($servicio->id);
                             $datos = OrdenServicioCotizacionProducto::updateOrCreate([
                                 'id_orden_servicio' => $request->idOrdenServicio,
                                 'id_cotizacion_producto' => $servicio->id,
+                                'costo_total' => $costoProducto,
                                 'orden' => $key + 1
                             ],['estado' => 1]);
                             $nombreDetalle = $servicio->productos->nombreProducto;
@@ -567,6 +583,7 @@ class OrdenServicio extends Controller
                             'cantidad' => $servicio->cantidad,
                             'descuento' => $servicio->descuento,
                             'idCotizacionServicio' => $servicio->id,
+                            'precio' => $servicio->precio,
                             'idOsCotizacion' => $datos->id,
                             'importe' => $servicio->importe,
                             'tipoServicioProducto' => $servicio->tipo,
@@ -618,30 +635,44 @@ class OrdenServicio extends Controller
             break;
         }
     }
+    public function devolverEstadosCotizacion($idOrdenServicio) {
+        $cotizacionesServicios = OrdenServicioCotizacionServicio::where('id_orden_servicio',$idOrdenServicio)->get();
+        $cotizacionesProductos = OrdenServicioCotizacionProducto::where('id_orden_servicio',$idOrdenServicio)->get();
+        foreach ($cotizacionesServicios as $cotizacionServicio) {
+            $cotizacionServicio->cotizacionServicio()->update(['estado' => 1]);
+            $cotizacionServicio->cotizacionServicio->cotizacion->update(['estado' => 2]);
+        }
+        foreach ($cotizacionesProductos as $cotizacionProducto) {
+            $cotizacionProducto->cotizacionOsProductos()->update(['estado' => 1]);
+            $cotizacionProducto->cotizacionOsProductos->cotizacion->update(['estado' => 2]);
+        }
+    }
     function actualizarMontosOrdenServicio($idOrdenServicio){
-        $cotizaciones = OrdenServicioCotizacionServicio::select("id_cotizacion_servicio")->where('id_orden_servicio',$idOrdenServicio)->get()->toArray();
-        $cotizaciones = array_map(function($val){
-            return $val['id_cotizacion_servicio'];
-        },$cotizaciones);
-        $servicios = CotizacionServicio::whereIn('id',$cotizaciones)->get();
+        $cotizacionesServicios = OrdenServicioCotizacionServicio::mostrarServiciosOrdenServicio($idOrdenServicio);
+        $cotizaciones = OrdenServicioCotizacionProducto::mostrarProductosOrdenServicio($cotizacionesServicios,$idOrdenServicio);
         $calculosTotales = [
             'importe' => 0,
             'descuento' => 0,
             'igv' => 0,
             'adicional' => 0,
-            'total' => 0
+            'total' => 0,
+            'costo_total' => 0,
+            'gasto_caja' => $this->calcularGastosCajaChica($idOrdenServicio)
         ];
-        foreach ($servicios as $servicio) {
-            $calculosTotales['importe'] += $servicio->total;
-            $calculosTotales['descuento'] += $servicio->descuento;
-            $calculosTotales['igv'] += $servicio->igv;
+        foreach ($cotizaciones as $cotizacion) {
+            $calculosTotales['importe'] += $cotizacion->importe;
+            $calculosTotales['descuento'] += $cotizacion->descuento;
+            $calculosTotales['igv'] += $cotizacion->igv;
+            $calculosTotales['total'] += $cotizacion->total;
+            $calculosTotales['costo_total'] += $cotizacion->costo_total;
         }
         $adicionales = OrdenServicioAdicional::where('id_orden_servicio',$idOrdenServicio)->get();
         foreach ($adicionales as $adicional) {
             $calculosTotales['adicional'] += $adicional->total;
         }
-        $calculosTotales['total'] = $calculosTotales['importe'] - $calculosTotales['descuento'] + $calculosTotales['adicional'];
-        return ModelsOrdenServicio::find($idOrdenServicio)->update($calculosTotales);
+        $calculosTotales['total'] = $calculosTotales['total'] + $calculosTotales['igv'];
+        $calculosTotales['utilidad'] = $calculosTotales['total'] - $calculosTotales['gasto_caja'] - $calculosTotales['adicional'] - $calculosTotales['costo_total'];
+        ModelsOrdenServicio::find($idOrdenServicio)->update($calculosTotales);
     }
     public function obtenerOrdenServicio(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
@@ -781,12 +812,6 @@ class OrdenServicio extends Controller
             }
         }
         return $gastosCajaChica;
-    }
-    public function calculoGeneralOrdenServicio($idOrdenServicio) {
-        $ordenServicio = ModelsOrdenServicio::find($idOrdenServicio);
-        $total = round($ordenServicio->importe - $ordenServicio->descuento + $ordenServicio->igv - $ordenServicio->adicional - $ordenServicio->gasto_caja,2);
-        $utilidad = round($total - $ordenServicio->costo_total,2);
-        return ['utilidad' => $utilidad,'total' => $total];
     }
     public function agregarOs(Request $request){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOSAgregar);

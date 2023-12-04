@@ -17,7 +17,8 @@ class Cotizacion extends Model
         ->selectRaw("DATE_FORMAT(cotizacion.fechaCotizacion,'%d/%m/%Y') AS fechaCotizada,DATE_FORMAT(cotizacion.fecha_fin_garantia,'%d/%m/%Y') AS fechaFinGarantia,DATE_FORMAT(cotizacion.fechaFinCotizacion,'%d/%m/%Y') AS fechaFinCotizada,LPAD(cotizacion.id,5,'0') AS nroCotizacion,IF(cotizacion.id_pre_cotizacion IS NULL,'SIN PRE - COTIZACIÓN',LPAD(cotizacion.id_pre_cotizacion,5,'0')) AS nroPreCotizacion,CONCAT(usuarios.nombres,' ',usuarios.apellidos) AS atendidoPor")
         ->leftjoin("cotizacion_pre","cotizacion.id_pre_cotizacion","=","cotizacion_pre.id")
         ->join("clientes","cotizacion.id_cliente","=","clientes.id")
-        ->join("usuarios","cotizacion.cotizadorUsuario","=","usuarios.id");
+        ->join("usuarios","cotizacion.cotizadorUsuario","=","usuarios.id")
+        ->where("cotizacion.estado",">=",0);
     }
     public static function obtenerGarantiasFechas($mes,$year,$cliente,$estado) {
         $diaActual = date('Y-m-d');

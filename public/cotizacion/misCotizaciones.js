@@ -114,7 +114,7 @@ function loadPage() {
                             <i class="fas fa-check text-success mr-1"></i>
                             <span class="text-secondary">Aprobar</span>
                         </a>
-                        <a class="dropdown-item eliminar-cotizacion" href="javascript:void(0)">
+                        <a class="dropdown-item eliminar-cotizacion" href="javascript:void(0)" data-cotizacion="${data}">
                             <i class="fas fa-trash-alt text-danger mr-1"></i>
                             <span class="text-secondary">Eliminar</span>
                         </a>
@@ -291,21 +291,20 @@ function loadPage() {
                                     id : servicioProducto.id_producto,
                                     precioVenta : servicioProducto.precio,
                                     descuento : servicioProducto.descuento,
-                                    tipoMoneda : response.cotizacion.tipoMoneda
+                                    tipoMoneda : response.cotizacion.tipoMoneda,
+                                    servicio : servicioProducto.nombreDescripcion
                                 }
-                                const {id_producto: id,precio: precioVenta,cantidad,precio,descuento,total,tipo} = servicioProducto;
-                                servicioProducto.tipoMoneda = response.cotizacion.tipoMoneda;
-                                if(tipo === 'servicio'){
-                                    servicioProducto.servicio = nombreDescripcion
+                                if(servicioProducto.tipo === 'servicio'){
+                                    parametros.productos = servicioProducto.detalleProductos;
                                 }
-                                const serviciosCotizacion = cotizacionGeneral.asignarListaServiciosProductos(servicioProducto,tipo,"antiguo");
-
-                                tablaServicios.append(cotizacionGeneral.agregarServicio(k+1,id_producto,nombreDescripcion,cantidad,precio,descuento,total,tipo,"antiguo"));
-                                if(tipo === "servicio"){
-                                    tablaServicioProductos.append(cotizacionGeneral.listarDetalleProductosDeServicios(id_producto,nombreDescripcion,servicioProducto.detalleProductos,"antiguo"));
+                                const serviciosCotizacion = cotizacionGeneral.asignarListaServiciosProductos(parametros,servicioProducto.tipo,"antiguo");
+                                serviciosProductos.push(serviciosCotizacion);
+                                serviciosCotizacion.numeroItem = k + 1;
+                                tablaServicios.append(cotizacionGeneral.agregarServicio(serviciosCotizacion));
+                                if(servicioProducto.tipo === "servicio"){
+                                    tablaServicioProductos.append(cotizacionGeneral.agregarServicioProductos(serviciosCotizacion));
                                 }
-                                serviciosProductos.push(cotizacionGeneral.asignarListaServiciosProductosEditar(servicioProducto));
-                                cotizacionGeneral.cbServiciosOpt(cbServicios,true,[{id:id_producto,tipo}]);
+                                cotizacionGeneral.cbServiciosOpt(cbServicios,true,[{id:servicioProducto.id_producto,tipo: servicioProducto.tipo}]);
                             });
                             $('#listaServiciosProductos .cb-servicios-productos').select2({
                                 theme: 'bootstrap',
@@ -338,15 +337,30 @@ function loadPage() {
                     $('#editarCotizacion .bloquer-os').prop('disabled',true);
                 }
                 $('#editarCotizacion .select2-simple').trigger("change");
-                cotizacionGeneral.ocultarMostrarIGV($('#idModalincluirIGV').val());
+                cotizacionGeneral.ocultarMostrarIGV(serviciosProductos,$('#idModalincluirIGV').val());
                 $('#editarCotizacion').modal("show");
             } catch (error) {
                 console.error(error);
                 alertify.error("error al consultar la cotizaicon");
             }
         }
-        if (e.target.classList.contains("btn-outline-danger")) {
-            
+        if (e.target.classList.contains("eliminar-cotizacion")) {
+            alertify.confirm("Alerta","¿Deseas eliminar esta cotización?",async ()=>{
+                try {
+                    const response = await general.funcfetch("eliminar/" + e.target.dataset.cotizacion,null,"DELETE");
+                    if (response.session) {
+                        return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    tablatablaCotizacionDatatable.draw();
+                    return alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al consultar la cotizaicon");
+                }
+            },()=>{})
         }
     });
     const checkIncluirCotizacion = document.querySelector("#idModalreportePreCotizacion"); 
@@ -397,7 +411,7 @@ function loadPage() {
         cotizacionGeneral.obtenerServicios(cbServicios,$(this).val(),serviciosProductos,tablaServicios,tablaServicioProductos,e.params.data.element.dataset.tipo||"servicio");
     });
     $('#idModalincluirIGV').on("select2:select",async function(e){
-        cotizacionGeneral.ocultarMostrarIGV($(this).val());
+        cotizacionGeneral.ocultarMostrarIGV(serviciosProductos,$(this).val());
         cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
     });
     tablaServicioProductos.addEventListener("click",function (e) {  
@@ -544,7 +558,7 @@ function loadPage() {
                 }else{
                     $('#idModalincluirIGV').prop("disabled",false);
                 }
-                cotizacionGeneral.ocultarMostrarIGV($('#idModalincluirIGV').val());
+                cotizacionGeneral.ocultarMostrarIGV(serviciosProductos,$('#idModalincluirIGV').val());
                 cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
             }
         } catch (error) {

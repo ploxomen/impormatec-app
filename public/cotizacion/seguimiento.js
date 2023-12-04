@@ -247,7 +247,8 @@ function loadPage(){
         }
     });
     tablaSeguimientoGarantia.addEventListener("click",async function(e){
-        if(e.target.classList.contains("btn-outline-success")){
+        console.log(e);
+        if(e.target.classList.contains("btn-success")){
             try {
                 general.cargandoPeticion(e.target, general.claseSpinner, true);
                 const response = await general.funcfetch(`seguimiento/notificar/${e.target.dataset.tipo}/${e.target.dataset.id}`,null,"GET");

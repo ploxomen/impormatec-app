@@ -43,7 +43,7 @@ function loadPage() {
         {
             data : 'descuento',
             render : function(data,type,row){
-                return gen.resetearMoneda(data,row.tipoMoneda);
+                return "-"+gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
@@ -435,6 +435,25 @@ function loadPage() {
                 console.error(error);
                 alertify.error("error al obtener los datos de la orden de servicio");
             }
+        }
+        if (e.target.classList.contains("eliminar-os")) {
+            alertify.confirm("Alerta","Al eliminar esta orden de servicio se eliminaran los <strong>informes, certificados y entregas de actas</strong> que se hayan generado.<br>¿Deseas eliminar esta orden de servicio?",async ()=>{
+                try {
+                    const response = await gen.funcfetch("eliminar/" + e.target.dataset.ordenServicio,null,"DELETE");
+                    if (response.session) {
+                        return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                    }
+                    if(response.alerta){
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    tablaDataOs.draw();
+                    return alertify.success(response.success);
+                } catch (error) {
+                    console.error(error);
+                    alertify.error("error al consultar la cotizaicon");
+                }
+            },()=>{})
+            
         }
     });
     document.querySelector("#verComprobantes #tablaComprobantes").addEventListener("click", e => {

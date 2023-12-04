@@ -97,7 +97,8 @@ function loadPage() {
     $($tipoMoneda).on("select2:select", e => obtenerDetalleCotizacion($(cbClientes).val()));
     tablaServicios.addEventListener("click",(e)=>{
         if(e.target.dataset.cotizacionServicio){
-            alertify.confirm("Alerta","¿Deseas quitar este item de la orden de servicio?",()=>{
+            const mensaje = e.target.dataset.tipo === 'servicio' ? '¿Deseas eliminar este servicio?.<br>Recuerda que si este servicio cuenta con <strong>informe y certificado</strong>, tambien seran eliminados.' : '¿Deseas eliminar este producto?';
+            alertify.confirm("Alerta",mensaje,()=>{
                 listaDetalleCotizacion = ordenServicio.eliminarServicio(e,listaDetalleCotizacion,tablaServicios);
                 ordenServicio.calcularServiciosTotales(listaDetalleCotizacion,tablaServiciosAdicionales,$tipoMoneda.value);
             },()=>{});

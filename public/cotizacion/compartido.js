@@ -157,6 +157,7 @@ class Cotizacion extends General{
         servicio.className = "col-12";
         servicio.dataset.domservicio = idServicio;
         let templateBody = "";
+        console.log(productosLista);
         productosLista.forEach((p,k) => {
             p.index = k + 1;
             templateBody += this.filaProducto(p).outerHTML;
@@ -270,7 +271,7 @@ class Cotizacion extends General{
         let idProducto = null;
         if(tipo === "producto"){
             if(servicio.descuento){
-                descuento += servicio.descuento;
+                descuento += parseFloat(servicio.descuento);
             }
             precioUnitarioNormal = this.convertirPrecioVenta(servicio.precioVenta,servicio.tipoMoneda);
             precioUnitarioConIgv = precioUnitarioNormal * this.igvTotal;
@@ -280,12 +281,12 @@ class Cotizacion extends General{
         }
         if(servicio.productos){
             servicio.productos.forEach(p => {
-                const descuentoProducto = !p.descuentoProducto ? 0  : p.descuentoProducto;
+                const descuentoProducto = !p.descuentoProducto ? 0 : p.descuentoProducto;
                 const precioVentaConvertido = this.convertirPrecioVenta(p.precioVenta,p.tipoMoneda);
                 const precioVentaIgvProducto = precioVentaConvertido * this.igvTotal; 
                 const importeTotalProducto = incluirIGV ? precioVentaIgvProducto * p.cantidadUsada : precioVentaConvertido * p.cantidadUsada; 
                 productosLista.push({
-                    idServicio : p.id_servicio,
+                    idServicio : p.id_servicio||servicio.id,
                     tipo : condicion,
                     tipoPoneada : p.tipoMoneda,
                     idProducto : p.idProducto,
@@ -299,13 +300,12 @@ class Cotizacion extends General{
                     total : importeTotalProducto - descuentoProducto
                 });
                 importeTotal += importeTotalProducto
-                descuento += descuentoProducto;
+                descuento += parseFloat(descuentoProducto);
             });
             precioUnitarioNormal += incluirIGV ? importeTotal - (importeTotal * this.igv) : importeTotal;
             precioUnitarioConIgv += !incluirIGV ? importeTotal * this.igvTotal  : importeTotal;
         }
         let total = importeTotal - descuento;
-        console.log(descuento);
         return {
             idServicio,
             idProducto,
@@ -411,13 +411,15 @@ class Cotizacion extends General{
             cp.total = generalTotalDetalle;
             cp.importeTotal = subTotalDetalle;
             cp.descuento = descuentoTotalDetalle;
+            cp.precioUnitarioNormal = subTotalDetalle/cp.cantidad;
+            cp.precioUnitarioConIgv = cp.precioUnitarioNormal * this.igvTotal;
             if(cp.idServicio && !cp.idProducto){
                 tr.querySelector(".costo-precio").textContent = this.resetearMoneda(!incluirIGV ? cp.precioUnitarioNormal.toFixed(2) : cp.precioUnitarioConIgv.toFixed(2),valorTipoDocumento);
                 tr.querySelector(".costo-descuento").textContent = "-" + this.resetearMoneda(cp.descuento,valorTipoDocumento);
             }
             tr.querySelector(".costo-subtotal").textContent = this.resetearMoneda(cp.total.toFixed(2),valorTipoDocumento);
             subTotal += cp.importeTotal;
-            descuentoTotal += cp.descuento;
+            descuentoTotal += parseFloat(cp.descuento);
             generalTotal += cp.total;
         });
         const igvTotal = !incluirIGV2 ? 0 : parseFloat(generalTotal * this.igv);
@@ -458,8 +460,6 @@ class Cotizacion extends General{
                 
             }
         })
-        console.log(serviciosProductos);
-
     }
     modificarCantidad(e,serviciosProductos,tablaServicios){
         console.log(e,serviciosProductos,tablaServicios);
@@ -469,11 +469,12 @@ class Cotizacion extends General{
             tipo : !tr.dataset.servicio ? 'producto' : 'servicio',
             idDetalle : tr.dataset.servicio || tr.dataset.producto
         };
+        console.log(datosDetalle);
         const indexServicio = serviciosProductos.findIndex(function(detalle){
-            if(datosDetalle.tipo === "servicio" && detalle.idServicio === +datosDetalle.idDetalle && !detalle.idProducto){
+            if(datosDetalle.tipo === "servicio" && +detalle.idServicio === +datosDetalle.idDetalle && !detalle.idProducto){
                 return true;
             }
-            if(datosDetalle.tipo === "producto" && detalle.idProducto === +datosDetalle.idDetalle && !detalle.idServicio){
+            if(datosDetalle.tipo === "producto" && +detalle.idProducto === +datosDetalle.idDetalle && !detalle.idServicio){
                 return true;
             }
             return false;

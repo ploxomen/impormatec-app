@@ -127,7 +127,7 @@ class Cotizacion extends Controller
         $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
         $detalleCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id);
         foreach ($detalleCotizacion->where('tipo','servicio') as $servicio) {
-            $servicio->detalleProductos = CotizacionServicioProducto::select("productos.id AS idProducto","productos.urlImagen","productos.nombreProducto","cotizacion_servicio_productos.cantidad AS cantidadUsada","cotizacion_servicio_productos.costo AS pVentaConvertido","cotizacion_servicio_productos.total AS precioTotal","cotizacion_servicio_productos.importe", "cotizacion_servicio_productos.descuento","productos.precioVenta")->selectRaw("? AS tipoMoneda", [$cotizacion->tipoMoneda])
+            $servicio->detalleProductos = CotizacionServicioProducto::select("productos.id AS idProducto","productos.urlImagen","productos.nombreProducto","cotizacion_servicio_productos.cantidad AS cantidadUsada","cotizacion_servicio_productos.costo AS precioVenta","cotizacion_servicio_productos.total AS precioTotal","cotizacion_servicio_productos.importe", "cotizacion_servicio_productos.descuento AS descuentoProducto")->selectRaw("? AS tipoMoneda", [$cotizacion->tipoMoneda])
             ->join("productos","cotizacion_servicio_productos.id_producto","=","productos.id")
             ->where(['id_cotizacion_servicio' => $servicio->id])->get();
         }
@@ -167,17 +167,18 @@ class Cotizacion extends Controller
             foreach ($detalleCotizacion as $key => $coti) {
                 $importes['descuentoTotal'] += $coti->descuento;
                 if($incluirIgv){
-                    $importes['igvTotal'] += $coti->pTotal * 0.18;
+                    $importes['igvTotal'] += $coti->total * 0.18;
                 }
-                $importes['importeTotal'] += $coti->pTotal;
+                $importes['importeTotal'] += $coti->importeTotal;
+                $importes['total'] += $coti->total;
                 $coleccionDatos = [
-                    'precio' => $coti->pUni,
+                    'precio' => $coti->precioUnitarioNormal,
                     'orden' => $key + 1,
                     'cantidad' => $coti->cantidad,
-                    'importe' => $coti->pImporte,
+                    'importe' => $coti->importeTotal,
                     'descuento' => $coti->descuento,
-                    'total' => $coti->pTotal,
-                    'igv' => $incluirIgv ? $coti->pTotal * 0.18 : 0,
+                    'total' => $coti->total,
+                    'igv' => $incluirIgv ? $coti->total * 0.18 : 0,
                 ];
                 if(empty($coti->idServicio) && !empty($coti->idProducto)){
                     CotizacionProductos::updateOrCreate([
@@ -195,16 +196,15 @@ class Cotizacion extends Controller
                         'id_cotizacion_servicio' => $mCotiServ->id,
                         'id_producto' => $producto->idProducto,
                     ],[
-                        'costo' => $producto->pVentaConvertido,
+                        'costo' => $producto->precioUnitarioNormal,
                         'cantidad' => $producto->cantidad,
-                        'importe' => $producto->importe,
+                        'importe' => $producto->importeTotal,
                         'descuento' => $producto->descuento,
-                        'total' => $producto->pTotal
+                        'total' => $producto->total
                     ]);
                 }
             }
-            $importes['total'] = $incluirIgv ? $importes['importeTotal'] + $importes['igvTotal'] : $importes['importeTotal'];
-            $importes['importeTotal'] = $importes['importeTotal'] + $importes['descuentoTotal'];
+            $importes['total'] = $importes['total'] + round($importes['igvTotal'],2);
             $cotizacionModel->update($importes);
             $cotizacionModel->fresh();
             $rutaArchivo = "/cotizacion/reportes/" . $cotizacionModel->documento;
@@ -332,6 +332,18 @@ class Cotizacion extends Controller
             'Content-Disposition' => 'inline; filename="cotizacion.pdf"'
         ]);
     }
+    public function eliminarCotizacion(ModelsCotizacion $cotizacion){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $mensaje = ['alerta' => 'No se puede eliminar la cotizacion porque esta asociada con una orden de servicio'];
+        if($cotizacion->estado >= 0){
+            $mensaje = ['success' => 'cotizacion eliminada correctamente'];
+            $cotizacion->update(['estado' => -1]);
+        }
+        return response()->json($mensaje);
+    }
     public function aprobarCotizacion(Request $request) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisCotizaciones);
         if(isset($verif['session'])){
@@ -445,7 +457,6 @@ class Cotizacion extends Controller
         try {
             $mCotizacion = ModelsCotizacion::create($cotizacion);
             foreach ($detalleCotizacion as $key => $coti) {
-                // dd($coti);
                 $importes['descuentoTotal'] += $coti->descuento;
                 if($incluirIgv){
                     $importes['igvTotal'] += $coti->total * 0.18;

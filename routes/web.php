@@ -148,6 +148,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('reportes', [Cotizacion::class, 'reportesCotizaciones'])->name("cotizacion.reportes");
         Route::get('obtener/{cotizacion}', [Cotizacion::class, 'obtenerCotizacion']);
         Route::post('aprobar', [Cotizacion::class, 'aprobarCotizacion']);
+        Route::delete('eliminar/{cotizacion}', [Cotizacion::class, 'eliminarCotizacion']);
         Route::post('acciones', [Cotizacion::class, 'accionesCotizacion']);
         Route::post('modificar', [Cotizacion::class, 'actualizarCotizacion']);
         Route::get('agregar', [Cotizacion::class, 'indexNuevaCotización'])->name('admin.cotizacion.agregar.index');
@@ -232,6 +233,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('mis-comprobantes/{ordenServicio}', [OrdenServicio::class, 'misComprobantes']);
         Route::post('mis-comprobantes/anular/{comprobante}', [OrdenServicio::class, 'anularComprobanteInterno']);
         Route::get('reportes', [OrdenServicio::class, 'reportesOrdenesServicios'])->name('ordenes.servicios.reportes');
+        Route::delete('eliminar/{ordenServicio}', [OrdenServicio::class, 'eliminarOrdenServicio']);
         Route::get('probar/{ordenServicio}', [OrdenServicio::class, 'probarBoloeta']);
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
@@ -271,10 +273,10 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('comprobante/ver/pdf/facturacion/{comprobante}', [Clientes::class, 'verComprobanteFacturacion']);
         Route::get('informes', [Clientes::class, 'misInformesIndex'])->name('cliente.informes.index');
         Route::post('informes/listar', [Clientes::class, 'obtenerInformes']);
-        Route::get('informe/ver/pdf/{idOrdenServicio}/{idServicio}', [Clientes::class, 'reportePrevioInforme'])->name("reporte.previo.informe");
+        Route::get('informe/ver/pdf/{idOrdenServicio}/{idServicio}', [Clientes::class, 'reportePrevioInforme']);
         Route::get('certificados', [Clientes::class, 'misCertificados'])->name('cliente.certificados.index');
         Route::post('certificados/listar', [Clientes::class, 'obtenerCertificados']);
-        Route::get('certificado/ver/pdf/{certificado}', [Clientes::class, 'visualizarCertificado'])->name("reporte.previo.informe");
+        Route::get('certificado/ver/pdf/{certificado}', [Clientes::class, 'visualizarCertificado']);
     });
     Route::prefix('usuarios')->group(function(){
         Route::post('accion',[Usuario::class,'usuarioAccion']);

@@ -23,7 +23,7 @@ class OrdenServicio extends Model
     }
     public static function misOrdeneseServicio($fechaInicio,$fechaFin,$cliente,$estado) {
         $ordenesServicios = OrdenServicio::select("orden_servicio.id","clientes.nombreCliente","orden_servicio.utilidad","orden_servicio.costo_total","orden_servicio.gasto_caja","tipoMoneda","orden_servicio.importe","orden_servicio.descuento","orden_servicio.igv","orden_servicio.adicional","orden_servicio.total","orden_servicio.estado")->selectRaw("DATE_FORMAT(orden_servicio.fecha,'%d/%m/%Y') AS fechaOs,LPAD(orden_servicio.id,5,'0') AS nroOs")
-        ->join("clientes","orden_servicio.id_cliente","=","clientes.id")->whereBetween('orden_servicio.fecha',[$fechaInicio,$fechaFin]);
+        ->join("clientes","orden_servicio.id_cliente","=","clientes.id")->where('orden_servicio.estado','>=',0)->whereBetween('orden_servicio.fecha',[$fechaInicio,$fechaFin]);
         if($cliente !== 'TODOS'){
             $ordenesServicios = $ordenesServicios->where('orden_servicio.id_cliente',$cliente);
         }

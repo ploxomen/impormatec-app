@@ -10,7 +10,6 @@ function loadPage(){
     const checkIncluirCotizacion = document.querySelector("#incluirPreCotizacion");
     let cbServicios = document.querySelector("#cbServicios");
     let serviciosProductos = [];
-    
     tablaServicioProductos.addEventListener("click",function(e){
         if(e.target.classList.contains("btn-danger")){
             const tr = e.target.parentElement.parentElement;
@@ -237,7 +236,6 @@ function loadPage(){
                         }).on("select2:select",function(e){
                             cotizacionGeneral.obtenerProducto($(this),serviciosProductos,tablaServicios);
                         });
-                        console.log(serviciosProductos);
                         cotizacionGeneral.calcularServiciosTotales(serviciosProductos,tablaServicios);
                         continue;
                     }

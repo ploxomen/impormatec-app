@@ -35,6 +35,7 @@ class OrdenServicioCotizacionServicio extends Model
         ->leftJoin("certificados_servicios","certificados_servicios.id_os_cotizacion_servicio","=","orden_servicio_cotizacion_servicio.id")
         ->join("clientes","clientes.id","=","orden_servicio.id_cliente")
         ->leftJoin("usuarios","usuarios.id","=","orden_servicio_cotizacion_servicio.responsable_usuario")
+        ->where("orden_servicio.estado",">=",0)
         ->whereBetween('orden_servicio_cotizacion_servicio.fechaCreada',[$fechaInicio,$fechaFin]);
     }
     public static function mostrarServiciosOrdenServicio($idOrdenServicio) {

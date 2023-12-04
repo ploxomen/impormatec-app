@@ -31,11 +31,11 @@
                         <option value="USD">Dolar ($)</option>
                     </select>
                 </div>
-                <div class="form-group col-12 col-md-6 col-lg-2 col-xl-2">
-                    <label for="idModalincluir_igv">Con IGV</label>
-                    <select id="idModalincluir_igv" disabled required class="select2-simple form-control-sm">
+                <div class="form-group col-12 col-md-6 col-lg-4 col-xl-2">
+                    <label for="idModalincluirIGV">Con IGV</label>
+                    <select disabled name="incluirIGV" id="idModalincluirIGV" required class="select2-simple form-control-sm">
                         <option value=""></option>
-                        <option value="1">SI</option>
+                        <option value="1" selected>SI</option>
                         <option value="0">NO</option>
                     </select>
                 </div>
@@ -79,10 +79,10 @@
                                     <th colspan="6">DESCUENTO</th>
                                     <th colspan="2" id="txtDescuento">- S/ 0.00</th>
                                 </tr>
-                                {{-- <tr>    
+                                <tr>    
                                     <th colspan="6">I.G.V</th>
                                     <th colspan="2" id="txtIGV">S/ 0.00</th>
-                                </tr> --}}
+                                </tr>
                                 <tr>
                                     <th colspan="6">COSTOS ADICIONALES</th>
                                     <th colspan="2" id="txtCostoAdicional">S/ 0.00</th>
