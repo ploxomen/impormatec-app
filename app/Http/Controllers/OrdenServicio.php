@@ -813,6 +813,8 @@ class OrdenServicio extends Controller
         foreach ($ordenServicio->cajaChicaCostos as $costoCajaChica) {
             if($ordenServicio->tipoMoneda !== $costoCajaChica->tipo_moneda){
                 $gastosCajaChica += $ordenServicio->tipoMoneda === 'PEN' ? round($costoCajaChica->monto_total * $costoCajaChica->tipo_cambio,2) : round($costoCajaChica->monto_total/$costoCajaChica->tipo_cambio,2);
+            }else{
+                $gastosCajaChica += $costoCajaChica->monto_total;
             }
         }
         return $gastosCajaChica;

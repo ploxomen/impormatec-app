@@ -181,7 +181,7 @@ class Usuario extends Controller
         }
         switch ($request->acciones) {
             case 'agregar':
-                $repetidos = User::where(['correo' => $request->correo])->count();
+                $repetidos = User::where(['correo' => $request->correo])->where('estado','!=',0)->count();
                 if ($repetidos > 0) {
                     return response()->json(['alerta' => 'El correo ' . $request->email . ' ya se encuentra registrado, por favor intente con otro correo']);
                 }

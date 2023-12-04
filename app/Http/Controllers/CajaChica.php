@@ -39,7 +39,7 @@ class CajaChica extends Controller
         $ordenesServicios = [];
         if(!empty($cajaChica)){
             $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
-            $ordenesServicios = OrdenServicio::select("id")->get();
+            $ordenesServicios = OrdenServicio::select("id")->where('estado','>',0)->get();
         }
         return view("almacen.cajaChicaGastos",compact("modulos","cajaChica","fechaLarga","monedaTipo","ordenesServicios"));
     }
@@ -52,7 +52,7 @@ class CajaChica extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         $fechaLarga = (new Utilitarios)->obtenerFechaLarga(strtotime(date('Y-m-d')));
         $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
-        $ordenesServicios = OrdenServicio::select("id")->get();
+        $ordenesServicios = OrdenServicio::select("id")->where('estado','>',0)->get();
         return view("almacen.cajaChicaGastosAdmin",compact("modulos","cajaChica","fechaLarga","monedaTipo","ordenesServicios"));
     }
     public function indexGastosReporte(ModelsCajaChica $cajaChica)
@@ -244,9 +244,14 @@ class CajaChica extends Controller
         if(isset($accessModulo['session'])){
             return response()->json($accessModulo);
         }
+        $listaOrdenesServicio = CajaChicaDetalle::select('id_os')->whereNotNull('id_os')->get()->toArray();
         CajaChicaAumento::where(['id_caja_chica'=>$cajaChica->id])->delete();
         CajaChicaDetalle::where(['id_caja_chica'=>$cajaChica->id])->delete();
         $cajaChica->delete();
+        $ordenServicioControler = new ControllersOrdenServicio();
+        foreach ($listaOrdenesServicio as $ordenServicio) {
+            $ordenServicioControler->actualizarMontosOrdenServicio($ordenServicio['id_os']);        
+        }
         return response()->json(['success' => 'caja chica eliminada correctamente']);
     }
     public function listarGasto($gasto,$cajaChica){
@@ -280,7 +285,16 @@ class CajaChica extends Controller
         if(isset($accessModulo['session'])){
             return response()->json($accessModulo);
         }
+        $detalleGasto = CajaChicaDetalle::where(['id_caja_chica'=>$cajaChica->id,'id'=>$gasto])->first();
+        if(!empty($detalleGasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($detalleGasto->url_imagen)){
+            Storage::disk('imgGastosCaja')->delete($detalleGasto->url_imagen);
+        }
+        $idOrdenServicio =  empty($detalleGasto->id_os) ? null : $detalleGasto->id_os;
         CajaChicaDetalle::where(['id_caja_chica'=>$cajaChica->id,'id'=>$gasto])->delete();
+        if(!is_null($idOrdenServicio)){
+            $ordenServicioControler = new ControllersOrdenServicio();
+            $ordenServicioControler->actualizarMontosOrdenServicio($idOrdenServicio);
+        }
         $totalDetalle = CajaChicaDetalle::where('id_caja_chica',$cajaChica->id)->sum('monto_total_cambio');
         $cajaChica->update(['monto_gastado' => $totalDetalle]);
         $cajaChica->refresh();
@@ -300,7 +314,12 @@ class CajaChica extends Controller
         if(!empty($detalleGasto->url_imagen) && Storage::disk('imgGastosCaja')->exists($detalleGasto->url_imagen)){
             Storage::disk('imgGastosCaja')->delete($detalleGasto->url_imagen);
         }
+        $idOrdenServicio =  empty($detalleGasto->id_os) ? null : $detalleGasto->id_os;
         $detalleGasto->delete();
+        if(!is_null($idOrdenServicio)){
+            $ordenServicioControler = new ControllersOrdenServicio();
+            $ordenServicioControler->actualizarMontosOrdenServicio($idOrdenServicio);
+        }
         $totalDetalle = CajaChicaDetalle::where('id_caja_chica',$modeloCaja->id)->sum('monto_total_cambio');
         $modeloCaja->update(['monto_gastado' => $totalDetalle]);
         $modeloCaja->refresh();
