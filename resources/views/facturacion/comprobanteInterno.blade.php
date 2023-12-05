@@ -61,7 +61,7 @@
                         style="text-align: center; border: 2px solid #000; padding: .5rem 1rem;">
                         <h5 style="margin-bottom: .1rem; color: #1A284A; padding: .2rem;"><b>COMPROBANTE INTERNO</b></h5>
                         <b style="margin-bottom: .3rem; display: block;">FECHA: {{date('d/m/Y',$strFechaPago)}}</b>
-                        <h5 style="color: red;"><b>CI - {{$numeroPago}}</b></h5>
+                        <h5 style="color: red;"><b>CI001 - {{$numeroPago}}</b></h5>
                     </div>
                 </th>
             </tr>
