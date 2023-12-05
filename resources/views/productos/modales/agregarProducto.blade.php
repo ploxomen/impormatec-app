@@ -25,7 +25,7 @@
                 </div>
                 <div class="form-group col-12">
                     <label for="idModaldescripcion">Descripción</label>
-                    <textarea name="descripcion" id="idModaldescripcion" class="form-control" rows="2"></textarea>
+                    <textarea name="descripcion" maxlength="1000" id="idModaldescripcion" class="form-control" rows="2"></textarea>
                 </div>
                 <div class="form-group col-12 col-md-6">
                     <div class="custom-control custom-radio">

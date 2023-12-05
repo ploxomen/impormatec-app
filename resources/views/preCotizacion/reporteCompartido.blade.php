@@ -46,7 +46,7 @@
         }
         $inicioContador = 1;
     @endphp
-    <table border="1">
+    <table>
         @foreach ($seccion->imagenes as $keyImagen => $imagen)
             @php
                 $path = storage_path('app/preCotizacionImgSeccion/' . $imagen->url_imagen);
@@ -58,7 +58,7 @@
                 <tr>
             @endif
             <td style="width:{{$ancho}}px;vertical-align: top !important;" class="text-center">
-                <img src="{{$path}}" style="border: 1px solid red;" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
+                <img src="{{$path}}" alt="{{$imagen->descripcion}}" width="{{$ancho - 30}}px" height="{{$ancho - 30}}px"/>
                 <p class="descripcion-img">
                     {{$imagen->descripcion}}
                 </p>
