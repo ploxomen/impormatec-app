@@ -7,10 +7,11 @@
             <th>SUBTOTAL</th>
             <th>DESC.</th>
             <th>I.G.V</th>
-            <th>GASTOS ADICIONALES</th>
-            <th>GASTOS CAJA</th>
             <th>TOTAL VENTA</th>
+            <th>GASTOS ADICIONAL</th>
+            <th>GASTOS CAJA</th>
             <th>COSTO TOTAL</th>
+            <th>GASTO TOTAL</th>
             <th>UTILIDAD</th>
             <th>ESTADO</th>
         </tr>
@@ -21,6 +22,7 @@
                 $moneda = $incluirMoneda ? ($ordenServicio->tipoMoneda === 'USD' ? '$ ' : 'S/ ') : '';
                 $nombresEstados = ['Anulado' => 0,'Generado' => 1,'Informado' => 2,'Pendiente OS' => 3,'Con OS' => 4];
                 $keyEstado = array_search($ordenServicio->estado,$nombresEstados);
+                $gastoTotal = round($moneda.$ordenServicio->adicional + $moneda.$ordenServicio->gasto_caja + $moneda.$ordenServicio->costo_total,2);
             @endphp
             <tr>
                 <td>{{$ordenServicio->nroOs}}</td>
@@ -29,10 +31,11 @@
                 <td>{{$moneda.$ordenServicio->importe}}</td>
                 <td>{{$moneda.$ordenServicio->descuento}}</td>
                 <td>{{$moneda.$ordenServicio->igv}}</td>
+                <td>{{$moneda.$ordenServicio->total}}</td>
                 <td>{{$moneda.$ordenServicio->adicional}}</td>
                 <td>{{$moneda.$ordenServicio->gasto_caja}}</td>
-                <td>{{$moneda.$ordenServicio->total}}</td>
                 <td>{{$moneda.$ordenServicio->costo_total}}</td>
+                <td>{{$moneda.$gastoTotal}}</td>
                 <td>{{$moneda.$ordenServicio->utilidad}}</td>
                 <td>{{$keyEstado === false ? 'Sin estado' : $keyEstado}}</td>
             </tr>
