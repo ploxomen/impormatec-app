@@ -537,22 +537,22 @@ class RapiFac extends Controller
         $detalles = [];
         $item = 0;
         $totalGeneral = 0;
-        // $totalSinIgv = 0;
+        $decimales = 2;
         $impuestoTotal = 0;
         $totalDescuentos = 0;
         $descuentoMontoBase = 0;
         foreach ($detallesComprobante as $detalle) {
             $item++;
             // dd($detalle);
-            $precioUnitario = round($detalle['precio'] * 1.18,6);
-            $valorUnitario = round($precioUnitario/1.18,6);
+            $precioUnitario = round($detalle['precio'] * 1.18,$decimales);
+            $valorUnitario = round($precioUnitario/1.18,$decimales);
             // dd($precioUnitario,$valorUnitario);
-            $valorVenta = round($detalle['cantidad'] * $valorUnitario,6);
-            $porcentajeDescuento = round(($detalle['descuento']/$valorVenta)*100,6);
-            $valorVentaItem = round($valorVenta - $detalle['descuento'],6);
-            $igv = round($valorVentaItem*0.18,6);
-            $totalPrecioVentaItem = round($valorVentaItem + $igv,6);
-            $precioUnitarioNeto = round($totalPrecioVentaItem/$detalle['cantidad'],6);
+            $valorVenta = round($detalle['cantidad'] * $valorUnitario,$decimales);
+            $porcentajeDescuento = round(($detalle['descuento']/$valorVenta)*100,$decimales);
+            $valorVentaItem = round($valorVenta - $detalle['descuento'],$decimales);
+            $igv = round($valorVentaItem*0.18,$decimales);
+            $totalPrecioVentaItem = round($valorVentaItem + $igv,$decimales);
+            $precioUnitarioNeto = round($totalPrecioVentaItem/$detalle['cantidad'],$decimales);
             $detalles[] = [
                 'Item' => $item,
                 "ProductoCodigo" => mb_strtoupper(substr($detalle['tipoServicioProducto'],0,1)) . $detalle['idOsCotizacion'],
@@ -604,8 +604,8 @@ class RapiFac extends Controller
             $impuestoTotal += $igv;
             $totalDescuentos += $detalle['descuento'];
         }
-        // $totalSinIgv = round($totalGeneral - $impuestoTotal,6);
-        return [$detalles,$descuentoMontoBase,round($totalGeneral,6),round($impuestoTotal,6),$totalDescuentos];
+        // $totalSinIgv = round($totalGeneral - $impuestoTotal,$decimales);
+        return [$detalles,$descuentoMontoBase,round($totalGeneral,$decimales),round($impuestoTotal,$decimales),$totalDescuentos];
     }
     function generarComprobanteAgrabadoSUNAT($datosGenerales,$detalleComprobante,$tipoMoneda){
         list($detalles,$descuentoMontoBase,$totalGeneral,$impuestoTotal,$totalDescuentos) = $this->detalleComprobanteAgrabadoSUNAT($detalleComprobante);
