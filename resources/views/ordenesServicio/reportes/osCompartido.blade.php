@@ -22,7 +22,7 @@
                 $moneda = $incluirMoneda ? ($ordenServicio->tipoMoneda === 'USD' ? '$ ' : 'S/ ') : '';
                 $nombresEstados = ['Anulado' => 0,'Generado' => 1,'Informado' => 2,'Pendiente OS' => 3,'Con OS' => 4];
                 $keyEstado = array_search($ordenServicio->estado,$nombresEstados);
-                $gastoTotal = round($moneda.$ordenServicio->adicional + $moneda.$ordenServicio->gasto_caja + $moneda.$ordenServicio->costo_total,2);
+                $gastoTotal = round($ordenServicio->adicional + $ordenServicio->gasto_caja + $ordenServicio->costo_total,2);
             @endphp
             <tr>
                 <td>{{$ordenServicio->nroOs}}</td>
