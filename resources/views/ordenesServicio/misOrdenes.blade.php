@@ -79,10 +79,11 @@
                     <th>Subtotal</th>
                     <th>Desc.</th>
                     <th>I.G.V</th>
-                    <th>Gastos Adicionales</th>
-                    <th>Gastos Caja</th>
                     <th>Total</th>
+                    <th>Gastos Adicional</th>
+                    <th>Gastos Caja</th>
                     <th>Costo Total</th>
+                    <th>Gasto total</th>
                     <th>Utilidad</th>
                     <th>Estado</th>
                     <th>Acciones</th>

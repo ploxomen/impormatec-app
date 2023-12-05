@@ -53,6 +53,12 @@ function loadPage() {
             }
         },
         {
+            data : 'total',
+            render : function(data,type,row){
+                return gen.resetearMoneda(data,row.tipoMoneda);
+            }
+        },
+        {
             data : 'adicional',
             render : function(data,type,row){
                 return "-" + gen.resetearMoneda(data,row.tipoMoneda);
@@ -65,15 +71,16 @@ function loadPage() {
             }
         },
         {
-            data : 'total',
-            render : function(data,type,row){
-                return gen.resetearMoneda(data,row.tipoMoneda);
-            }
-        },
-        {
             data : 'costo_total',
             render : function(data,type,row){
                 return "-" + gen.resetearMoneda(data,row.tipoMoneda);
+            }
+        },
+        {
+            data : 'data',
+            render : function(data,type,row){
+                const gastoTotal = parseFloat(row.adicional) + parseFloat(row.gasto_caja) + parseFloat(row.costo_total);
+                return "-" + gen.resetearMoneda(gastoTotal,row.tipoMoneda);
             }
         },
         {
