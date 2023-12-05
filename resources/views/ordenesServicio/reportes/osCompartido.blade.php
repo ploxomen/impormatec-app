@@ -27,12 +27,12 @@
                 <td>{{$ordenServicio->fechaOs}}</td>
                 <td>{{$ordenServicio->nombreCliente}}</td>
                 <td>{{$moneda.$ordenServicio->importe}}</td>
-                <td>{{'-'.$moneda.$ordenServicio->descuento}}</td>
+                <td>{{$moneda.$ordenServicio->descuento}}</td>
                 <td>{{$moneda.$ordenServicio->igv}}</td>
-                <td>{{'-'.$moneda.$ordenServicio->adicional}}</td>
-                <td>{{'-'.$moneda.$ordenServicio->gasto_caja}}</td>
+                <td>{{$moneda.$ordenServicio->adicional}}</td>
+                <td>{{$moneda.$ordenServicio->gasto_caja}}</td>
                 <td>{{$moneda.$ordenServicio->total}}</td>
-                <td>{{'-'.$moneda.$ordenServicio->costo_total}}</td>
+                <td>{{$moneda.$ordenServicio->costo_total}}</td>
                 <td>{{$moneda.$ordenServicio->utilidad}}</td>
                 <td>{{$keyEstado === false ? 'Sin estado' : $keyEstado}}</td>
             </tr>
