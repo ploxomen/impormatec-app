@@ -230,6 +230,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         });
     });
     Route::prefix('ordenes-servicio')->group(function () {
+        Route::get('guiar-remision/consultar/{ordenServicio}', [OrdenServicio::class, 'consultarDatosGuiaRemision']);
         Route::get('mis-comprobantes/{ordenServicio}', [OrdenServicio::class, 'misComprobantes']);
         Route::post('mis-comprobantes/anular/{comprobante}', [OrdenServicio::class, 'anularComprobanteInterno']);
         Route::get('reportes', [OrdenServicio::class, 'reportesOrdenesServicios'])->name('ordenes.servicios.reportes');
@@ -238,6 +239,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('nueva', [OrdenServicio::class, 'indexNuevaOs'])->name("os.generar.index");
         Route::get('clientes/{cliente}', [OrdenServicio::class, 'obtenerCotizacionCliente']);
         Route::post('agregar', [OrdenServicio::class, 'agregarOs']);
+        Route::post('generar/factura/guia-remision', [OrdenServicio::class, 'facturarGuiaRemision']);
         Route::post('generar/factura', [OrdenServicio::class, 'generarComprobante']);
         Route::get('todos', [OrdenServicio::class, 'indexMisOs'])->name("admin.ordenesServicios.index");
         Route::post('pago/cuota-agregar', [OrdenServicio::class, 'agregarCuota']);

@@ -132,7 +132,7 @@ function loadPage() {
                             <i class="fas fa-money-bill-alt text-success"></i>
                             <span>Generar comprobante</span>
                         </a>
-                        <a href="javascript:void(0)" class="dropdown-item" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarGuiaRemision">
+                        <a href="javascript:void(0)" class="dropdown-item generar-guia-remision" data-orden-servicio="${data}" data-toggle="modal" data-target="#generarGuiaRemision">
                             <i class="fas fa-box-open text-warning"></i>
                             <span>Guía de remisión</span>
                         </a>
@@ -392,6 +392,31 @@ function loadPage() {
             } catch (error) {
                 console.error(error);
                 alertify.error("error al obtener los datos de los comprobantes");
+            }
+        }
+        if(e.target.classList.contains("generar-guia-remision")){
+            try {
+                const response = await gen.funcfetch("guiar-remision/consultar/" + e.target.dataset.ordenServicio,null,"GET");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => {
+                        window.location.reload();
+                    });
+                }
+                idOrdenServicio = e.target.dataset.ordenServicio;
+                for (const key in response.success) {
+                    if (Object.hasOwnProperty.call(response.success, key)) {
+                        const valor = response.success[key];
+                        const dom = document.querySelector("#generarGuiaRemision #" + key);
+                        if(!dom){
+                            continue;
+                        }
+                        dom.value = valor;
+                    }
+                }
+                $('#generarGuiaRemision').modal("show");
+            } catch (error) {
+                console.error(error);
+                alertify.error("error al obtener los datos de la guía de remisión");
             }
         }
         if(e.target.classList.contains("generar-comprobante")){
@@ -1076,7 +1101,97 @@ function loadPage() {
             console.error(error);
             alertify.error("error al editar la cuota");
         }
+    });
+    /*GUIAS DE REMISION*/
+    const botonDetalleGuiaRemision = document.querySelector("#generarGuiaRemision #agregarDetalleGuiaRemision");
+    const tablaDetalleGuiaRemision = document.querySelector("#generarGuiaRemision #tablaDetalleGuiaRemision");
+    const formularioGuiaRemision = document.querySelector("#generarGuiaRemision #formGuiaRemitente");
+    const cantidadTotalBultos = document.querySelector("#generarGuiaRemision #modalCantidadTotal");
+    tablaDetalleGuiaRemision.querySelector("input").addEventListener("change",calculatBultoTotal);
+    botonDetalleGuiaRemision.addEventListener("click", e => {
+        e.preventDefault();
+        $(tablaDetalleGuiaRemision.querySelectorAll(".select2-simple")).select2('destroy');
+        const primeraFila = tablaDetalleGuiaRemision.children[0];
+        const nuevaFila = primeraFila.cloneNode(true);
+        nuevaFila.querySelector("textarea").value = "";
+        nuevaFila.querySelector("input").value = "";
+        nuevaFila.children[0].textContent = tablaDetalleGuiaRemision.children.length + 1;
+        nuevaFila.querySelector("input").addEventListener("change",calculatBultoTotal);
+        tablaDetalleGuiaRemision.append(nuevaFila);
+        $(tablaDetalleGuiaRemision.querySelectorAll(".select2-simple")).select2({
+            theme: 'bootstrap',
+            width: '100%',
+            placeholder: 'Seleccione una medida'
+        })
+        return alertify.success("detalle agregado correctamente");
     })
-    
+    function calculatBultoTotal() {
+        let totalBultos = 0;
+        for (const fila of tablaDetalleGuiaRemision.children) {
+            const valor = parseFloat(fila.querySelector("input").value);
+            const cantidad = isNaN(valor) ? 0 : valor;
+            totalBultos += cantidad;
+        }
+        cantidadTotalBultos.textContent = totalBultos;
+    }
+    tablaDetalleGuiaRemision.addEventListener("click", e=> {
+        if(e.target.classList.contains("eliminar-detalle")){
+            if(tablaDetalleGuiaRemision.children.length === 1){
+                return alertify.alert("Alerta","La guía de remisión debe tener al menos un detalle");
+            }
+            e.target.closest("tr").remove();
+            Array.from(tablaDetalleGuiaRemision.children).forEach((detalle, key) => {
+                detalle.children[0].textContent = key + 1;
+            })
+            calculatBultoTotal();
+            return alertify.success("detalle eliminado correctamente");
+        }
+    })
+    $('#generarGuiaRemision').on("hidden.bs.modal",function(e){
+        formularioGuiaRemision.reset();
+        idOrdenServicio = null;
+        Array.from(tablaDetalleGuiaRemision.children).forEach((detalle, key) => {
+           if(key > 0){
+            detalle.remove();
+           }else{
+            detalle.querySelector("textarea").value = "";
+            detalle.querySelector("input").value = "";
+           }
+        })
+        cantidadTotalBultos.textContent = "0";
+    })
+    document.querySelector("#generarGuiaRemision #btnFacturar").onclick = e => document.querySelector("#generarGuiaRemision #inputFacturar").click();
+    formularioGuiaRemision.addEventListener("submit",async function(e){
+        e.preventDefault();
+        alertify.confirm("Alerta","Estas apunto de generar una Guía de Remision<br>¿Deseas continuar de todas formas?",async ()=>{
+            try {
+                gen.banerLoader.hidden = false;
+                let datos = new FormData(formularioGuiaRemision);
+                datos.append("ordenServicio",idOrdenServicio);
+                const response = await gen.funcfetch("generar/factura/guia-remision",datos,"POST");
+                if (response.session) {
+                    return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                }
+                if (response.error) {
+                    return alertify.alert("Alerta",response.error);
+                }
+                if(response.urlPdf){
+                    const pdf = document.createElement("a");
+                    pdf.href = response.urlPdf;
+                    pdf.target = "_blank";
+                    document.body.append(pdf);
+                    pdf.click();
+                    document.body.removeChild(pdf);
+                }
+                $('#generarGuiaRemision').modal("hide");
+                return alertify.alert("Mensaje",response.success);
+            } catch (error) {
+                alertify.alert("Alerta","Ocurrió un error al generar la guia de remision, por favor intentelo nuevamente más tarde");
+                console.error(error);
+            }finally{
+                gen.banerLoader.hidden = true;
+            }
+        },()=>{})
+    });
 }
 window.addEventListener("DOMContentLoaded",loadPage);

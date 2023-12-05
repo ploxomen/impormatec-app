@@ -66,12 +66,12 @@ class RapiFac extends Controller
         $data = $response->getBody()->getContents();
         return json_decode($data);
     }
-    function listaDetallesGuiaRemision($detalleKardex){
-        $detalles = [];
-        foreach ($detalleKardex as $key => $kardex) {
-            $detalles[] = [
-                "Cantidad" => $kardex->cantidad,
-                "CantidadReferencial" => $kardex->cantidad,
+    function listaDetallesGuiaRemision($detalles){
+        $nuevoDetalle = [];
+        foreach ($detalles as $key => $detalle){
+            $nuevoDetalle[] = [
+                "Cantidad" => $detalle['cantidad'],
+                "CantidadReferencial" => $detalle['cantidad'],
                 "CantidadUnidadMedida" => 1,
                 "Cargo" => 0,
                 "CargoCargoCodigo" => "",
@@ -83,7 +83,7 @@ class RapiFac extends Controller
                 "CodigoCategoria" => 0,
                 "ComprobanteID" => 0,
                 "Control" => 0,
-                "Descripcion" => $kardex->productos->nombreProducto,
+                "Descripcion" => $detalle['descripcion'],
                 "Descuento" => 0,
                 "DescuentoBase" => 0,
                 "DescuentoCargo" => 0,
@@ -120,13 +120,13 @@ class RapiFac extends Controller
                 "PrecioUnitarioNeto" => 0,
                 "PrecioVenta" => 0,
                 "PrecioVentaCodigo" => "01",
-                "ProductoCodigo" => $kardex->productos->codigo,
-                "ProductoCodigoCliente" => $kardex->productos->codigo,
+                "ProductoCodigo" => 'P000'.($key + 1),
+                "ProductoCodigoCliente" => 'P000'.($key + 1),
                 "ProductoCodigoSUNAT" => "",
                 "TipoAfectacionIGVCodigo" => "10",
                 "TipoProductoCodigo" => "1",
                 "TipoSistemaISCCodigo" => "00",
-                "UnidadMedidaCodigo" => $kardex->id_presentacion,
+                "UnidadMedidaCodigo" => $detalle['unidad'],
                 "ValorUnitario" => 0,
                 "ValorUnitarioNeto" => 0,
                 "ValorVenta" => 0,
@@ -136,7 +136,7 @@ class RapiFac extends Controller
                 "ValorVentaNetoXML" => 0
             ];
         }
-        return $detalles;
+        return $nuevoDetalle;
     }
     function generarComprobanteExtrangeroSUNAT($datosGenerales,$detalleComprobante,$tipoMoneda){
         list($detalles,$montoTotal) = $this->detalleComprobanteExtrangeroSUNAT($detalleComprobante);

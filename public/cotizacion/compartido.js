@@ -21,7 +21,7 @@ class Cotizacion extends General{
             <td><img class="img-vistas-pequena" src="${this.urlProductos + "" + urlImagen}" alt="Imagen del producto"></td>
             <td>${nombreProducto}</td>
             <td>${cantidadUsada}</td>
-            <td style="width:70px !important;">${this.comboListaAlmacenes(listaAlmacenes,idAlmacen).outerHTML}</td>        
+            <td>${this.comboListaAlmacenes(listaAlmacenes,idAlmacen).outerHTML}</td>        
         `
         return tr;
     }
@@ -42,7 +42,7 @@ class Cotizacion extends General{
             <th>IMAGEN</th>
             <th>DESCRIPCION</th>
             <th>CANT.</th>
-            <th style="width:70px !important;">ALMACEN</th>
+            <th style="min-width: 150px; width: 150px; max-width: 150px;">ALMACEN</th>
         </tr>
         </thead>`;
         const tbodyProductos = document.createElement("tbody");

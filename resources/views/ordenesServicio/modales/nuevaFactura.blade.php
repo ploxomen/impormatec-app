@@ -29,7 +29,7 @@
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
                     <label for="modalFechaEmision">Fecha Emisión</label>
-                    <input type="date" name="fechaEmision" value="{{date('Y-m-d')}}" min="{{date('Y-m-d',strtotime(date('Y-m-d') . ' - 2 days'))}}" max="{{date('Y-m-d')}}" required id="modalFechaEmision" class="form-control form-control-sm">
+                    <input type="date" name="fechaEmision" value="{{$diaActual}}" min="{{$dosDiasAntes}}" max="{{$diaActual}}" required id="modalFechaEmision" class="form-control form-control-sm">
                 </div>
                 <div class="form-group col-12 col-md-6 col-lg-4">
                     <label for="idModaltipoDocumentoCliente">Tipo Documento</label>

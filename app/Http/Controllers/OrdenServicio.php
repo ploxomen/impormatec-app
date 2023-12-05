@@ -20,9 +20,11 @@ use App\Models\OrdenServicioCotizacionServicio;
 use App\Models\PagoCuotas;
 use App\Models\PagoCuotasImg;
 use App\Models\TipoDocumento;
+use App\Models\UnidadesDeMedida;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
@@ -497,9 +499,12 @@ class OrdenServicio extends Controller
         $modulos = $this->usuarioController->obtenerModulos();
         $firmasUsuarios = User::firmasHabilitadas();
         $tiposDocumentos = TipoDocumento::where('estado',1)->get();
-        $fechaFin = date('Y-m-d');
-        $fechaInicio = date('Y-m-d',strtotime($fechaFin . ' - 90 days'));
-        return view("ordenesServicio.misOrdenes",compact("modulos","clientes","fechaFin","fechaInicio","firmasUsuarios","tiposDocumentos"));
+        $diaActual = date('Y-m-d');
+        $unidadesMedidas = UnidadesDeMedida::all();
+        $dosDiasAntes = date('Y-m-d',strtotime($diaActual . ' - 2 days'));
+        $fechaFin = date('Y-m-d',strtotime($diaActual . ' + 90 days'));
+        $fechaInicio = date('Y-m-d',strtotime($diaActual . ' - 90 days'));
+        return view("ordenesServicio.misOrdenes",compact("unidadesMedidas","dosDiasAntes","diaActual","modulos","clientes","fechaFin","fechaInicio","firmasUsuarios","tiposDocumentos"));
     }
     public function accionesOrdenServicio(Request $request)  {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
@@ -799,6 +804,82 @@ class OrdenServicio extends Controller
         $cotizacionProducto = CotizacionProductos::find($idCotizacionProducto);
         $costoCompra = $cotizacionProducto->productos->precioCompra;
         return $cotizacionProducto->cantidad * $costoCompra;
+    }
+    public function facturarGuiaRemision(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $detalles = [];
+        $totalBulto = 0;
+        if($request->has('descripciones')){
+            for ($i=0; $i < count($request->descripciones); $i++) { 
+                $detalles[] = [
+                    'descripcion' => $request->descripciones[$i],
+                    'cantidad' => $request->cantidades[$i],
+                    'unidad' => $request->unidades[$i]
+                ];
+                $totalBulto += $request->cantidades[$i];
+            }
+        }
+        if($totalBulto == 0){
+            return response()->json(['alerta' => 'El total de bulto debe ser mayor a 0']);
+        }
+        $rapifac = new RapiFac();
+        $datosFacturar = [
+            'ConductorTipoDocIdentidadCodigo' => $request->tipoDocumentoConductorPrincipal,
+            'VendedorNombre' => Auth::user()->nombres,
+            'ClienteNumeroDocIdentidad' => $request->numeroDocumentoDestinatario,
+            'FechaEmision' => date('d/m/Y',strtotime($request->fechaEmision)),
+            'TransportistaNumeroDocIdentidad' => $request->numeroDocumentoTransportista,
+            'ConductorNumeroDocIdentidad' => $request->numeroDocumentoConductorPrincipal,
+            'TransportistaTipoDocIdentidadCodigo2' => "",
+            'TransportistaNumeroDocIdentidad2' => "",
+            'NOMBRE_UBIGEOLLEGADA' => 'LIMA - CALLAO - CALLAO',
+            'NOMBRE_UBIGEOPARTIDA' => 'LIMA - LIMA - LA VICTORIA',
+            'BANDERA_TRANSPORTISTA' => $request->nombreTransportista,
+            'ClienteDireccion' => $request->direccionDestinatario,
+            'ClienteNombreRazonSocial' => $request->nombreDestinatario,
+            'DireccionPartida' => $request->puntoPartida,
+            'DireccionLlegada' => $request->puntoLlegada,
+            'PesoTotal' => $totalBulto,
+            'FechaTraslado' => date('d/m/Y',strtotime($request->fechaTraslado)),
+            'ConductorLicencia' => $request->numeroLicenciaConductorPrincipal,
+            'ConductorLicencia2' => empty($request->numeroLicenciaConductorSecundario) ? "" : $request->numeroLicenciaConductorSecundario,
+            'VehiculoPlaca' => $request->numeroPlacaPrincipal,
+            'VehiculoPlaca2' => empty($request->numeroPlacaSecundario) ? "" : $request->numeroPlacaSecundario,
+            'TransportistaNombreRazonSocial' => $request->nombreTransportista,
+            'VehiculoCertificado' => $request->numeroTuceOChvPrincipal,
+            'VehiculoCertificado2' => empty($request->numeroTuceOChvSecundario) ? "" : $request->numeroTuceOChvSecundario,
+            'ConductorTipoDocIdentidadCodigo2' => empty($request->tipoDocumentoConductorSecundario) ? "" : $request->tipoDocumentoConductorSecundario,
+            'ConductorNumeroDocIdentidad2' => empty($request->numeroDocumentoConductorSecundario) ? "" : $request->numeroDocumentoConductorSecundario,
+            'Observacion' =>  empty($request->observaciones) ? "" : $request->observaciones
+        ];
+        $generarGuiaRemision = $rapifac->generarGuiaRemision($datosFacturar,$detalles);
+        // $kardex->update(['estado' => 4,'guia_remision_sunat' => null]);
+        // return response()->json(['success' => 'Guia de remision remitente generada correctamente']);
+        if(isset($generarGuiaRemision->Mensaje) && empty($generarGuiaRemision->Mensaje)){
+            // list($numero,$serie,$correlativo) = explode('-',$generarGuiaRemision->xml_pdf->Mensaje);
+            // $kardex->update(['estado' => 4]);
+            return response()->json(['success' => 'Guia de remision remitente generada correctamente', 'urlPdf' => $rapifac->urlPdfComprobantes .'?key=' . $generarGuiaRemision->IDRepositorio]);
+        }
+    }
+    public function consultarDatosGuiaRemision(ModelsOrdenServicio $ordenServicio){
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc'])->get();
+        $response = [
+            'modalPuntoPartida' => $ordenServicio->cliente->usuario->direccion,
+            'modalpuntoLlegada' => $configuracion->where('descripcion','direccion')->first()->valor,
+            'modalagenteNumeroDocumento' => $configuracion->where('descripcion','ruc')->first()->valor,
+            'modalagente' => $configuracion->where('descripcion','razon_social_largo')->first()->valor,
+            'modalDireccionDestinatario' => $configuracion->where('descripcion','direccion')->first()->valor,
+            'modalnumeroDocumentoTransportista' => $configuracion->where('descripcion','ruc')->first()->valor,
+            'modalnombreTransportista' => $configuracion->where('descripcion','razon_social_largo')->first()->valor,
+        ];
+        return response()->json(['success' => $response]);
     }
     public function misComprobantes(ModelsOrdenServicio $ordenServicio){
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);

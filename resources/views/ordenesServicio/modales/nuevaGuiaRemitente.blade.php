@@ -9,25 +9,21 @@
         </div>
         <div class="modal-body">
             <form class="form-row formulario-remision" id="formGuiaRemitente">
-                <div class="form-group mb-1 col-6 col-md-4">
+                <div class="form-group mb-1 col-6">
                     <label for="modalFechaEmision">Fecha Emisión</label>
-                    <input type="date" name="fechaEmision" required id="modalFechaEmision" class="form-control form-control-sm">
+                    <input type="date" value="{{$diaActual}}" min="{{$dosDiasAntes}}" max="{{$diaActual}}" name="fechaEmision" required id="modalFechaEmision" class="form-control form-control-sm">
                 </div>
-                <div class="form-group mb-1 col-6 col-md-4">
+                <div class="form-group mb-1 col-6">
                     <label for="modalFechaEmision">Fecha Traslado</label>
-                    <input type="date" name="fechaTraslado" required id="modalFechaEmision" class="form-control form-control-sm">
-                </div>
-                <div class="form-group mb-1 col-12 col-md-4">
-                    <label for="modalfacturaSunat">Factura</label>
-                    <input type="text" name="facturaSunat" pattern="^[A-Za-z]+[0-9]+-[0-9]+$" placeholder="Ejm: F001-1234" id="modalfacturaSunat" class="form-control form-control-sm">
+                    <input type="date" value="{{$diaActual}}" max="{{$diaActual}}" name="fechaTraslado" required id="modalFechaEmision" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12">
                     <label for="modalPuntoPartida">Punto de Partida</label>
-                    <input type="text" value="JR. AMERICA 626 URB. EL PORVENIR INT. 302 LIMA - LIMA - LA VICTORIA" name="puntoPartida" required id="modalPuntoPartida" class="form-control form-control-sm">
+                    <input type="text" name="puntoPartida" required id="modalPuntoPartida" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12">
                     <label for="modalpuntoLlegada">Punto de Llegada</label>
-                    <input type="text" value="AV. ELMER FAUCETT NRO. S/N (ARPTO INT JORGE CHAVEZ - RAMPA SUR) - CALLAO - PROV. CONST. DEL CALLAO - PROV. CONST. DEL CALLAO" name="puntoLlegada" required id="modalpuntoLlegada" class="form-control form-control-sm">
+                    <input type="text" name="puntoLlegada" required id="modalpuntoLlegada" class="form-control form-control-sm">
                 </div>
                 <div class="col-12">
                     <h6 class="text-primary">
@@ -37,25 +33,15 @@
                 </div>
                 <div class="form-group mb-1 col-12 col-lg-4">
                     <label for="modalagenteNumeroDocumento">Número RUC</label>
-                    <input type="text" name="numeroDocumentoDestinatario" value="20550083613" required id="modalagenteNumeroDocumento" class="form-control form-control-sm">
+                    <input type="text" name="numeroDocumentoDestinatario" required id="modalagenteNumeroDocumento" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12 col-lg-8">
                     <label for="modalagente">Nombre</label>
-                    <input type="text" required name="nombreDestinatario" value="SERVICIOS AEROPORTUARIOS ANDINOS S.A" id="modalagente" class="form-control form-control-sm">
+                    <input type="text" required name="nombreDestinatario" id="modalagente" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12">
                     <label for="modalDireccionDestinatario">Dirección</label>
-                    <input type="text" required name="direccionDestinatario" value="Av. Mariscal Jose de la Mar Nro. 1263 Int. 604" id="modalDireccionDestinatario" class="form-control form-control-sm">
-                </div>
-                <div class="col-12">
-                    <h6 class="text-primary">
-                        <i class="fas fa-caret-right"></i>
-                        Datos Bultos
-                    </h6>
-                </div>
-                <div class="form-group mb-1 col-12">
-                    <label for="pesoBultoTotal">Peso Bulto Total</label>
-                    <input type="number" step="0.01" min="0" required name="pesoBultoTotal" id="modalpesoBultoTotal" class="form-control form-control-sm">
+                    <input type="text" required name="direccionDestinatario" id="modalDireccionDestinatario" class="form-control form-control-sm">
                 </div>
                 <div class="col-12">
                     <h6 class="text-primary">
@@ -65,11 +51,11 @@
                 </div>
                 <div class="form-group mb-1 col-12 col-lg-4">
                     <label for="modalnumeroDocumentoTransportista">Número RUC</label>
-                    <input type="text" name="numeroDocumentoTransportista" value="20606223162" required id="modalnumeroDocumentoTransportista" class="form-control form-control-sm">
+                    <input type="text" name="numeroDocumentoTransportista" required id="modalnumeroDocumentoTransportista" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12 col-lg-8">
                     <label for="modalnombreTransportista">Nombre</label>
-                    <input type="text" required name="nombreTransportista" value="WYNS SERVICIOS GENERALES S.A.C." id="modalnombreTransportista" class="form-control form-control-sm">
+                    <input type="text" required name="nombreTransportista" id="modalnombreTransportista" class="form-control form-control-sm">
                 </div>
                 <div class="col-12">
                     <h6 class="text-primary">
@@ -79,11 +65,11 @@
                 </div>
                 <div class="form-group mb-1 col-6">
                     <label for="modalnumeroPlacaPrincipal">Número de Placa</label>
-                    <input type="text" value="BBO900" required name="numeroPlacaPrincipal" id="modalnumeroPlacaPrincipal" class="form-control form-control-sm">
+                    <input type="text" required name="numeroPlacaPrincipal" id="modalnumeroPlacaPrincipal" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-6">
                     <label for="modalnumeroTuceOChvPrincipal">TUCE o CHV</label>
-                    <input type="text" value="151933753" required name="numeroTuceOChvPrincipal" id="modalnumeroTuceOChvPrincipal" class="form-control form-control-sm">
+                    <input type="text" required name="numeroTuceOChvPrincipal" id="modalnumeroTuceOChvPrincipal" class="form-control form-control-sm">
                 </div>
                 <div class="col-12">
                     <h6 class="text-primary">
@@ -107,7 +93,7 @@
                 </div>
                 <div class="form-group mb-1 col-4">
                     <label for="modaltipoDocumentoConductorPrincipal">Tipo Documento</label>
-                    <select name="tipoDocumentoConductorPrincipal" required id="modaltipoDocumentoConductorPrincipal" class="form-control">
+                    <select name="tipoDocumentoConductorPrincipal" required id="modaltipoDocumentoConductorPrincipal" class="form-control form-control-sm">
                         <option value="">Ninguno</option>
                         <option value="6">REGISTRO ÚNICO DE CONTRIBUYENTES</option>
                         <option value="1" selected>DNI</option>
@@ -117,15 +103,15 @@
                 </div>
                 <div class="form-group mb-1 col-4">
                     <label for="modalnumeroDocumentoConductorPrincipal">Número Documento</label>
-                    <input type="text" value="40584190" name="numeroDocumentoConductorPrincipal" id="modalnumeroDocumentoConductorPrincipal" required class="form-control form-control-sm">
+                    <input type="text" name="numeroDocumentoConductorPrincipal" id="modalnumeroDocumentoConductorPrincipal" required class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-4">
                     <label for="modalnumeroLicenciaConductorPrincipal">Número Licencia</label>
-                    <input type="text" value="Q40584190" name="numeroLicenciaConductorPrincipal" id="modalnumeroLicenciaConductorPrincipal" required class="form-control form-control-sm">
+                    <input type="text" name="numeroLicenciaConductorPrincipal" id="modalnumeroLicenciaConductorPrincipal" required class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12">
                     <label for="modalnombreCompletoConductorPrincipal">Apellidos y Nombres</label>
-                    <input type="text" value="FARIAS GONZALES WILLMER HUGO" name="nombreCompletoConductorPrincipal" id="modalnombreCompletoConductorPrincipal" required class="form-control form-control-sm">
+                    <input type="text" name="nombreCompletoConductorPrincipal" id="modalnombreCompletoConductorPrincipal" required class="form-control form-control-sm">
                 </div>
                 <div class="col-12">
                     <h6 class="text-primary">
@@ -135,7 +121,7 @@
                 </div>
                 <div class="form-group mb-1 col-4">
                     <label for="modaltipoDocumentoConductorSecundario">Tipo Documento</label>
-                    <select name="tipoDocumentoConductorSecundario" id="modaltipoDocumentoConductorSecundario" class="form-control">
+                    <select name="tipoDocumentoConductorSecundario" id="modaltipoDocumentoConductorSecundario" class="form-control form-control-sm">
                         <option value="">Ninguno</option>
                         <option value="6">REGISTRO ÚNICO DE CONTRIBUYENTES</option>
                         <option value="1">DNI</option>
@@ -159,26 +145,53 @@
                     <label for="modalObservaciones">Observaciones</label>
                     <textarea name="observaciones" id="modalobservaciones" class="form-control form-control-sm" rows="3"></textarea>
                 </div>
-                <div class="form-group mb-1 col-12">
+                <div class="form-group mb-1 col-12 d-flex justify-content-between">
                     <h6 class="text-primary">
                         <i class="fas fa-caret-right"></i>
                         Detalle de productos
                     </h6>
+                    <button type="button" class="btn btn-sm btn-primary" title="Agregar detalle" id="agregarDetalleGuiaRemision">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="form-group mb-1 col-12">
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered" style="font-size: 0.8rem;">
                             <thead>
                                 <tr>
                                     <th>N°</th>
-                                    <th>Descripcion</th>
-                                    <th>Unidad</th>
+                                    <th style="min-width: 400px; width: 400px;">Descripcion</th>
+                                    <th style="min-width: 200px; width: 200px; max-width: 200px;">Unidad</th>
                                     <th>Cantidad</th>
+                                    <th>Eliminar</th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaProductos"></tbody>
+                            <tbody id="tablaDetalleGuiaRemision">
+                                <tr>
+                                    <td>1</td>
+                                    <td><textarea name="descripciones[]" required class="form-control form-control-sm" rows="2"></textarea></td>
+                                    <td>
+                                        <select name="unidades[]" required class="select2-simple" data-placeholder="Seleccione una medida">
+                                            <option value=""></option>
+                                            @foreach ($unidadesMedidas as $unidadMedida)
+                                                <option value="{{$unidadMedida->codigo}}" {{$unidadMedida->codigo === 'NIU' ? 'selected' : ''}}>{{$unidadMedida->descripcion}}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" required name="cantidades[]" class="form-control form-control-sm" step="0.01">
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger eliminar-detalle" type="button" title="Eliminar detalle">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="3" class="text-right">Cantidad Total</th>
-                                    <th id="modalCantidadTotal"></th>
+                                    <th colspan="4" class="text-right">Bulto Total</th>
+                                    <th id="modalCantidadTotal">0</th>
                                 </tr>
                             </tfoot>
                         </table>
