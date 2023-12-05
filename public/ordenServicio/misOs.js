@@ -43,7 +43,7 @@ function loadPage() {
         {
             data : 'descuento',
             render : function(data,type,row){
-                return "-"+gen.resetearMoneda(data,row.tipoMoneda);
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
@@ -61,26 +61,26 @@ function loadPage() {
         {
             data : 'adicional',
             render : function(data,type,row){
-                return "-" + gen.resetearMoneda(data,row.tipoMoneda);
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'gasto_caja',
             render : function(data,type,row){
-                return "-" + gen.resetearMoneda(data,row.tipoMoneda);
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'costo_total',
             render : function(data,type,row){
-                return "-" + gen.resetearMoneda(data,row.tipoMoneda);
+                return gen.resetearMoneda(data,row.tipoMoneda);
             }
         },
         {
             data : 'total',
             render : function(data,type,row){
                 const gastoTotal = parseFloat(row.adicional) + parseFloat(row.gasto_caja) + parseFloat(row.costo_total);
-                return "-" + gen.resetearMoneda(gastoTotal,row.tipoMoneda);
+                return gen.resetearMoneda(gastoTotal,row.tipoMoneda);
             }
         },
         {
