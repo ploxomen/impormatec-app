@@ -77,7 +77,7 @@ function loadPage() {
             }
         },
         {
-            data : 'data',
+            data : 'total',
             render : function(data,type,row){
                 const gastoTotal = parseFloat(row.adicional) + parseFloat(row.gasto_caja) + parseFloat(row.costo_total);
                 return "-" + gen.resetearMoneda(gastoTotal,row.tipoMoneda);
