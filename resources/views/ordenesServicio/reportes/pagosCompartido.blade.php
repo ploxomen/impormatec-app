@@ -24,7 +24,7 @@
                 $comprobantesTexto = "";
                 $numeroCuotas = $ordenServicio->pagoCuotas()->count();
                 foreach ($comprobantes as $keyComprobante => $comprobante) {
-                    $comprobantesTexto .= '<strong>'.$comprobante['numero_comprobante'].'</strong>' . '<br>' . $moneda.$comprobante['numero_comprobante'];
+                    $comprobantesTexto .= '<strong>'.$comprobante['numero_comprobante'].'</strong>' . '<br>' . $moneda.$comprobante['monto_total'];
                     if(($keyComprobante + 1) !== $comprobantes->count()){
                         $comprobantesTexto .= "<br>";
                     }
