@@ -30,9 +30,10 @@
             </td>
         </tr>
         <tr>
-            <td>
+            <td rowspan="2">
                 <strong>{{$cliente->nombreCliente}}</strong><br>
-                <span>{{$cotizacion->direccionCliente}}</span>
+                <span>{{$cotizacion->direccionCliente}}</span><br>
+                <strong>LIMA - PERU</strong>
             </td>
             <td class="tabla-detalle">
                 <strong>Mes</strong>
@@ -42,9 +43,6 @@
             </td>
         </tr>
         <tr>
-            <td>
-                <strong>LIMA - PERU</strong>
-            </td>
             <td class="tabla-detalle">
                 <strong>Año</strong>
             </td>
