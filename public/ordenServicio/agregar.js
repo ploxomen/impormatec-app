@@ -95,6 +95,7 @@ function loadPage() {
         obtenerDetalleCotizacion($(cbClientes).val());
     });
     $($tipoMoneda).on("select2:select", e => obtenerDetalleCotizacion($(cbClientes).val()));
+    $(cbTipoIgv).on("select2:select", e => obtenerDetalleCotizacion($(cbClientes).val()));
     tablaServicios.addEventListener("click",(e)=>{
         if(e.target.dataset.cotizacionServicio){
             const mensaje = e.target.dataset.tipo === 'servicio' ? '¿Deseas eliminar este servicio?.<br>Recuerda que si este servicio cuenta con <strong>informe y certificado</strong>, tambien seran eliminados.' : '¿Deseas eliminar este producto?';
