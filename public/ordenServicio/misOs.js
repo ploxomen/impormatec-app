@@ -427,6 +427,9 @@ function loadPage() {
                         window.location.reload();
                     });
                 }
+                if(response.alerta){
+                    return alertify.alert("Alerta",response.alerta);
+                }
                 idOrdenServicio = e.target.dataset.ordenServicio;
                 tipoMonedaFacturacion = response.comprobanteDetalle.tipoMoneda;
                 cambioVisibilidadComprobantes(response.comprobanteCliente);
