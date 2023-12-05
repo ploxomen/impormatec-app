@@ -1,6 +1,8 @@
 /node_modules
 /public/build
 /public/hot
+/public/imagenesEditor
+/public/firmas
 /public/storage
 /storage/*.key
 /vendor
