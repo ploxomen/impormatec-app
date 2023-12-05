@@ -435,14 +435,16 @@ function loadPage() {
                 cambioVisibilidadComprobantes(response.comprobanteCliente);
                 let template = "";
                 response.comprobanteDetalle.detalle.forEach((detalleVenta,key) => {
+                    const total = parseFloat(detalleVenta.total) + parseFloat(detalleVenta.igv);
+                    const precio = parseFloat(total / detalleVenta.cantidad).toFixed(2);
                     template += `
                     <tr>
                         <td>${key + 1}</td>
                         <td>${detalleVenta.servicio}</td>
                         <td>${detalleVenta.cantidad}</td>
-                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.precio),tipoMonedaFacturacion)}</td>
+                        <td>${gen.resetearMoneda(precio,tipoMonedaFacturacion)}</td>
                         <td>${gen.resetearMoneda(detalleVenta.descuento,tipoMonedaFacturacion)}</td>
-                        <td>${gen.resetearMoneda(parseFloat(detalleVenta.total),tipoMonedaFacturacion)}</td>
+                        <td>${gen.resetearMoneda(total,tipoMonedaFacturacion)}</td>
                     <tr>
                     `
                 });
