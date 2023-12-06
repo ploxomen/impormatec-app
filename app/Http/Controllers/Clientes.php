@@ -9,6 +9,7 @@ use App\Models\ClientesContactos;
 use App\Models\Comprobantes;
 use App\Models\Configuracion;
 use App\Models\Cotizacion as ModelCotizacion;
+use App\Models\EntregaActa;
 use App\Models\OrdenServicio;
 use App\Models\OrdenServicioCotizacionServicio;
 use App\Models\PagoCuotas;
@@ -36,6 +37,7 @@ class Clientes extends Controller
     private $moduloCotizaciones = "cliente.cotizaciones.index";
     private $moduloInformes = "cliente.informes.index";
     private $moduloCertificados = "cliente.certificados.index";
+    private $moduloActas = "cliente.actas.index";
 
     function __construct()
     {
@@ -358,7 +360,7 @@ class Clientes extends Controller
         if(isset($verif['session'])){
             return redirect()->route('home');
         }
-        if($comprobante->ordenServicio->id_cliente !== $this->obtenerClienteId(Auth::id())){
+        if(($comprobante->ordenServicio->id_cliente !== $this->obtenerClienteId(Auth::id())) || $comprobante->ordenServicio->estado < 1){
             return abort(404);
         }
         if($comprobante->tipo_comprobante === "00"){
@@ -376,7 +378,7 @@ class Clientes extends Controller
         if(isset($verif['session'])){
             return redirect()->route('home');
         }
-        if($cuota->ordenServicio->id_cliente !== $this->obtenerClienteId(Auth::id())){
+        if(($cuota->ordenServicio->id_cliente !== $this->obtenerClienteId(Auth::id())) || $cuota->ordenServicio->estado < 1){
             return abort(404);
         }
         $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
@@ -387,5 +389,38 @@ class Clientes extends Controller
         $fechaFormato = date('d/m/Y',$strFechaPago);
         $nombreMonto = (new RapiFac)->numeroAPalabras($cuota->monto_pagado,$cuota->ordenServicio->tipoMoneda);
         return Pdf::loadView('ordenesServicio.reportes.pagoCuota',compact("cuota","titulo","configuracion","fechaFormato","fechaTexto","numeroPago","nombreMonto"))->setPaper('none')->stream($titulo . '.pdf');
+    }
+    public function misActas() {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloActas);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $fechaFin = date('Y-m-d',strtotime(date('Y-m-d') . ' + 90 days'));
+        $fechaInicio = date('Y-m-d',strtotime(date('Y-m-d') . ' - 90 days'));
+        $modulos = $this->usuarioController->obtenerModulos();
+        return view("clientes.actas",compact("modulos","fechaFin","fechaInicio"));
+    }
+    public function obtenerActas(Request $request) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloComprobantes);
+        if(isset($verif['session'])){
+            return redirect()->route("home"); 
+        }
+        $listaActas = EntregaActa::actascClientes($request->fechaInicio,$request->fechaFin,$this->obtenerClienteId(Auth::id()));
+        return DataTables::of($listaActas)->toJson();
+    }
+    public function verActa(EntregaActa $entregaActa) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloComprobantes);
+        if(isset($verif['session'])){
+            return redirect()->route('home');
+        }
+        if(($entregaActa->ordenServicio->id_cliente !== $this->obtenerClienteId(Auth::id())) || $entregaActa->ordenServicio->estado < 1){
+            return abort(404);
+        }
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $utilitarios = new Utilitarios();
+        $tituloPdf = "ENTREGA ACTAS - " . str_pad($entregaActa->id,5,'0',STR_PAD_LEFT);
+        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $diaFecha = $utilitarios->obtenerFechaLargaSinDia(strtotime($entregaActa->fecha_entrega));
+        return Pdf::loadView('ordenesServicio.reportes.entregaActa',compact("tituloPdf","configuracion","entregaActa","diaFecha"))->stream($tituloPdf.".pdf");
     }
 }

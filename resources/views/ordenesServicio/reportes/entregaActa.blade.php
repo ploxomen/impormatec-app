@@ -43,15 +43,14 @@
 
                         <en> Pertenecientes a la
                             Empresa/Condominio: <b>{{$entregaActa->ordenServicio->cliente->nombreCliente}}</b>, en prensencia del Sr.(Sra.) <b>{{$entregaActa->nombre_representante}}</b> identificado con D.N.I.
-                            <b>{{$entregaActa->dni_representante}}</b>, quien en representación
-                            del anteriormente mencionado
+                            <b>{{$entregaActa->dni_representante}}</b>, quien da fe de haber recibido el servicio y/o equipos en buen estado de operación.
                         </p>
                     </div>
                 </td>
             </tr>
             <tr>
                 <td scope="row" colspan="2">
-                    <p style="text-align: center;">A continuación, se procede a dar fe de lo antes mencionado, por las partes que en ella intervinieron.</p>
+                    <p style="text-align: center;">A continuación, se procede a firmar ambas partes.</p>
                 </td>
             </tr>
             

@@ -448,7 +448,7 @@ class OrdenServicio extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        if($ordenServicio->comprobantes()->count() > 0){
+        if($ordenServicio->comprobantes()->where('estado',1)->count() > 0){
             return response()->json(['alerta' => 'Para eliminar la orden de servicio debe primero anular los comprobantes y/o guías de remisión asociados a ella']);
         }
         $this->devolverEstadosCotizacion($ordenServicio->id);
@@ -912,6 +912,7 @@ class OrdenServicio extends Controller
             }
             $ordenServicioDatos = $request->only("id_cliente","fecha","tipoMoneda","observaciones");
             $ordenServicioDatos['estado'] = 1;
+            $ordenServicioDatos['id_responsable'] = Auth::id();
             $ordenServicioDatos['incluir_igv'] = !$request->has('incluirIGV') ? false : ($request->incluirIGV === "0" ? false : true);
             $ordenServicio = ModelsOrdenServicio::create($ordenServicioDatos);
             $listaServiciosProductos = json_decode($request->listaDetalleCotizacion,true);

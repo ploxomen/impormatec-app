@@ -252,5 +252,11 @@
     <div>
         {!! str_replace(['../../imagenesEditorOs/'],'imagenesEditorOs/',$ordenServicio->observaciones)  !!}
     </div>
+    @php
+        $firma = !empty($ordenServicio->firmante) ? $ordenServicio->firmante->firma : null;
+    @endphp
+    @if (!empty($firma))
+        <img src="{{$firma}}" style="position: absolute; right: 5px; bottom: 20px;" alt="Firma del usuario" width="150px" height="120px">
+    @endif
 </body>
 </html>

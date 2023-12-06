@@ -9,7 +9,7 @@ class OrdenServicio extends Model
     public $table = "orden_servicio";
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
-    protected $fillable = ['id_cliente','tipoMoneda','facturacion_externa','fecha','observaciones','incluir_igv','importe','descuento','igv','adicional','costo_total','utilidad','gasto_caja','total','estado'];
+    protected $fillable = ['id_cliente','tipoMoneda','facturacion_externa','fecha','observaciones','incluir_igv','importe','descuento','igv','adicional','costo_total','utilidad','gasto_caja','total','id_responsable','estado'];
     
     public function cliente()
     {
@@ -50,5 +50,8 @@ class OrdenServicio extends Model
     {
         return $this->hasMany(Comprobantes::class,'id_os_servicio');
     }
-    
+    public function firmante()
+    {
+        return $this->belongsTo(User::class,'id_responsable');
+    }
 }

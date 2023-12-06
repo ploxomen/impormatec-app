@@ -279,6 +279,9 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
         Route::get('certificados', [Clientes::class, 'misCertificados'])->name('cliente.certificados.index');
         Route::post('certificados/listar', [Clientes::class, 'obtenerCertificados']);
         Route::get('certificado/ver/pdf/{certificado}', [Clientes::class, 'visualizarCertificado']);
+        Route::get('actas', [Clientes::class, 'misActas'])->name('cliente.actas.index');
+        Route::post('actas/listar', [Clientes::class, 'obtenerActas']);
+        Route::get('acta/ver/pdf/{entregaActa}', [Clientes::class, 'verActa']);
     });
     Route::prefix('usuarios')->group(function(){
         Route::post('accion',[Usuario::class,'usuarioAccion']);

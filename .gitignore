@@ -1,8 +1,7 @@
 /node_modules
 /public/build
 /public/hot
-/public/imagenesEditor
-/public/firmas
+/public/firmas/*
 /public/storage
 /storage/*.key
 /vendor
@@ -17,7 +16,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/public/imagenesEditor
-/public/imagenesEditorConfiguracion
-/public/imagenesEditorCotizacion
-/public/imagenesEditorOs
+/public/imagenesEditor/*
+/public/imagenesEditorConfiguracion/*
+/public/imagenesEditorCotizacion/*
+/public/imagenesEditorOs/*
