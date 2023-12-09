@@ -117,7 +117,7 @@
         @endphp
         <tfoot>
             <tr>
-                <th colspan="7" class="text-right">SUBTOTAL VENTA</th>
+                <th colspan="7" class="text-right">VENTA SUBTOTAL</th>
                 <th>{{$moneda . ' ' . number_format($calculosGenerales['totalImporte'],2) }}</th>
             </tr>
             <tr>
@@ -129,11 +129,11 @@
                 <th>{{$moneda . ' ' . number_format($calculosGenerales['totalIgv'],2) }}</th>
             </tr>
             <tr>
-                <th colspan="7" class="text-right">TOTAL VENTA</th>
+                <th colspan="7" class="text-right">VENTA TOTAL</th>
                 <th>{{$moneda . ' ' . number_format($calculosGenerales['totalVenta'],2) }}</th>
             </tr>
             <tr>
-                <th colspan="7" class="text-right">TOTAL COMPRA</th>
+                <th colspan="7" class="text-right">COSTO TOTAL</th>
                 <th>{{$moneda . ' ' . number_format($calculosGenerales['totalCosto'],2)}}</th>
             </tr>
         </tfoot>
@@ -230,7 +230,7 @@
                     <th>VENTA</th>
                     <th>GASTO ADICIONAL</th>
                     <th>GASTO CAJA CHICA</th>
-                    <th>COMPRA</th>
+                    <th>COSTO</th>
                     <th>UTILIDAD</th>
                 </tr>
             </thead>

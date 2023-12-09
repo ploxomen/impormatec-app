@@ -145,7 +145,7 @@ class Cotizacion extends Controller
         $cotizacionModel = ModelsCotizacion::find($request->idCotizacion);
         $preCotizacion = $request->id_pre_cotizacion == "ninguno" ? null : $request->id_pre_cotizacion;
         $cotizacion = $request->only("fechaCotizacion","tipoMoneda","conversionMoneda","textoNota","referencia","id_cliente","representanteCliente","cotizadorUsuario","direccionCliente","mesesGarantia");
-        $incluirIgv = !$request->has('incluirIGV') ? false : ($request->incluirIGV === "1" ? true : false);
+        $incluirIgv = $request->incluirIGV === "1" ? true : false;
         $cotizacion['reportePreCotizacion'] = $request->has("reportePreCotizacion");
         $cotizacion['incluirIGV'] = $incluirIgv;
         $cotizacion['reporteDetallado'] = $request->has("reporteDetallado");

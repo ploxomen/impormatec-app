@@ -786,7 +786,7 @@ class OrdenServicio extends Controller
         $serviciosOS = OrdenServicioCotizacionServicio::mostrarServiciosOrdenServicio($ordenServicio->id);
         $ordenServicio->cotizaciones = OrdenServicioCotizacionProducto::mostrarProductosOrdenServicio($serviciosOS,$ordenServicio->id);
         $ordenServicio->adicionales = OrdenServicioAdicional::select("id AS idAdicional","descripcion","precio AS precioUnitario","cantidad","total")->where('id_orden_servicio',$ordenServicio->id)->get();
-        $ordenServicio->listaServicios = Cotizacion::obtenerCotizacionesAprobadas($ordenServicio->id_cliente,$ordenServicio->tipoMoneda,$ordenServicio->incluir_igv,true);
+        $ordenServicio->listaServicios = Cotizacion::obtenerProductoServicioPendiente($ordenServicio->id_cliente,$ordenServicio->tipoMoneda,$ordenServicio->incluir_igv);
         $ordenServicio->nombreCliente = $ordenServicio->cliente->nombreCliente;
         return response()->json(['ordenServicio' => $ordenServicio->makeHidden("cliente","fechaActualizada","fechaCreada")]);
     }

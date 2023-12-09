@@ -577,6 +577,9 @@ function loadPage() {
         datos.append("idCotizacion",idCotizacion);
         datos.append("servicios",JSON.stringify(serviciosProductos));
         datos.append("textoNota",tinymce.activeEditor.getContent());
+        if(!datos.has('incluirIGV')){
+            datos.append('incluirIGV',$('#idModalincluirIGV').val());
+        }
         general.cargandoPeticion(btnActualizar, general.claseSpinner, true);
         try {
             const response = await general.funcfetch("modificar",datos,"POST");

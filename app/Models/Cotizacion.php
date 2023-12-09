@@ -72,11 +72,27 @@ class Cotizacion extends Model
         }
         return $servicios;
     }
+    public static function obtenerProductoServicioPendiente($idCliente,$tipoMoneda,$conIgv) {
+        $productos = CotizacionProductos::select("cotizacion.id")
+        ->selectRaw("LPAD(cotizacion.id,5,'0') AS nroCotizacion")
+        ->join('cotizacion','cotizacion.id','=','cotizacion_productos.id_cotizacion')->where([
+            'id_cliente' => $idCliente,
+            'incluirIGV' => $conIgv,
+            'tipoMoneda' => $tipoMoneda
+        ])->where('cotizacion.estado','>=',2)->where('cotizacion_productos.estado',1);
+        return CotizacionServicio::select("cotizacion.id")
+        ->selectRaw("LPAD(cotizacion.id,5,'0') AS nroCotizacion")
+        ->join('cotizacion','cotizacion.id','=','cotizacion_servicios.id_cotizacion')->where([
+            'id_cliente' => $idCliente,
+            'incluirIGV' => $conIgv,
+            'tipoMoneda' => $tipoMoneda
+        ])->where('cotizacion.estado','>=',2)->where('cotizacion_servicios.estado',1)->union($productos)->get();
+    }
     public function scopeObtenerCotizacionesAprobadas($query,$idCliente,$tipoMoneda,$conIgv,$soloCotizacion = false){
         $cotizaciones = $query->select("id","importeTotal","descuentoTotal","igvTotal","total")
         ->selectRaw("LPAD(id,5,'0') AS nroCotizacion")
         ->where(['id_cliente' => $idCliente,'tipoMoneda' => $tipoMoneda,'incluirIgv' => $conIgv])
-        ->whereIn('estado',[2,3])->get();
+        ->where('estado','>=',2)->get();
         if($soloCotizacion){
             return $cotizaciones;
         }
