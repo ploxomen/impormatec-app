@@ -18,6 +18,7 @@ use App\Http\Controllers\OrdenServicio;
 use App\Http\Controllers\PreCotizacion;
 use App\Http\Controllers\Programacion;
 use App\Http\Controllers\Publicidades;
+use App\Http\Controllers\RapiFac;
 use App\Http\Controllers\Seguimiento;
 use App\Http\Controllers\Servicio;
 use App\Http\Controllers\Tecnico;

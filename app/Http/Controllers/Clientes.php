@@ -199,12 +199,12 @@ class Clientes extends Controller
         $cotizacionControlador = new Cotizacion();
         return DataTables::of($cotizacionControlador->listaCotizaciones($request->fechaInicio,$request->fechaFin,$this->obtenerClienteId(Auth::id()),'TODOS'))->toJson();
     }
-    public function verPdfCotizacion(ModelCotizacion $cotizacion) {
+    public function verPdfCotizacion($idCotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloCotizaciones);
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
-        $cotizacion = $cotizacion->where('id_cliente',$this->obtenerClienteId(Auth::id()))->first();
+        $cotizacion = ModelCotizacion::where(['id_cliente' => $this->obtenerClienteId(Auth::id()),'id' => $idCotizacion])->first();
         if(empty($cotizacion)){
             return abort(404);
         }
@@ -287,8 +287,7 @@ class Clientes extends Controller
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
-        $ordenServicioDetalle = OrdenServicio::findOrFail($idOrdenServicio);
-        $ordenServicioDetalle = $ordenServicioDetalle->where('id_cliente',$this->obtenerClienteId(Auth::id()))->first();
+        $ordenServicioDetalle = OrdenServicio::where(['id_cliente'=>$this->obtenerClienteId(Auth::id()),'id'=>$idOrdenServicio])->first();
         if(empty($ordenServicioDetalle)){
             return abort(404);
         }
