@@ -112,7 +112,7 @@ class Clientes extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]); 
         }
-        return response()->json(['cliente' => ModelsClientes::obenerCliente($cliente) ]);
+        return response()->json(['cliente' => ModelsClientes::obenerCliente($cliente)]);
     }
     public function update(ModelsClientes $cliente, Request $request)
     {
