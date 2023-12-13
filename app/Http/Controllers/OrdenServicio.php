@@ -449,7 +449,10 @@ class OrdenServicio extends Controller
             return response()->json(['session' => true]);
         }
         if($ordenServicio->comprobantes()->where('estado',1)->count() > 0){
-            return response()->json(['alerta' => 'Para eliminar la orden de servicio debe primero anular los comprobantes y/o guías de remisión asociados a ella']);
+            return response()->json(['alerta' => 'Para eliminar la orden de servicio debe primero anular los comprobantes asociados a esta']);
+        }
+        if($ordenServicio->pagoCuotas()->where('estado',1)->count() > 0){
+            return response()->json(['alerta' => 'Para eliminar la orden de servicio debe primero anular los pagos a credito que se tiene asociados a esta']);
         }
         $this->devolverEstadosCotizacion($ordenServicio->id);
         $ordenServicio->update(['estado' => -1]);

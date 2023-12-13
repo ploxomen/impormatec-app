@@ -474,7 +474,7 @@ function loadPage() {
             }
         }
         if (e.target.classList.contains("eliminar-os")) {
-            alertify.confirm("Alerta","Al eliminar esta orden de servicio se eliminaran los <strong>informes, certificados y entregas de actas</strong> que se hayan generado.<br>¿Deseas eliminar esta orden de servicio?",async ()=>{
+            alertify.confirm("Alerta","Al eliminar esta orden de servicio se eliminaran los <strong>informes, certificados y entregas de actas</strong> que se hayan generado.<br>Asegurate de eliminar los comprobante emitidos.<br>¿Deseas eliminar esta orden de servicio?",async ()=>{
                 try {
                     const response = await gen.funcfetch("eliminar/" + e.target.dataset.ordenServicio,null,"DELETE");
                     if (response.session) {

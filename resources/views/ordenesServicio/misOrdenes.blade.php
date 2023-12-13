@@ -6,7 +6,7 @@
     <script src="/library/signature.js"></script>
     <script src="/ordenServicio/compartidoOs.js?v1.5"></script>
     <link rel="stylesheet" href="/ordenServicio/ordenServicio.css">
-    <script src="/ordenServicio/misOs.js?v1.5"></script>
+    <script src="/ordenServicio/misOs.js?v1.6"></script>
     <title>Mis Ordenes de Servicio</title>
 @endsection
 @section('body')

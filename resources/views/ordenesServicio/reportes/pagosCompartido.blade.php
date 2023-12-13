@@ -20,7 +20,7 @@
             @php
                 $moneda = $incluirMoneda ? ($ordenServicio->tipoMoneda === 'USD' ? '$ ' : 'S/ ') : '';
                 $montoAPagar = $ordenServicio->importe - $ordenServicio->descuento + $ordenServicio->igv;
-                $comprobantes = $ordenServicio->comprobantes()->whereIn('tipo_comprobante',['00','01','03'])->get();
+                $comprobantes = $ordenServicio->comprobantes()->whereIn('tipo_comprobante',['00','01','03'])->where('estado',1)->get();
                 $comprobantesTexto = "";
                 $numeroCuotas = $ordenServicio->pagoCuotas()->count();
                 foreach ($comprobantes as $keyComprobante => $comprobante) {

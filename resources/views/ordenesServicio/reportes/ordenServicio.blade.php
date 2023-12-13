@@ -113,7 +113,7 @@
             @endforeach
         </tbody>
         @php
-            $calculosGenerales['totalVenta'] = $calculosGenerales['totalImporte'] - $calculosGenerales['totalDescuento'] + $calculosGenerales['totalIgv'];
+            $calculosGenerales['totalVenta'] = $calculosGenerales['totalImporte'] - $calculosGenerales['totalDescuento'];
         @endphp
         <tfoot>
             <tr>

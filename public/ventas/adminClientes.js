@@ -234,13 +234,16 @@ function loadPage(){
             }
         }
         if (e.target.classList.contains("btn-outline-danger")) {
-            alertify.confirm("Alerta","¿Estás seguro de eliminar este cliente?",async ()=>{
+            alertify.confirm("Alerta","¿Estás seguro de eliminar este cliente?<br>Al aceptar también se eliminará el usuario asociado a este",async ()=>{
                 try {
                     gen.cargandoPeticion(e.target, gen.claseSpinner, true);
                     const response = await gen.funcfetch("clientes/eliminar/" + e.target.dataset.cliente, null,"DELETE");
                     gen.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
                     if (response.session) {
                         return alertify.alert([...gen.alertaSesion], () => { window.location.reload() });
+                    }
+                    if (response.alerta) {
+                        return alertify.alert("Alerta",response.alerta);
                     }
                     tablaClientesDatatable.draw();
                     return alertify.success(response.success);

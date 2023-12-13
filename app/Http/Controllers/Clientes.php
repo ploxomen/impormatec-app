@@ -169,7 +169,11 @@ class Clientes extends Controller
         }
         DB::beginTransaction();
         try {
-            $cliente->delete();
+            if($cliente->cotizaciones()->where('estado','>=',0)->count()){
+                return response()->json(['alerta' => 'Primero se deben eliminar las cotizaciones asociadas a este cliente']);
+            }
+            $cliente->update(['estado' => 0]);
+            $cliente->usuario()->update(['estado' => 0]);
             DB::commit();
             return response()->json(['success' => 'cliente eliminado correctamente']);
         } catch (\Throwable $th) {

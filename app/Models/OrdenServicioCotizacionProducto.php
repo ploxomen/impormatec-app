@@ -19,10 +19,10 @@ class OrdenServicioCotizacionProducto extends Model
         ->where('id_orden_servicio',$idOrdenServico)->union($serviciosOS)->orderBy("orden")->get();
     }
     public function cotizacionOsProductos() {
-        return $this->belongsTo(CotizacionProductos::class,'idCotizacionDetalle');
+        return $this->belongsTo(CotizacionProductos::class,'id_cotizacion_producto');
     }
     //CASO EXCEPCIONAL YA QUE SE CONVINAN - SE USA EN EL PDF DE COTIZACION PARA EL DETALLE
     public function cotizacionOsServicios() {
-        return $this->belongsTo(CotizacionServicio::class,'idCotizacionDetalle');
+        return $this->belongsTo(CotizacionServicio::class,'id_cotizacion_producto');
     }
 }
