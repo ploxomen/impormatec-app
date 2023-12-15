@@ -183,6 +183,7 @@
                         <ul>
                             <li><strong>Forma pago:</strong> 50% con la confirmación, resto contra entrega.</li>
                             <li><strong>Validez Oferta:</strong> 15 día(s).</li>
+                            <li><strong>Tiempo de entrega:</strong></li>
                             <li><strong>Nota 1:</strong> Los costos incluyen IGV -Todos nuestros servicios se formalizan con boleta de venta o factura
                                 de venta.</li>
                             <li><strong>Nota 2:</strong> Todo trabajo adicional que se pudiera encontrar se comunicará anticipadamente.</li>
