@@ -249,7 +249,7 @@ class Clientes extends Controller
         if(empty($preCotizacion)){
             return abort(404);
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $titulo = 'REPORTE_PRECOTIZACION_'.str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT);
         $rutaVisataUnica = '/formatoVisitas/'.$preCotizacion->formato_visita_pdf;
         try {
@@ -297,7 +297,7 @@ class Clientes extends Controller
         }
         $nroOrdenServicio = str_pad($ordenServicioDetalle->id,5,'0',STR_PAD_LEFT);
         $utilitarios = new Utilitarios();
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $ordenServicio = $ordenServicioDetalle->servicios()->where('id',$idServicio)->get();
         if($ordenServicio->isEmpty()){
             return abort(404,'No se encontro el informe');
@@ -333,7 +333,7 @@ class Clientes extends Controller
             return abort(404);
         }
         $utilitarios = new Utilitarios();
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter','ruc'])->get();
+        $configuracion = Configuracion::obtener();
         $certificado->fechaLarga = $utilitarios->obtenerFechaLargaSinDia(strtotime($certificado->fecha));
         $cliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->cliente;
         $direccionCliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->direccionCliente;
@@ -367,7 +367,7 @@ class Clientes extends Controller
             return abort(404);
         }
         if($comprobante->tipo_comprobante === "00"){
-            $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+            $configuracion = Configuracion::obtener();
             $comprobanteInterno = $comprobante->comprobanteInterno;
             $numeroPago = str_pad($comprobanteInterno->id,4,'0',STR_PAD_LEFT);
             $titulo = "GUIA INTERNA - " . $numeroPago;
@@ -384,7 +384,7 @@ class Clientes extends Controller
         if(($cuota->ordenServicio->id_cliente !== $this->obtenerClienteId(Auth::id())) || $cuota->ordenServicio->estado < 1){
             return abort(404);
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $configuracion = Configuracion::obtener();
         $numeroPago = str_pad($cuota->id,4,'0',STR_PAD_LEFT);
         $titulo = "CUOTA - " . $numeroPago;
         $strFechaPago = strtotime($cuota->fecha_pagada);
@@ -419,10 +419,9 @@ class Clientes extends Controller
         if(($entregaActa->ordenServicio->id_cliente !== $this->obtenerClienteId(Auth::id())) || $entregaActa->ordenServicio->estado < 1){
             return abort(404);
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $configuracion = Configuracion::obtener();
         $utilitarios = new Utilitarios();
         $tituloPdf = "ENTREGA ACTAS - " . str_pad($entregaActa->id,5,'0',STR_PAD_LEFT);
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
         $diaFecha = $utilitarios->obtenerFechaLargaSinDia(strtotime($entregaActa->fecha_entrega));
         return Pdf::loadView('ordenesServicio.reportes.entregaActa',compact("tituloPdf","configuracion","entregaActa","diaFecha"))->stream($tituloPdf.".pdf");
     }

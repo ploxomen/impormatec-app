@@ -206,8 +206,8 @@
                 <span>Generar</span>
             </button>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" id="btnAtrasFrmContacto">
-                <i class="far fa-hand-point-left"></i>                
-                <span>Cancelar</span>
+                <i class="far fa-times-circle"></i>
+                <span>Cerrar</span>
             </button>
         </div>
       </div>

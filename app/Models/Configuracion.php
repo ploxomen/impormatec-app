@@ -11,4 +11,7 @@ class Configuracion extends Model
     const CREATED_AT = 'fechaCreada';
     const UPDATED_AT = 'fechaActualizada';
     
+    public static function obtener() {
+        return Configuracion::all();
+    }
 }

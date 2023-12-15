@@ -313,7 +313,7 @@ class OrdenServicio extends Controller
         if(isset($verif['session'])){
             return redirect()->route('home');
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $configuracion = Configuracion::obtener();
         $numeroPago = str_pad($cuota->id,4,'0',STR_PAD_LEFT);
         $titulo = "CUOTA - " . $numeroPago;
         $strFechaPago = strtotime($cuota->fecha_pagada);
@@ -334,7 +334,7 @@ class OrdenServicio extends Controller
         if(isset($verif['session'])){
             return redirect()->route('home');
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio));
         $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin));
         $ordenesServicios = ModelsOrdenServicio::misOrdeneseServicio($request->fecha_inicio,$request->fecha_fin,$request->cliente,$request->estado);
@@ -480,7 +480,7 @@ class OrdenServicio extends Controller
         if(empty($comprobanteInterno)){
             return abort(404);
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $configuracion = Configuracion::obtener();
         $numeroPago = str_pad($comprobanteInterno->id,4,'0',STR_PAD_LEFT);
         $titulo = "GUIA INTERNA - " . $numeroPago;
         $strFechaPago = strtotime($comprobanteInterno->fecha_emision);
@@ -700,7 +700,7 @@ class OrdenServicio extends Controller
         }
         $utilitarios = new Utilitarios();
         $tituloPdf = "ENTREGA ACTAS - " . str_pad($entregaActa->id,5,'0',STR_PAD_LEFT);
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc','razon_social'])->get();
+        $configuracion = Configuracion::obtener();
         $diaFecha = $utilitarios->obtenerFechaLargaSinDia(strtotime($entregaActa->fecha_entrega));
         return Pdf::loadView('ordenesServicio.reportes.entregaActa',compact("tituloPdf","configuracion","entregaActa","diaFecha"))->stream($tituloPdf.".pdf");
     }
@@ -773,7 +773,7 @@ class OrdenServicio extends Controller
         }
         $utilitarios = new Utilitarios();
         $moneda = $ordenServicio->tipoMoneda === "USD" ? '$' : 'S/';
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $nombreDia = $utilitarios->obtenerFechaLarga(strtotime($ordenServicio->fecha));
         $cliente = Clientes::find($ordenServicio->id_cliente);
         $codigoOrdenServicio = str_pad($ordenServicio->id,5,'0',STR_PAD_LEFT);
@@ -872,7 +872,7 @@ class OrdenServicio extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','ruc'])->get();
+        $configuracion = Configuracion::obtener();
         $response = [
             'modalPuntoPartida' => $ordenServicio->cliente->usuario->direccion,
             'modalpuntoLlegada' => $configuracion->where('descripcion','direccion')->first()->valor,

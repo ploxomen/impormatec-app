@@ -88,10 +88,10 @@
             <h1 class="text-center">INFORME TÉCNICO DE {{$servicio->cotizacionServicio->servicios->servicio}}</h1>
         </div>
         <div class="saltopagina"></div>
-        <p>
+        <p style="text-align: justify;">
             El día {{$fechaTerminoLargo}} se culminó con los trabajos de {{$servicio->cotizacionServicio->servicios->servicio}}
         </p>
-        <p class="parrafo">
+        <p class="parrafo" style="text-align: justify;">
             Con la finalidad de ofrecerle los detalles durante la ejecución del servicio, se ha generado el informe técnico correspondiente. Líneas abajo se incluye fotografías que evidencian la objetividad del servicio generado.
         </p>
         <div>

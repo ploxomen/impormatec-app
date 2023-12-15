@@ -55,7 +55,7 @@ class Seguimiento extends Controller
         if(isset($verif['session'])){
             return redirect()->route('home');
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $garantias = Cotizacion::obtenerGarantiasFechas($request->mes_fin_garantia,$request->year_fin_garantia,$request->cliente,$request->vigencia);
         $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio_cotizacion));
         $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin_cotizacion));
@@ -83,7 +83,7 @@ class Seguimiento extends Controller
         if(isset($verif['session'])){
             return redirect()->route('home');
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $cotizaciones = $this->cotizacionSeguimiento($request->fecha_inicio_cotizacion,$request->fecha_fin_cotizacion,$request->porcentaje,$request->cotizador);
         $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio_cotizacion));
         $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin_cotizacion));

@@ -42,7 +42,7 @@
                 <span>Anular</span>
             </button>
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
-                <i class="far fa-hand-point-left"></i>                
+                <i class="far fa-times-circle"></i>
                 <span>Cancelar</span>
             </button>
         </div>

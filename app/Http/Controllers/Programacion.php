@@ -44,7 +44,7 @@ class Programacion extends Controller
         $fechaInicio = $request->fecha_inicio . ' 00:00:00';
         $fechaFin = $request->fecha_fin . ' 23:59:59';
         $actividades = UsuariosActvidades::obtenerActividades($fechaInicio,$fechaFin,$request->responsables);
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $titulo = "PROGRAMACIÓN DE ACTIVIDADES DESDE " . date('d/m/Y',strtotime($request->fecha_inicio)) . ' HASTA ' . date('d/m/Y',strtotime($request->fecha_fin));
         return Pdf::loadView('administracion.reportes.programacionReporte',compact("titulo","actividades","configuracion"))->stream("PROGRAMACION_REPORTE_" . $fechaInicio . '_'.$fechaFin. '.pdf');
 

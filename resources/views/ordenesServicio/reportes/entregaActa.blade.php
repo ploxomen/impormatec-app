@@ -50,7 +50,7 @@
             </tr>
             <tr>
                 <td scope="row" colspan="2">
-                    <p style="text-align: center;">A continuación,proceden a firmar ambas partes.</p>
+                    <p style="text-align: center;">A continuación, proceden a firmar ambas partes.</p>
                 </td>
             </tr>
             

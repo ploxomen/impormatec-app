@@ -82,20 +82,24 @@
     </table>
 </header>
 <footer style="width: 100%">
-    <table style="width: 100%;">
+    <table style="width: 100%; vertical-align: middle;">
         <tr>
             <td>
                 <img src="{{public_path("img/logo.png")}}" alt="logo de impormatec" width="100px">
             </td>
-            <td style="width: 340px;">
-            </td>
             <td class="text-right">
                 @php
+                    $paginaWeb = $configuracion->where('descripcion','pagina_web')->first();
                     $facebook = $configuracion->where('descripcion','red_social_facebook')->first();
                     $instagram = $configuracion->where('descripcion','red_social_instagram')->first();
                     $tiktok = $configuracion->where('descripcion','red_social_tiktok')->first();
                     $twiter = $configuracion->where('descripcion','red_social_twitter')->first();
                 @endphp
+                @empty(!$paginaWeb->valor)
+                 <a href="{{$paginaWeb->valor}}" style="font-size: 10px; color: black !important;">
+                    {{$paginaWeb->valor}}
+                 </a>
+                @endempty
                 @empty(!$facebook->valor)
                     <a href="{{$facebook->valor}}">
                         <img src="{{public_path('img/logos/facebook.png')}}" width="20px" alt="logo de Facebook">

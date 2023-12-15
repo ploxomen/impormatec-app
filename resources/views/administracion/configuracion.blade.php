@@ -119,8 +119,8 @@
                     </div>
                 </fieldset>
             </div>
-            <div class="col-12 form-group text-center">
-                <button type="submit" class="btn btn-success" id="btnSubmitNegocio">
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-secondary" id="btnSubmitNegocio">
                     <i class="fas fa-pencil-alt"></i>
                     <span>Actualizar Datos</span>
                 </button>

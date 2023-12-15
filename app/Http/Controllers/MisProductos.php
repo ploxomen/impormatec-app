@@ -42,7 +42,7 @@ class MisProductos extends Controller
             return redirect()->route("home"); 
         }
         $productos = Productos::where('productos.estado','>=',0)->get();
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $titulo = "productos_" . date('d_m_Y');
         if($request->has('pdf')){
             return Pdf::loadView('productos.reportes.productosPDF',compact("productos","titulo","configuracion"))

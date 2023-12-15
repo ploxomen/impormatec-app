@@ -187,7 +187,6 @@
                                 de venta.</li>
                             <li><strong>Nota 2:</strong> Todo trabajo adicional que se pudiera encontrar se comunicará anticipadamente.</li>
                             <li><strong>Nota 3:</strong> Nuestro personal cuenta con EPPS (casco, uniforme completo, guantes, lentes, zapatos de seguridad, etc). Así mismo, cuenta con SCTR (salud y pensión).</li>
-                            <li><strong>Nota 4:</strong> Nuestro personal cumple con el protocolo COVID19</li>
                         </ul>
                     </textarea>
                 </fieldset>

@@ -57,6 +57,7 @@ function loadPage() {
             data: 'id',
             render : function(data,type,row){
                 let opcionesInforme = "";
+                let nombreCertificado = row.estado >= 3 ? "Editar Certificado" : "Generar Certificado";
                 if(row.estado > 1){
                     opcionesInforme = `
                     <a href="completado/${row.id_orden_servicio}#formularioInforme${data}" target="_blank" class="dropdown-item">
@@ -65,7 +66,7 @@ function loadPage() {
                     </a>
                     <a href="certificado/${data}" class="dropdown-item">
                         <i class="fas fa-share-square"></i>
-                        <span>Realizar Certificado</span>
+                        <span>${nombreCertificado}</span>
                     </a>
                     <a href="reporte/previa/${row.id_orden_servicio}/${data}" target="_blank" class="dropdown-item">
                         <i class="fas fa-file-pdf text-danger"></i> 

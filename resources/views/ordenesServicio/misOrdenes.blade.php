@@ -49,20 +49,20 @@
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
-                <div class="form-group col-12">
-                    <button type="submit" name="exportarExcel" class="btn btn-sm btn-success">
+                <div class="col-12">
+                    <button type="submit" name="exportarExcel" class="form-group btn btn-sm btn-success">
                         <i class="far fa-file-excel"></i>
                         <span>Exportar OS EXCEL</span>
                     </button>
-                    <button type="submit" name="exportarPdf" class="btn btn-sm btn-danger">
+                    <button type="submit" name="exportarPdf" class="form-group btn btn-sm btn-danger">
                         <i class="far fa-file-pdf"></i>
                         <span>Exportar OS PDF</span>
                     </button>
-                    <button type="submit" name="exportarExcelPagos" class="btn btn-sm btn-success">
+                    <button type="submit" name="exportarExcelPagos" class="form-group btn btn-sm btn-success">
                         <i class="far fa-file-excel"></i>
                         <span>Exportar Pagos EXCEL</span>
                     </button>
-                    <button type="submit" name="exportarPdfPagos" class="btn btn-sm btn-danger">
+                    <button type="submit" name="exportarPdfPagos" class="form-group btn btn-sm btn-danger">
                         <i class="far fa-file-pdf"></i>
                         <span>Exportar Pagos PDF</span>
                     </button>

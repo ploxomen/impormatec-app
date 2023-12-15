@@ -70,7 +70,7 @@ class PreCotizacion extends Controller
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $titulo = 'REPORTE_PRECOTIZACION_'.str_pad($preCotizacion->id,5,'0',STR_PAD_LEFT);
         $rutaVisataUnica = '/formatoVisitas/'.$preCotizacion->formato_visita_pdf;
         try {

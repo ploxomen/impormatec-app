@@ -55,7 +55,7 @@
         <strong>{{$configuracion->where('descripcion','razon_social_largo')->first()->valor}},</strong> con Nro. de <strong>R.U.C: {{$configuracion->where('descripcion','ruc')->first()->valor}}</strong> extiende el presente certificado de operatividad al cliente {{$cliente->nombreCliente}} ubicado en {{$direccionCliente}}.
     </p>
     <p>
-        Con este documento se deja constancia lo siguiente:
+        Con este documento se deja constancia de haber realizado los siguiente servicios:
     </p>
     {!! $certificado->descripcion !!}
     <p class="text-justify">

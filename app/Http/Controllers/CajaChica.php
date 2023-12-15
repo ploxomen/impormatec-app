@@ -61,7 +61,7 @@ class CajaChica extends Controller
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $detalleGastos = CajaChicaDetalle::where(['id_caja_chica' => $cajaChica->id])->get();
         $tituloPdf = 'REPORTE_GASTOS_'.str_pad($cajaChica->id,5,'0',STR_PAD_LEFT).'.pdf';
         $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';
@@ -122,7 +122,7 @@ class CajaChica extends Controller
         if($cajaChica->responsable_caja !== Auth::id()){
             return abort(404);
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $detalleGastos = CajaChicaDetalle::where(['id_caja_chica' => $cajaChica->id])->get();
         $tituloPdf = 'REPORTE_GASTOS_'.str_pad($cajaChica->id,5,'0',STR_PAD_LEFT).'.pdf';
         $monedaTipo = $cajaChica->tipo_moneda === 'PEN' ? 'S/' : '$';

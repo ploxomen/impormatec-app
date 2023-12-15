@@ -85,7 +85,7 @@ class Cotizacion extends Controller
     public function renderPdf($idCotizacion) {
         $utilitarios = new Utilitarios();
         $cotizacion = ModelsCotizacion::find($idCotizacion);
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $cliente = Clientes::find($cotizacion->id_cliente);
         $representante = ClientesContactos::find($cotizacion->representanteCliente);
         $nombreDia = $utilitarios->obtenerFechaLarga(strtotime($cotizacion->fechaCotizacion));
@@ -556,7 +556,7 @@ class Cotizacion extends Controller
         if(isset($verif['session'])){
             return redirect()->route("home"); 
         }
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','texto_datos_bancarios','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $fechaInicioReporte = date('d/m/Y',strtotime($request->fecha_inicio));
         $fechaFinReporte = date('d/m/Y',strtotime($request->fecha_fin));
         $cotizaciones = $this->listaCotizaciones($request->fecha_inicio,$request->fecha_fin,$request->cliente,$request->estado);

@@ -25,8 +25,8 @@
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" id="btnAtrasFrmContacto">
-                <i class="far fa-hand-point-left"></i>                
-                <span>Cerrar</span>
+              <i class="far fa-times-circle"></i>
+              <span>Cerrar</span>
             </button>
         </div>
       </div>

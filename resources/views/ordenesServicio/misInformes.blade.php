@@ -3,7 +3,7 @@
     @include('helper.headDatatable')
     <script src="/library/tinyeditor/tinyeditor.js"></script>
     <script src="/library/tinyeditor/es.js"></script>
-    <script src="/ordenServicio/misInformes.js?v1.5"></script>
+    <script src="/ordenServicio/misInformes.js?v1.6"></script>
     <title>Mis Informes</title>
 @endsection
 @section('body')

@@ -125,7 +125,7 @@ class Informes extends Controller
             return redirect()->route("home");
         }
         $utilitarios = new Utilitarios();
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','razon_social_largo','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter','ruc'])->get();
+        $configuracion = Configuracion::obtener();
         $certificado->fechaLarga = $utilitarios->obtenerFechaLargaSinDia(strtotime($certificado->fecha));
         $cliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->cliente;
         $direccionCliente = $certificado->ordenServicioCotizacion->cotizacionServicio->cotizacion->direccionCliente;
@@ -141,7 +141,7 @@ class Informes extends Controller
         $ordenServicioDetalle = OrdenServicio::findOrFail($idOrdenServicio);
         $nroOrdenServicio = str_pad($ordenServicioDetalle->id,5,'0',STR_PAD_LEFT);
         $utilitarios = new Utilitarios();
-        $configuracion = Configuracion::whereIn('descripcion',['direccion','telefono','red_social_facebook','red_social_instagram','red_social_tiktok','red_social_twitter'])->get();
+        $configuracion = Configuracion::obtener();
         $ordenServicio = !empty($idServicio) ? $ordenServicioDetalle->servicios()->where('id',$idServicio)->get() : $ordenServicioDetalle->servicios()->get();
         if($ordenServicio->isEmpty()){
             return abort(404,'No se encontro el informe');
