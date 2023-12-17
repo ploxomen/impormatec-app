@@ -147,6 +147,7 @@ class Informes extends Controller
             return abort(404,'No se encontro el informe');
         }
         $tituloPdf = empty($idServicio) ? "INFORME GENERAL - OS " .  $nroOrdenServicio : "INFORME DEL SERVICIO - " .  str_pad($ordenServicio->first()->id,5,'0',STR_PAD_LEFT);
+        ini_set("memory_limit","2048M");
         return Pdf::loadView('ordenesServicio.reportes.informe',compact("utilitarios","ordenServicio","tituloPdf","nroOrdenServicio","configuracion","ordenServicioDetalle"))->stream($tituloPdf . '.pdf');
     }
     public function actualizarServiciosDescripciones(Request $request) {
