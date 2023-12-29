@@ -2,7 +2,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Guía de Remisión</h5>
+          <h5 class="modal-title">Guía de Remisión Remitente</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -18,12 +18,33 @@
                     <input type="date" value="{{$diaActual}}" max="{{$diaActual}}" name="fechaTraslado" required id="modalFechaEmision" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12">
-                    <label for="modalPuntoPartida">Punto de Partida</label>
+                    <label for="modalPuntoPartida">Dirección Partida</label>
                     <input type="text" name="puntoPartida" required id="modalPuntoPartida" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12">
-                    <label for="modalpuntoLlegada">Punto de Llegada</label>
-                    <input type="text" name="puntoLlegada" required id="modalpuntoLlegada" class="form-control form-control-sm">
+                    <label for="modalUbigeoPartida">Ubigeo partida</label>
+                    <input type="text" name="ubigeoPartida" value="LIMA - LIMA - SAN MARTIN DE PORRES" required id="modalUbigeoPartida" class="form-control form-control-sm">
+                    <small class="form-text text-muted">El ubigeo se debe escribir de la siguiente manera: DEPARTAMENTO - PROVINCIA - DISTRITO</small>
+                </div>
+                <div class="form-group mb-1 col-12">
+                    <label for="modalpuntoLlegada">Dirección Llegada</label>
+                    <input type="text" name="puntoLlegada" required id="modalPuntoLlegada" class="form-control form-control-sm">
+                </div>
+                <div class="form-group mb-1 col-12">
+                    <label for="modalUbigeoLlegada">Ubigeo Llegada</label>
+                    <input type="text" name="ubigeoLlegada" required id="modalUbigeoLlegada" class="form-control form-control-sm">
+                    <small class="form-text text-muted">El ubigeo se debe escribir de la siguiente manera: DEPARTAMENTO - PROVINCIA - DISTRITO</small>
+                </div>
+                <div class="form-group mb-1 col-12">
+                    <label for="modalMotivoTraslado">Motivo Traslado</label>
+                    <select id="modalMotivoTraslado" required name="motivoTraslado" class="form-control form-control-sm">
+                        <option value="01" selected>VENTA</option>
+                        <option value="02">COMPRA</option>
+                        <option value="04">TRASLADO ENTRE ESTABLECIMIENTOS DE LA MISMA EMPRESA</option>
+                        <option value="13">OTROS</option>
+                        <option value="14">VENTA SUJETA A CONFIRMACION DEL COMPRADOR</option>
+                        <option value="18">TRASLADO EMISOR ITINERANTE CP</option>
+                    </select>
                 </div>
                 <div class="col-12">
                     <h6 class="text-primary">
@@ -69,7 +90,7 @@
                 </div>
                 <div class="form-group mb-1 col-6">
                     <label for="modalnumeroTuceOChvPrincipal">TUCE o CHV</label>
-                    <input type="text" required name="numeroTuceOChvPrincipal" id="modalnumeroTuceOChvPrincipal" class="form-control form-control-sm">
+                    <input type="text" name="numeroTuceOChvPrincipal" id="modalnumeroTuceOChvPrincipal" class="form-control form-control-sm">
                 </div>
                 <div class="col-12">
                     <h6 class="text-primary">

@@ -841,8 +841,9 @@ class OrdenServicio extends Controller
             'ConductorNumeroDocIdentidad' => $request->numeroDocumentoConductorPrincipal,
             'TransportistaTipoDocIdentidadCodigo2' => "",
             'TransportistaNumeroDocIdentidad2' => "",
-            'NOMBRE_UBIGEOLLEGADA' => 'LIMA - CALLAO - CALLAO',
-            'NOMBRE_UBIGEOPARTIDA' => 'LIMA - LIMA - LA VICTORIA',
+            'NOMBRE_UBIGEOLLEGADA' => $request->ubigeoLlegada,
+            'NOMBRE_UBIGEOPARTIDA' => $request->ubigeoPartida,
+            'MotivoTrasladoCodigo' => $request->motivoTraslado,
             'BANDERA_TRANSPORTISTA' => $request->nombreTransportista,
             'ClienteDireccion' => $request->direccionDestinatario,
             'ClienteNombreRazonSocial' => $request->nombreDestinatario,
@@ -855,19 +856,18 @@ class OrdenServicio extends Controller
             'VehiculoPlaca' => $request->numeroPlacaPrincipal,
             'VehiculoPlaca2' => empty($request->numeroPlacaSecundario) ? "" : $request->numeroPlacaSecundario,
             'TransportistaNombreRazonSocial' => $request->nombreTransportista,
-            'VehiculoCertificado' => $request->numeroTuceOChvPrincipal,
+            'VehiculoCertificado' => empty($request->numeroTuceOChvPrincipal) ? "" : $request->numeroTuceOChvPrincipal,
             'VehiculoCertificado2' => empty($request->numeroTuceOChvSecundario) ? "" : $request->numeroTuceOChvSecundario,
             'ConductorTipoDocIdentidadCodigo2' => empty($request->tipoDocumentoConductorSecundario) ? "" : $request->tipoDocumentoConductorSecundario,
             'ConductorNumeroDocIdentidad2' => empty($request->numeroDocumentoConductorSecundario) ? "" : $request->numeroDocumentoConductorSecundario,
             'Observacion' =>  empty($request->observaciones) ? "" : $request->observaciones
         ];
         $generarGuiaRemision = $rapifac->generarGuiaRemision($datosFacturar,$detalles);
-        // $kardex->update(['estado' => 4,'guia_remision_sunat' => null]);
-        // return response()->json(['success' => 'Guia de remision remitente generada correctamente']);
-        if(isset($generarGuiaRemision->Mensaje) && empty($generarGuiaRemision->Mensaje)){
-            // list($numero,$serie,$correlativo) = explode('-',$generarGuiaRemision->xml_pdf->Mensaje);
-            // $kardex->update(['estado' => 4]);
-            return response()->json(['success' => 'Guia de remision remitente generada correctamente', 'urlPdf' => $rapifac->urlPdfComprobantes .'?key=' . $generarGuiaRemision->IDRepositorio]);
+        if(isset($generarGuiaRemision->Mensaje)){
+            if(!empty($generarGuiaRemision->Mensaje)){
+                return response()->json(['error' => $generarGuiaRemision->Mensaje]);
+            }
+            return response()->json(['success' => 'Guia de remisión remitente generada correctamente', 'urlPdf' => $rapifac->urlPdfComprobantes .'?key=' . $generarGuiaRemision->IDRepositorio]);
         }
     }
     public function consultarDatosGuiaRemision(ModelsOrdenServicio $ordenServicio){

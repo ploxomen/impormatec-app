@@ -1176,7 +1176,7 @@ function loadPage() {
     document.querySelector("#generarGuiaRemision #btnFacturar").onclick = e => document.querySelector("#generarGuiaRemision #inputFacturar").click();
     formularioGuiaRemision.addEventListener("submit",async function(e){
         e.preventDefault();
-        alertify.confirm("Alerta","Estas apunto de generar una Guía de Remision<br>¿Deseas continuar de todas formas?",async ()=>{
+        alertify.confirm("Alerta","Estas apunto de generar una Guía de Remisión Remitente<br>¿Deseas continuar de todas formas?",async ()=>{
             try {
                 gen.banerLoader.hidden = false;
                 let datos = new FormData(formularioGuiaRemision);
