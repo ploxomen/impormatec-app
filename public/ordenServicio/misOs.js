@@ -495,7 +495,8 @@ function loadPage() {
     });
     document.querySelector("#verComprobantes #tablaComprobantes").addEventListener("click", e => {
         if(e.target.classList.contains("eliminar-comprobante")){
-            alertify.confirm("Alerta",'¿Desea eliminar el comprobante interno?.<br>Una vez anulado no se podra activar nuevamente',async ()=>{
+            const mensaje = e.target.dataset.tipo !== "00" ? "Estas a punto de anular un comprobante que ha sido generado a <strong>SUNAT</strong> asegurese que se haya eliminado correctamente desde la plataforma externa de RAPIFACT.<br>¿Deseas continuar de todas formas?" : "¿Desea eliminar el comprobante interno?";
+            alertify.confirm("Alerta",`${mensaje}<br>Una vez anulado no se podra activar nuevamente`,async ()=>{
                 try {
                     const response = await gen.funcfetch("mis-comprobantes/anular/" + e.target.dataset.comprobante,null,"POST");
                     if (response.session) {
@@ -516,7 +517,7 @@ function loadPage() {
         let template = "";
         comprobantesSunat.forEach((comprobante,key) => {
             const urlComprobante = comprobante.tipo_comprobante === "00" ? '../comprobantes/interno/' + comprobante.id : urlSunat + '?key=' + comprobante.repositorio;
-            const btnEliminarComprobante = comprobante.tipo_comprobante === "00" && +comprobante.estado === 1 ? `<button class="btn btn-sm eliminar-comprobante btn-danger" data-comprobante="${comprobante.id}" type="button"><i class="fas fa-trash-alt"></i></button>` : ''
+            const btnEliminarComprobante = +comprobante.estado === 1 ? `<button class="btn btn-sm eliminar-comprobante btn-danger" data-comprobante="${comprobante.id}" data-tipo="${comprobante.tipo_comprobante}" type="button"><i class="fas fa-trash-alt"></i></button>` : ''
             template += `
             <tr>
                 <td>${key + 1}</td>

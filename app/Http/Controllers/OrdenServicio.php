@@ -463,13 +463,16 @@ class OrdenServicio extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $comprobanteInterno = $comprobante->comprobanteInterno;
-        if(empty($comprobanteInterno)){
-            return response()->json(['alerta' => 'No se encontró el comprobante interno']);
+        if($comprobante->tipo_comprobante === "00"){
+            $comprobanteInterno = $comprobante->comprobanteInterno;
+            if(empty($comprobanteInterno)){
+                return response()->json(['alerta' => 'No se encontró el comprobante interno']);
+            }
+            $comprobanteInterno->update(['estado' => 0]);
         }
+        
         $comprobante->update(['estado' => 0]);
-        $comprobanteInterno->update(['estado' => 0]);
-        return response()->json(['success' => 'comprobante interno anulado correctamente','comprobantesSunat' => $comprobante->ordenServicio->comprobantes, 'urlSunat' => (new RapiFac)->urlPdfComprobantes]);
+        return response()->json(['success' => $comprobante->tipo_comprobante === "00" ? 'comprobante interno anulado correctamente' : 'comprobante SUNAT anulado correctamente','comprobantesSunat' => $comprobante->ordenServicio->comprobantes, 'urlSunat' => (new RapiFac)->urlPdfComprobantes]);
     }
     public function comprobanteInterno(Comprobantes $comprobante) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloOsMostrar);

@@ -43,7 +43,7 @@
                 <div class="form-group">
                     <div class="ml-auto" style="max-width: 400px;">
                         <label for="txtBuscar">Buscar</label>
-                        <input id="txtBuscar" name="busqueda" placeholder="Número de documento o nombre" type="search" class="form-control" value="{{$busqueda}}">
+                        <input id="txtBuscar" name="busqueda" placeholder="Número de documento o nombre del cliente" type="search" class="form-control" value="{{$busqueda}}">
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -71,6 +71,7 @@
                             @php
                                 $inicio = ($facturas->PaginaActual - 1) * $facturas->ItemsPorPagina;
                                 $fin = $inicio;
+                                $diaActual = date('Y-m-d');
                             @endphp
                             @foreach ($facturas->ListaItems as $key => $factura)
                                 <tr>
@@ -97,7 +98,12 @@
                                             <i class="fas fa-file-pdf"></i>
                                             <span>Ver</span>
                                         </a>
-                                        @if(!$factura->Baja)
+                                        @php
+                                            $diaEmision = date('Y-m-d',strtotime($factura->FechaEmision));
+                                            $diaLimite = date('Y-m-d',strtotime($diaActual . '-1 days'));
+                                            $ocultarBoton = strtotime($diaLimite) <= strtotime($diaEmision);
+                                        @endphp
+                                        @if(!$factura->Baja && $ocultarBoton)
                                             <button type="button" class="btn btn-sm btn-danger" data-id="{{$factura->ID}}" data-serie="{{$factura->Serie}}" data-correlativo="{{$factura->Correlativo}}" data-tipo-documento="{{$factura->ClienteTipoDocIdentidadDetalle}}" data-numero-documento="{{$factura->ClienteNumeroDocIdentidad}}" data-fecha="{{date('d/m/Y',strtotime($factura->FechaEmision))}}" data-codigo-documento="{{$factura->TipoDocumentoCodigo}}" data-cliente="{{$factura->ClienteNombreRazonSocial}}">
                                                 <i class="fas fa-trash-alt"></i>
                                                 <span>Anular</span>
