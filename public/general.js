@@ -189,13 +189,19 @@ class General{
                     <label for="txtEditarResponsable${id}">Responsable</label>
                     <input type="text" id="txtEditarResponsable${id}" required disabled class="form-control form-control-sm" value="${nombreUsuario}"/>
                 </div>
-                <div class="form-group col-12 col-md-8">
+                <div class="form-group col-12 col-md-7">
                     <label for="id="txtEditarFechaHr${id}"">Fecha Hr.</label>
                     <input type="text" required disabled class="form-control form-control-sm" value="${fechaCreadaFormato}" id="txtEditarFechaHr${id}"/>
                 </div>
-                <div class="form-group col-12 col-md-4">
+                <div class="form-group col-12 col-md-5">
                     <label for="txtEditarPorcentaje${id}">Porcentaje</label>
-                    <input type="number" required name="porcentaje[]" min="1" max="100" step="0.01"  class="form-control form-control-sm" value="${porcentaje}" id="txtEditarPorcentaje${id}"/>
+                    <select name="porcentaje[]" required class="select2-simple" id="cbPorcentaje${id}">
+                        <option value="10" ${Number.parseInt(porcentaje) == "10" ? 'selected' : ''}>10% cotizado</option>
+                        <option value="30" ${Number.parseInt(porcentaje) == "30" ? 'selected' : ''}>30% en consultas</option>
+                        <option value="50" ${Number.parseInt(porcentaje) == "50" ? 'selected' : ''}>50% en evaluación</option>
+                        <option value="75" ${Number.parseInt(porcentaje) == "75" ? 'selected' : ''}>75% oferta elegida</option>
+                        <option value="95" ${Number.parseInt(porcentaje) == "95" ? 'selected' : ''}>95% pre aprobado</option>
+                    </select>
                 </div>
                 <div class="form-group col-12">
                     <label for="txtEditarDescripcion${id}">Descripción</label>

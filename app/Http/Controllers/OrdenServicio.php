@@ -650,10 +650,12 @@ class OrdenServicio extends Controller
         $cotizacionesServicios = OrdenServicioCotizacionServicio::where('id_orden_servicio',$idOrdenServicio)->get();
         $cotizacionesProductos = OrdenServicioCotizacionProducto::where('id_orden_servicio',$idOrdenServicio)->get();
         foreach ($cotizacionesServicios as $cotizacionServicio) {
+            $cotizacionServicio->update(['estado' => 0]);
             $cotizacionServicio->cotizacionServicio()->update(['estado' => 1]);
             $cotizacionServicio->cotizacionServicio->cotizacion->update(['estado' => 2]);
         }
         foreach ($cotizacionesProductos as $cotizacionProducto) {
+            $cotizacionProducto->update(['estado' => 0]);
             $cotizacionProducto->cotizacionOsProductos()->update(['estado' => 1]);
             $cotizacionProducto->cotizacionOsProductos->cotizacion->update(['estado' => 2]);
         }

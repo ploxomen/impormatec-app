@@ -17,7 +17,8 @@
         @foreach ($productos as $producto)
             @php
                 $moneda = $incluirMoneda ? ($producto->tipoMoneda === 'USD' ? '$ ' : 'S/ ') : '';
-                $filas = $producto->esIntangible === 1 ? 1 : $producto->almacenes->count();
+                $totalAlmacen = $producto->almacenes->count();
+                $filas = $totalAlmacen > 0 ? $totalAlmacen : 1;
             @endphp
             <tr>
                 <td rowspan="{{$filas}}">{{str_pad($producto->id,5,'0',STR_PAD_LEFT)}}</td>
@@ -28,7 +29,7 @@
                 <td rowspan="{{$filas}}">{{$moneda.$producto->precioCompra}}</td>
                 <td rowspan="{{$filas}}">{{$producto->utilidad}}</td>
                 <td rowspan="{{$filas}}">{{$producto->estado === 1 ? 'Vigente' : 'Descontinuado'}}</td>
-                @if ($producto->esIntangible === 0)
+                @if ($producto->esIntangible === 0 && $totalAlmacen > 0)
                     @foreach ($producto->almacenes as $key => $almacen)
                         @if($key > 0)
                             <tr>

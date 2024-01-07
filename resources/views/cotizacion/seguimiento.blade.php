@@ -1,7 +1,7 @@
 @extends('helper.index')
 @section('head')
     @include('helper.headDatatable')
-    <script src="/cotizacion/seguimiento.js?v1.5"></script>
+    <script src="/cotizacion/seguimiento.js?v1.6"></script>
     <title>Seguimiento de cotizaciones</title>
 @endsection
 @section('body')

@@ -30,8 +30,9 @@ class ExportProductos implements FromView,ShouldAutoSize,WithStyles
     {
         foreach ($this->datos as $producto) {
             $this->filaFinal++;
-            if($producto->esIntangible === 0){
-                $this->filaFinal += $producto->almacenes->count() - 1;            
+            $totalAlmacen = $producto->almacenes->count();
+            if($producto->esIntangible === 0 && $totalAlmacen > 0){
+                $this->filaFinal += $totalAlmacen - 1;            
             }
         }
         $rango = "A" . $this->filaInicial . ":J" . $this->filaFinal;

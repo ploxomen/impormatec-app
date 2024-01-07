@@ -86,6 +86,9 @@ class Almacenes extends Controller
         if(isset($accessModulo['session'])){
             return response()->json($accessModulo);
         }
+        if($almacen->productos->count() > 0){
+            return response()->json(['alerta' => 'No se puede eliminar este almacen porque contiene productos, si desea eliminarlo, elimine primero los productos asociados a este almacen']);
+        }
         $almacen->delete();
         return response()->json(['success' => 'almacen eliminado correctamente']);
     }

@@ -27,7 +27,7 @@ class Cotizacion extends Model
         ->join("cotizacion","cotizacion.id","=","cotizacion_productos.id_cotizacion")
         ->join("productos","productos.id","=","cotizacion_productos.id_producto")
         ->join("clientes","cotizacion.id_cliente","=","clientes.id")
-        ->leftjoin("orden_servicio_cotizacion_producto","orden_servicio_cotizacion_producto.id_cotizacion_producto","=","cotizacion_productos.id");
+        ->leftjoin("orden_servicio_cotizacion_producto","orden_servicio_cotizacion_producto.id_cotizacion_producto","=","cotizacion_productos.id")->where('orden_servicio_cotizacion_producto.estado','!=',0);
         if($cliente !== '0'){
             $productos = $productos->where('clientes.id',$cliente);
         }
@@ -44,7 +44,7 @@ class Cotizacion extends Model
         ->join("cotizacion_servicios","cotizacion_servicios.id","=","orden_servicio_cotizacion_servicio.id_cotizacion_servicio")
         ->join("cotizacion","cotizacion.id","=","cotizacion_servicios.id_cotizacion")
         ->join("servicios","servicios.id","=","cotizacion_servicios.id_servicio")
-        ->join("clientes","cotizacion.id_cliente","=","clientes.id");
+        ->join("clientes","cotizacion.id_cliente","=","clientes.id")->where('orden_servicio_cotizacion_servicio.estado','!=',0);
         if($cliente !== '0'){
             $servicios = $servicios->where('clientes.id',$cliente);
         }

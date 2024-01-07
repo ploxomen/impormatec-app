@@ -327,6 +327,7 @@ function loadPage(){
         switchEstado.checked = true;
         switchEstado.parentElement.querySelector("label").textContent = "ABIERTO";
         formCajaChica.reset();
+        $('#agregarCaja .select2-simple').trigger("change");
     });
 }
 window.addEventListener("DOMContentLoaded",loadPage);

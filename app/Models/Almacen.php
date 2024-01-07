@@ -14,6 +14,10 @@ class Almacen extends Model
     {
         return $date->format('d/m/Y h:i a');
     }
+    public function productos()
+    {
+        return $this->belongsToMany(Productos::class,'productos_almacen','id_almacen','id_producto')->withPivot('stock','estado');
+    }
     // public function productos()
     // {
     //     return $this->hasMany(Productos::class,'presentacionFk');

@@ -239,6 +239,11 @@ function loadPage(){
                 });
                 contenidoSeguientoHistorialEditar.innerHTML = !template ? '<h6 class="text-center">No se registro historial para esta cotización</h6>' : template;
                 $('#editarSeguimiento').modal("show");
+                $('#editarSeguimiento .select2-simple').select2({
+                    theme: 'bootstrap',
+                    width: '100%',
+                    placeholder:'Seleccione el procentaje',
+                });
             } catch (error) {
                 alertify.error("error al visualizar los seguimientos");
             }finally{
