@@ -49,7 +49,7 @@ function loadPage(params) {
                 return row.estado >= 2 ? `
                 <a class="btn btn-sm btn-outline-danger" href="visita/ver/pdf/${data}" target="_blank">
                     <i class="far fa-file-pdf"></i>
-                    Ver i8nforme
+                    Ver informe
                 </a>` : `<span class="badge badge-danger">Sin acciones</span>`
             }
         },
