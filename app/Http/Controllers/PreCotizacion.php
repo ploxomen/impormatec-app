@@ -41,7 +41,7 @@ class PreCotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->whereBetween('cp.fecha_hr_visita',[$request->fechaInicio . ' 00:00:00',$request->fechaFin.' 00:00:00'])->groupBy("cp.id")->get();
+        $preCotizaciones = PreCotizaion::obtenerPreCotizaciones()->where('cp.estado','!=',0)->whereBetween('cp.fecha_hr_visita',[$request->fechaInicio . ' 00:00:00',$request->fechaFin.' 00:00:00'])->groupBy("cp.id")->get();
         return DataTables::of($preCotizaciones)->toJson();
     }
     public function obtenerInformePreCotizacion($idPreCotizacion) {
@@ -50,6 +50,17 @@ class PreCotizacion extends Controller
             return response()->json(['session' => true]);
         }
         return response()->json(PreCotizaion::obtenerPreCotizacion($idPreCotizacion,null));
+    }
+    public function eliminarPreCotizacion(PreCotizaion $preCotizacion) {
+        $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);
+        if(isset($verif['session'])){
+            return response()->json(['session' => true]);
+        }
+        if($preCotizacion->cotizacion()->count()){
+            return response()->json(['alerta' => 'No se puede eliminar esta precotización porque pertenece a la cotizacion N° ' . str_pad($preCotizacion->cotizacion->id,5,'0',STR_PAD_LEFT)]);
+        }
+        $preCotizacion->update(['estado' => 0]);
+        return response()->json(['success' => 'Precotización eliminada correctamente']);
     }
     public function eliminarFormatoVisita(PreCotizaion $preCotizacion) {
         $verif = $this->usuarioController->validarXmlHttpRequest($this->moduloMisPreCotizacion);

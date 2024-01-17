@@ -122,4 +122,8 @@ class PreCotizaion extends Model
     {
         return $this->belongsToMany(Tecnico::class,'cotizacion_pre_tecnicos','id_pre_cotizacion','id_tecnico')->wherePivot('responsable',1);
     }
+    public function cotizacion()
+    {
+        return $this->hasOne(Cotizacion::class,'id_pre_cotizacion');
+    }
 }

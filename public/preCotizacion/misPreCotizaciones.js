@@ -69,8 +69,8 @@ function loadPage() {
                         </a>
                         ${!pdfInforme ? '' : pdfInforme}
                         ${!pdfInformeVisita ? '' : pdfInformeVisita}
-                        <a class="dropdown-item eliminar-cotizacion" href="javascript:void(0)">
-                            <i class="fas fa-trash-alt text-danger mr-1"></i>
+                        <a class="dropdown-item text-danger eliminar-precotizacion" href="javascript:void(0)" data-precotizacion="${data}">
+                            <i class="fas fa-trash-alt mr-1"></i>
                             <span class="text-secondary">Eliminar precotización</span>
                         </a>
                     </div>
@@ -304,11 +304,15 @@ function loadPage() {
             alertify.confirm("Alerta","¿Estás seguro de eliminar esta precotizacion?",async ()=>{
                 try {
                     general.cargandoPeticion(e.target, general.claseSpinner, true);
-                    const response = await general.funcfetch("producto/eliminar/" + e.target.dataset.producto, null,"DELETE");
+                    const response = await general.funcfetch("eliminar/" + e.target.dataset.precotizacion, null,"DELETE");
                     general.cargandoPeticion(e.target, 'fas fa-trash-alt', false);
                     if (response.session) {
                         return alertify.alert([...general.alertaSesion], () => { window.location.reload() });
                     }
+                    if(response.alerta){
+                        return alertify.alert("Alerta",response.alerta);
+                    }
+                    tablaPreCotizacionDatatable.draw();
                     return alertify.success(response.success);
                 } catch (error) {
                     general.cargandoPeticion(e.target, 'fas fa-trash-alt', false);

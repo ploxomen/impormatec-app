@@ -6,7 +6,7 @@
     <script src="/preCotizacion/compartido.js"></script>
     <link rel="stylesheet" href="/ordenServicio/informe.css?v1.1">
     <link rel="stylesheet" href="/tecnico/primeraVisitaPreCoti.css?v1.5">
-    <script src="/preCotizacion/misPreCotizaciones.js"></script>
+    <script src="/preCotizacion/misPreCotizaciones.js?1.3"></script>
     <title>Mis Pre - Cotizaciones</title>
 @endsection
 @section('body')

@@ -175,6 +175,7 @@ Route::middleware('auth')->prefix('intranet')->group(function(){
             Route::get('reporte/{preCotizacion}', [PreCotizacion::class, 'visualizacionPdfReporte']);
             Route::get('informe/{idPreCotizacion}', [PreCotizacion::class, 'obtenerInformePreCotizacion']);
             Route::delete('eliminar/formato-visita/{preCotizacion}', [PreCotizacion::class, 'eliminarFormatoVisita']);
+            Route::delete('eliminar/{preCotizacion}', [PreCotizacion::class, 'eliminarPreCotizacion']);
             Route::post('acciones', [PreCotizacion::class, 'accionesPreCotizacion']);
             Route::post('eliminar/imagen', [PreCotizacion::class, 'eliminarImagenPreCotizacion']);
             Route::post('actualizar', [PreCotizacion::class, 'actualizarPreCotizacion']);
