@@ -97,8 +97,8 @@ class Cotizacion extends Model
             return $cotizaciones;
         }
         foreach ($cotizaciones as $cotizacion) {
-            $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
-            $cotizacion->detalleCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id)->where('estado',1);
+            $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id,1);
+            $cotizacion->detalleCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id,1);
         }
         return $cotizaciones;
     }

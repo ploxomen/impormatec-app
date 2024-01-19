@@ -25,10 +25,11 @@ class CotizacionServicio extends Model
     public function ordenServicioDetalleServicio() {
         return $this->hasOne(OrdenServicioCotizacionServicio::class,'id_cotizacion_servicio');
     }
-    public static function mostrarServiciosConProductos($idCotizacion) {
-        return CotizacionServicio::select("cotizacion_servicios.id","cotizacion_servicios.id_cotizacion","cotizacion_servicios.id_servicio","cotizacion_servicios.orden","cotizacion_servicios.precio","cotizacion_servicios.cantidad","cotizacion_servicios.importe","cotizacion_servicios.descuento","cotizacion_servicios.igv","cotizacion_servicios.total","servicios.servicio AS nombreDescripcion","cotizacion_servicios.estado")->selectRaw("'servicio' AS tipo,null AS detalleProductos")
+    public static function mostrarServiciosConProductos($idCotizacion,$estado = null) {
+        $servicios = CotizacionServicio::select("cotizacion_servicios.id","cotizacion_servicios.id_cotizacion","cotizacion_servicios.id_servicio","cotizacion_servicios.orden","cotizacion_servicios.precio","cotizacion_servicios.cantidad","cotizacion_servicios.importe","cotizacion_servicios.descuento","cotizacion_servicios.igv","cotizacion_servicios.total","servicios.servicio AS nombreDescripcion","cotizacion_servicios.estado")->selectRaw("'servicio' AS tipo,null AS detalleProductos")
         ->join("servicios","cotizacion_servicios.id_servicio","=","servicios.id")
         ->where('id_cotizacion',$idCotizacion);
+        return !empty($estado) ? $servicios->where('cotizacion_servicios.estado',$estado) : $servicios;
     }
     
 }

@@ -39,9 +39,13 @@ class CotizacionProductos extends Model
         }
         return $productos;
     }
-    public static function productosServicios($servicios,$idCotizacion) {
-        return CotizacionProductos::select("cotizacion_productos.id","cotizacion_productos.id_cotizacion","cotizacion_productos.id_producto","cotizacion_productos.orden","cotizacion_productos.precio","cotizacion_productos.cantidad","cotizacion_productos.importe","cotizacion_productos.descuento","cotizacion_productos.igv","cotizacion_productos.total","productos.nombreProducto AS nombreDescripcion","cotizacion_productos.estado")->selectRaw("'producto' AS tipo,null AS detalleProductos")
+    public static function productosServicios($servicios,$idCotizacion,$estado = null) {
+        $productosServicios = CotizacionProductos::select("cotizacion_productos.id","cotizacion_productos.id_cotizacion","cotizacion_productos.id_producto","cotizacion_productos.orden","cotizacion_productos.precio","cotizacion_productos.cantidad","cotizacion_productos.importe","cotizacion_productos.descuento","cotizacion_productos.igv","cotizacion_productos.total","productos.nombreProducto AS nombreDescripcion","cotizacion_productos.estado")->selectRaw("'producto' AS tipo,null AS detalleProductos")
         ->join("productos","cotizacion_productos.id_producto","=","productos.id")
-        ->where('id_cotizacion',$idCotizacion)->union($servicios)->orderBy("orden")->get();
+        ->where('id_cotizacion',$idCotizacion);
+        if(!empty($estado)){
+            $productosServicios->where('cotizacion_productos.estado',$estado);
+        }
+        return $productosServicios->union($servicios)->orderBy("orden")->get();
     }
 }

@@ -563,8 +563,8 @@ class OrdenServicio extends Controller
                     $respuesta = [];
                     $cotizacion = Cotizacion::find($request->idCotizacion);
                     $cotizacion->update(['estado' => 4]);
-                    $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
-                    $detallesCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id)->where('estado',1);
+                    $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id,1);
+                    $detallesCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id,1);
                     foreach ($detallesCotizacion as $key => $servicio) {
                         if($servicio->estado > 1){
                             continue;

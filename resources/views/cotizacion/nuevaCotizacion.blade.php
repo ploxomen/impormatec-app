@@ -20,7 +20,7 @@
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Cotización</legend>
                     <div class="col-12 col-md-6 col-lg-4 col-xl-2 form-group">
                         <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Pre - Cotizacion</label>
-                        <select name="id_pre_cotizacion" id="cbPreCotizacion" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una pre - cotización">
+                        <select name="id_pre_cotizacion" id="cbPreCotizacion" required class="form-control select2-simple"  data-placeholder="Seleccione una pre - cotización">
                             <option value=""></option>
                             <option value="ninguno" selected>Ninguno</option>
                             @foreach ($preCotizaciones as $preCotizacion)

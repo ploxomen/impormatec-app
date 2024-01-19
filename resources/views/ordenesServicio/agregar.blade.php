@@ -20,7 +20,7 @@
                     <legend class="bg-white d-inline-block w-auto px-2 border shadow-sm text-left legend-add">Orden Servicio</legend>
                         <div class="col-12 col-md-6 col-lg-4 col-xl-3 form-group">
                             <label for="cbPreCotizacion" class="col-form-label col-form-label-sm">Clientes</label>
-                            <select name="id_cliente" id="cbClientes" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione un cliente">
+                            <select name="id_cliente" id="cbClientes" required class="form-control select2-simple" data-placeholder="Seleccione un cliente">
                                 <option value=""></option>
                                 <option value="ninguno" selected>Ninguno</option>
                                 @foreach ($clientes as $cliente)

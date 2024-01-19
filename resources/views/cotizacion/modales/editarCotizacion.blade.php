@@ -17,7 +17,7 @@
             </div>
             <div class="col-12 col-md-6 col-lg-4 form-group">
                 <label for="idModalid_pre_cotizacion" class="col-form-label col-form-label-sm">Pre - Cotizacion</label>
-                <select name="id_pre_cotizacion" id="idModalid_pre_cotizacion" required class="form-control select2-simple" data-tags="true" data-placeholder="Seleccione una pre - cotización">
+                <select name="id_pre_cotizacion" id="idModalid_pre_cotizacion" required class="form-control select2-simple" data-placeholder="Seleccione una pre - cotización">
                     <option value=""></option>
                     <option value="ninguno" selected>Ninguno</option>
                     @foreach ($preCotizaciones as $preCotizacion)
