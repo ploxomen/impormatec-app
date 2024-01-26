@@ -229,7 +229,7 @@ class RapiFac extends Controller
                 'Content-Type' => 'application/json'
             ];
             $body = json_encode($parametros);
-            // dd($body);
+            dd($body);
             $response = $client->post($this->urlComprobante,[
                 'headers' => $headers,
                 'body' => $body
@@ -558,7 +558,8 @@ class RapiFac extends Controller
                 "ProductoCodigo" => mb_strtoupper(substr($detalle['tipoServicioProducto'],0,1)) . $detalle['idOsCotizacion'],
                 "ProductoCodigoSUNAT" => "",
                 'TipoSistemaISCCodigo' => '00',
-                'UnidadMedidaCodigo' => 'NIU',
+                'UnidadMedidaCodigo' => $detalle['tipoServicioProducto'] == 'servicio' ? 'ZZ' : 'NIU',
+                'DescripcionUnidadMedida' => $detalle['tipoServicioProducto'] == 'servicio' ? 'SERVICIO' : 'BIEN',
                 'PrecioUnitarioItem' => $precioUnitarioNeto,
                 'PrecioVentaCodigo' => '01',
                 'ICBPER' => 0,
@@ -612,10 +613,10 @@ class RapiFac extends Controller
         $tipoFactura = !isset($datosGenerales['tipoFactura']) ? 'Contado' : $datosGenerales['tipoFactura'];
         $fechaEmision = date('d/m/Y',strtotime($datosGenerales['fechaEmision']));
         $parametros = [
+            // "EsPrueba" => ""
             "Usuario" => env('API_RAPIFAC_USER'),
             "Sucursal" => env('API_RAPIFAC_SUCURSAL_ID'),
             "IGVPorcentaje" => 18,
-            "DetraccionTipoOperacion" => "01",
             "CantidadDecimales" => 2,
             "CanalVenta" => 2,
             // "OrigenSistema" => 7,
@@ -649,7 +650,10 @@ class RapiFac extends Controller
             "TipoDocumentoCodigoModificado" => "01",
             "TipoNotaCreditoCodigo" => "01",
             "TipoNotaDebitoCodigo" => "01",
+            "ListaMovimientos" => [],
             "TipoOperacionCodigo" => "0101",
+            "FechaIngresoPais" => $fechaEmision,
+            "FechaIngresoEstablecimiento" => $fechaEmision,
             "TipoCambio" => "3.919",
             "Observacion" => empty($datosGenerales['observaciones']) ? '' : $datosGenerales['observaciones'],
             "MotivoTrasladoCodigo" => "01",
@@ -675,6 +679,17 @@ class RapiFac extends Controller
             $parametros['CreditoTotal'] = $totalGeneral;
             $parametros['TotalCuotas'] = $totalGeneral;
             $parametros["PendientePago"] = $totalGeneral;
+        }
+        if($datosGenerales['tipoComprobante'] == '01' && isset($datosGenerales['incluirDetraccion'])){
+            $parametros['TipoOperacionCodigo'] = '1001';
+            $parametros["DetraccionTipoOperacion"] = "01";
+            $parametros["DetraccionMedioPago"] = "001";
+            $parametros['BienServicioCodigo'] = $datosGenerales['BienServicioCodigo'];
+            $parametros['DetraccionPorcentaje'] = intval($datosGenerales['DetraccionPorcentaje']);
+            $parametros['DetraccionCuenta'] = $datosGenerales['DetraccionCuenta'];
+            $parametros['Leyenda'] = "1";
+            $parametros['Detraccion'] = round($datosGenerales['DetraccionPorcentaje'] / 100 * $totalGeneral);
+            $parametros["PendientePago"] =  $totalGeneral - $parametros['Detraccion'];
         }
         try {
             $token = $this->obtenerToken();

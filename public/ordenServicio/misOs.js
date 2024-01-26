@@ -268,6 +268,8 @@ function loadPage() {
     const linkReporteActas = document.querySelector("#verReporteActas");
     const detalleFactura = document.querySelector("#generarFactura #tablaProductos");
     const tablaVerComprobantes = document.querySelector("#verComprobantes #tablaComprobantes");
+    const $detalleCriditoFacturacion = document.querySelector("#generarFactura #bloqueCredito");
+
     let totalFacturar = 0;
     let tipoMonedaFacturacion = null;
     tablaOs.addEventListener("click",async (e)=>{
@@ -530,7 +532,6 @@ function loadPage() {
         });
         tablaVerComprobantes.innerHTML = !template ? `<tr><td colspan="100%" class="text-center">No se encontraron comprobantes</td></tr>` : template;
     }
-    const $detalleCriditoFacturacion = document.querySelector("#generarFactura #bloqueCredito");
     const $txtFechaEmision = document.querySelector("#generarFactura #modalFechaEmision");
     const $tablaCreditosFactura = document.querySelector("#generarFactura #tablaCreditos");
     const formFacturar = document.querySelector("#generarFactura #formFacturar");
@@ -540,7 +541,7 @@ function loadPage() {
     </tr>
     `
     let numeroCuotasFactura = 0;
-    for (const tipoFactura of document.querySelectorAll("#generarFactura .cambio-tipo-factura")) {
+    for (const tipoFactura of document.querySelectorAll("#generarFactura .cambio-tipo-pago")) {
         tipoFactura.addEventListener("change",function(e){
             if(e.target.value === "Contado"){
                 $tablaCreditosFactura.innerHTML = $sinCuotas;
@@ -551,6 +552,7 @@ function loadPage() {
             $detalleCriditoFacturacion.hidden = false;
         })
     }
+    const contenidoDetraccion = document.querySelector("#generarFactura #contenidoDetraccion");
     document.querySelector("#generarFactura #btnAgregarCuotaFactura").addEventListener("click",()=>{
         $tablaCreditosFactura.append(agregarCuotaFactura());
     });
@@ -563,6 +565,10 @@ function loadPage() {
             tipoFactura.disabled = true;
             tipoFactura.parentElement.parentElement.hidden =  true;
         }
+        for (const tipoFactura of document.querySelectorAll('#generarFactura .cambio-tipo-detraccion')) {
+            tipoFactura.disabled = true;
+        }
+        contenidoDetraccion.hidden = true;
         idOrdenServicio = null;
         totalFacturar = 0;
         tipoMonedaFacturacion = null;
@@ -609,11 +615,38 @@ function loadPage() {
         `
         return $tr;
     }
+    const incluirDetraccion = document.querySelector("#incluirDetraccion");
+    const montoDetraccion = document.querySelector("#generarFactura #idModalMontoDetraccion");
+    const porcentajeDetraccion = document.querySelector("#generarFactura #idModalPorcentajeDetraccion");
+    function calcularDetraccion() {
+        let totalDetraccion = porcentajeDetraccion.value/100 * totalFacturar;
+        montoDetraccion.value = totalDetraccion.toFixed(2);
+    }
+    porcentajeDetraccion.onchange = calcularDetraccion;
+    incluirDetraccion.onchange = e => {
+        calcularDetraccion();
+        for (const detraccion of document.querySelectorAll('#generarFactura .cambio-tipo-detraccion')) {
+            detraccion.disabled = !e.target.checked;
+            if(detraccion.closest("#contenidoDetraccion")){
+                detraccion.closest("#contenidoDetraccion").hidden = !e.target.checked;
+            }
+        }
+    }
+
     for (const tipoFactura of document.querySelectorAll("#generarFactura .tipo-factura")) {
         tipoFactura.addEventListener("change",function(e){
             for (const tipoFactura of document.querySelectorAll('#generarFactura .cambio-tipo-factura')) {
                 tipoFactura.disabled = e.target.value !== "Factura" ? true : false;
-                tipoFactura.parentElement.parentElement.hidden =  e.target.value !== "Factura" ? true : false;
+                if(tipoFactura.closest(".ocultar-contenido")){
+                    tipoFactura.closest(".ocultar-contenido").hidden = e.target.value !== "Factura" ? true : false;
+                }
+                if(e.target.value !== "Factura"){
+                    contenidoDetraccion.hidden = true;
+                    incluirDetraccion.checked = false;
+                    $tablaCreditosFactura.innerHTML = $sinCuotas;
+                    $detalleCriditoFacturacion.hidden = true;
+                    numeroCuotasFactura = 0;
+                }
             }
         })
     }

@@ -52,21 +52,83 @@
                     <label for="idModaldireccionCliente">Dirección</label>
                     <input type="text" name="direccionCliente" id="idModaldireccionCliente" class="form-control form-control-sm">
                 </div>
-                <div class="form-group col-12 col-md-6" hidden>
+                <div class="form-group col-12 col-md-6 ocultar-contenido" hidden>
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="tipoAlContado" disabled required name="tipoFactura" value="Contado" class="custom-control-input cambio-tipo-factura">
+                        <input type="radio" id="tipoAlContado" disabled required name="tipoFactura" value="Contado" class="custom-control-input cambio-tipo-factura cambio-tipo-pago">
                         <label class="custom-control-label" for="tipoAlContado">Al contado</label>
                     </div>
                 </div>
-                <div class="form-group col-12 col-md-6" hidden>
+                <div class="form-group col-12 col-md-6 ocultar-contenido" hidden>
                     <div class="custom-control custom-radio">
-                        <input type="radio" id="tipoACredito" disabled value="Credito" required name="tipoFactura" class="custom-control-input cambio-tipo-factura">
+                        <input type="radio" id="tipoACredito" disabled value="Credito" required name="tipoFactura" class="custom-control-input cambio-tipo-factura cambio-tipo-pago">
                         <label class="custom-control-label" for="tipoACredito">A crédito</label>
                     </div>
                 </div>
                 <div class="form-group col-12">
                     <label for="modalObservaciones">Observaciones</label>
                     <textarea name="observaciones" id="modalObservaciones" class="form-control form-control-sm" rows="3"></textarea>
+                </div>
+                <div class="form-group col-12 ocultar-contenido" hidden>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input cambio-tipo-factura" name="incluirDetraccion" id="incluirDetraccion">
+                        <label class="custom-control-label" for="incluirDetraccion" disabled>Incluir detracción</label>
+                    </div>
+                </div>
+                <div class="form-group col-12" hidden id="contenidoDetraccion">
+                    <h5 class="text-primary">
+                        <i class="fas fa-caret-right"></i>
+                        Detalle detracción
+                    </h5>
+                    <div class="form-row">
+                        <div class="form-group col-12 col-md-6">
+                            <label for="idModalTipoBienServicio">Tipo Bien/Servicio</label>
+                            <select name="BienServicioCodigo" class="form-control select2-simple cambio-tipo-detraccion" id="idModalTipoBienServicio" required disabled>
+                                <option value="001">001-Azúcar y melaza de caña</option>
+                                <option value="002">002-Arroz pilado</option>
+                                <option value="003">003-Alcohol etílico</option>
+                                <option value="004">004-Recursos hidrobiológicos</option>
+                                <option value="005">005-Maíz amarillo duro</option>
+                                <option value="007">007-Caña de azúcar</option>
+                                <option value="008">008-Madera</option>
+                                <option value="009">009-Arena y piedra.</option>
+                                <option value="010">010-Residuos, subproductos, desechos, recortes y desperdicios</option>
+                                <option value="011">011-Bienes del inciso A) del Apéndice I de la Ley del IGV</option>
+                                <option value="012">012-Intermediación laboral y tercerización</option>
+                                <option value="014">014-Carnes y despojos comestibles</option>
+                                <option value="016">016-Aceite de pescado.</option>
+                                <option value="017">017-Harina, polvo y “pellets” de pescado, crustáceos, moluscos y demás invertebrados acuaticos</option>
+                                <option value="018">018-Embarcaciones pesqueras</option>
+                                <option value="019">019-Arrendamiento de bienes muebles</option>
+                                <option value="020">020-Mantenimiento y reparación de bienes muebles</option>
+                                <option value="021">021-Movimiento de carga</option>
+                                <option value="022" selected>022-Otros servicios empresariales</option>
+                                <option value="024">024-Comisión mercantil </option>
+                                <option value="025">025-Fabricación de bienes por encargo</option>
+                                <option value="026">026-Servicio de transporte de personas</option>
+                                <option value="027">027-Transporte de carga</option>
+                                <option value="030">030-Contratos &nbsp; de construcción&nbsp;&nbsp;</option>
+                                <option value="031">031-Oro gravado con el IGV</option>
+                                <option value="034">034-Minerales metalicos no auriferos</option>
+                                <option value="035">035-Bienes exonerados del IGV </option>
+                                <option value="036">036-Oro y demas minerales metalicos exonerados del IGV</option>
+                                <option value="037">037-Demás &nbsp; servicios gravados con el IGV</option>
+                                <option value="039">039-Minerales no metalicos</option>
+                                <option value="040">040-bien inmueble gravado con el IGV</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-12 col-md-6">
+                            <label for="idModalNroCuenta">Nro. Cuenta</label>
+                            <input name="DetraccionCuenta" type="text" class="form-control form-control-sm cambio-tipo-detraccion" id="idModalNroCuenta" required disabled>
+                        </div>
+                        <div class="form-group col-12 col-md-6">
+                            <label for="idModalPorcentajeDetraccion">Porcentaje</label>
+                            <input name="DetraccionPorcentaje" type="number" value="12" min="0" max="100" id="idModalPorcentajeDetraccion" class="form-control form-control-sm cambio-tipo-detraccion" required disabled>
+                        </div>
+                        <div class="form-group col-12 col-md-6">
+                            <label for="idModalMontoDetraccion">Monto</label>
+                            <input type="number" id="idModalMontoDetraccion" readonly step="0.01" class="form-control form-control-sm cambio-tipo-detraccion" required disabled>
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group col-12" id="bloqueCredito" hidden>
                     <div class="d-flex justify-content-between form-group" style="gap: 10px;">
