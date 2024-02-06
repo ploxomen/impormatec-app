@@ -90,8 +90,8 @@ class Cotizacion extends Controller
         $representante = ClientesContactos::find($cotizacion->representanteCliente);
         $nombreDia = $utilitarios->obtenerFechaLarga(strtotime($cotizacion->fechaCotizacion));
         $nombreMes = $utilitarios->obtenerNombreMes(strtotime($cotizacion->fechaCotizacion));
-        $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
-        $productosServicios = CotizacionProductos::productosServicios($servicios,$cotizacion->id);
+        $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id)->where('cotizacion_servicios.estado','>',0);
+        $productosServicios = CotizacionProductos::productosServiciosCotizacion($servicios,$cotizacion->id);
         $moneda = $cotizacion->tipoMoneda === "USD" ? '$' : 'S/';
         $reportePreCotizacion = [];
         $documentoVisitaUnicoPrecotizacion = "";
@@ -124,8 +124,8 @@ class Cotizacion extends Controller
         if(isset($verif['session'])){
             return response()->json(['session' => true]);
         }
-        $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id);
-        $detalleCotizacion = CotizacionProductos::productosServicios($servicios,$cotizacion->id);
+        $servicios = CotizacionServicio::mostrarServiciosConProductos($cotizacion->id)->where('cotizacion_servicios.estado','>',0);
+        $detalleCotizacion = CotizacionProductos::productosServiciosCotizacion($servicios,$cotizacion->id);
         foreach ($detalleCotizacion->where('tipo','servicio') as $servicio) {
             $servicio->detalleProductos = CotizacionServicioProducto::select("productos.id AS idProducto","productos.urlImagen","productos.nombreProducto","cotizacion_servicio_productos.cantidad AS cantidadUsada","cotizacion_servicio_productos.costo AS precioVenta","cotizacion_servicio_productos.total AS precioTotal","cotizacion_servicio_productos.importe", "cotizacion_servicio_productos.descuento AS descuentoProducto")->selectRaw("? AS tipoMoneda", [$cotizacion->tipoMoneda])
             ->join("productos","cotizacion_servicio_productos.id_producto","=","productos.id")
@@ -181,13 +181,14 @@ class Cotizacion extends Controller
                     'igv' => $incluirIgv ? $coti->total * 0.18 : 0,
                 ];
                 if(empty($coti->idServicio) && !empty($coti->idProducto)){
-                    CotizacionProductos::updateOrCreate([
+                    CotizacionProductos::where('estado','>',0)->updateOrCreate([
                         'id_cotizacion' => $cotizacionModel->id,
                         'id_producto' => $coti->idProducto
                     ],$coleccionDatos);
                     continue;
                 }
-                $mCotiServ = CotizacionServicio::updateOrCreate([
+                // dd($coti);
+                $mCotiServ = CotizacionServicio::where('estado','>',0)->updateOrCreate([
                     'id_cotizacion' => $cotizacionModel->id,
                     'id_servicio' => $coti->idServicio,
                     ],$coleccionDatos);
@@ -285,23 +286,23 @@ class Cotizacion extends Controller
                 return response()->json(['success' => 'El prodcto se a eliminado de manera correcta']);
             break;
             case 'eliminar-producto-servicio':
-                $cotizacion = CotizacionProductos::where(['id_cotizacion' => $request->idCotizacion, 'id_producto' => $request->idDetalle])->first();
-                $ordenServicio = OrdenServicioCotizacionProducto::where(['id_cotizacion_producto' => $cotizacion->id]);
+                $cotizacion = CotizacionProductos::where(['id_cotizacion' => $request->idCotizacion, 'id_producto' => $request->idDetalle])->where('estado','>',0)->first();
+                $ordenServicio = OrdenServicioCotizacionProducto::where(['id_cotizacion_producto' => $cotizacion->id])->where('estado','>',0);
                 if($ordenServicio->count() > 0){
                     return response()->json(['alerta' => 'Este producto no puede ser eliminado debido a que esta asociado con la orden de servicio N° ' . str_pad($ordenServicio->first()->id_orden_servicio,5,"0",STR_PAD_LEFT)]);
                 }
-                $cotizacion->delete();
+                $cotizacion->update(['estado' => 0]);
                 return response()->json(['success' => 'El producto se a eliminado de manera correcta']);
             break;
             case 'eliminar-servicio':
                 $servicios = CotizacionServicio::where('id_cotizacion',$request->idCotizacion);
-                $consultaServicio = $servicios->where('id_servicio',$request->idDetalle)->first();
-                $ordenServicio = OrdenServicioCotizacionServicio::where(['id_cotizacion_servicio' => $consultaServicio->id]);
+                $consultaServicio = $servicios->where('id_servicio',$request->idDetalle)->where('estado','>',0)->first();
+                $ordenServicio = OrdenServicioCotizacionServicio::where(['id_cotizacion_servicio' => $consultaServicio->id])->where('estado','>',0);
                 if($ordenServicio->count() > 0){
                     return response()->json(['alerta' => 'Este servicio no puede ser eliminado debido a que esta asociado con la orden de servicio N° ' . str_pad($ordenServicio->first()->id_orden_servicio,5,"0",STR_PAD_LEFT)]);
                 }
                 CotizacionServicioProducto::where('id_cotizacion_servicio',$consultaServicio->id)->delete();
-                $consultaServicio->delete();
+                $consultaServicio->update(['estado' => 0]);
                 return response()->json(['success' => 'El servicio se a eliminado de manera correcta']);
             break;
             case 'eliminar-pdf':

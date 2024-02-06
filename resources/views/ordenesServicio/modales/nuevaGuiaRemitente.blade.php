@@ -64,7 +64,7 @@
                     <label for="modalDireccionDestinatario">Dirección</label>
                     <input type="text" required name="direccionDestinatario" id="modalDireccionDestinatario" class="form-control form-control-sm">
                 </div>
-                <div class="col-12">
+                {{-- <div class="col-12">
                     <h6 class="text-primary">
                         <i class="fas fa-caret-right"></i>
                         Datos Transportista
@@ -72,12 +72,12 @@
                 </div>
                 <div class="form-group mb-1 col-12 col-lg-4">
                     <label for="modalnumeroDocumentoTransportista">Número RUC</label>
-                    <input type="text" name="numeroDocumentoTransportista" required id="modalnumeroDocumentoTransportista" class="form-control form-control-sm">
+                    <input type="text" name="numeroDocumentoTransportista" id="modalnumeroDocumentoTransportista" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-12 col-lg-8">
                     <label for="modalnombreTransportista">Nombre</label>
-                    <input type="text" required name="nombreTransportista" id="modalnombreTransportista" class="form-control form-control-sm">
-                </div>
+                    <input type="text" name="nombreTransportista" id="modalnombreTransportista" class="form-control form-control-sm">
+                </div> --}}
                 <div class="col-12">
                     <h6 class="text-primary">
                         <i class="fas fa-caret-right"></i>
@@ -86,7 +86,7 @@
                 </div>
                 <div class="form-group mb-1 col-6">
                     <label for="modalnumeroPlacaPrincipal">Número de Placa</label>
-                    <input type="text" required name="numeroPlacaPrincipal" id="modalnumeroPlacaPrincipal" class="form-control form-control-sm">
+                    <input type="text" required name="numeroPlacaPrincipal" value="APN662" id="modalnumeroPlacaPrincipal" class="form-control form-control-sm">
                 </div>
                 <div class="form-group mb-1 col-6">
                     <label for="modalnumeroTuceOChvPrincipal">TUCE o CHV</label>

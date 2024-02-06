@@ -836,17 +836,18 @@ class OrdenServicio extends Controller
         $rapifac = new RapiFac();
         $datosFacturar = [
             'ConductorTipoDocIdentidadCodigo' => $request->tipoDocumentoConductorPrincipal,
+            'ConductorNombreApeCompleto' => $request->nombreCompletoConductorPrincipal,
             'VendedorNombre' => Auth::user()->nombres,
             'ClienteNumeroDocIdentidad' => $request->numeroDocumentoDestinatario,
             'FechaEmision' => date('d/m/Y',strtotime($request->fechaEmision)),
-            'TransportistaNumeroDocIdentidad' => $request->numeroDocumentoTransportista,
+            'TransportistaNumeroDocIdentidad' => empty($request->numeroDocumentoTransportista) ? : $request->numeroDocumentoTransportista,
             'ConductorNumeroDocIdentidad' => $request->numeroDocumentoConductorPrincipal,
             'TransportistaTipoDocIdentidadCodigo2' => "",
             'TransportistaNumeroDocIdentidad2' => "",
             'NOMBRE_UBIGEOLLEGADA' => $request->ubigeoLlegada,
             'NOMBRE_UBIGEOPARTIDA' => $request->ubigeoPartida,
             'MotivoTrasladoCodigo' => $request->motivoTraslado,
-            'BANDERA_TRANSPORTISTA' => $request->nombreTransportista,
+            'BANDERA_TRANSPORTISTA' => empty($request->nombreTransportista) ? "" : $request->nombreTransportista,
             'ClienteDireccion' => $request->direccionDestinatario,
             'ClienteNombreRazonSocial' => $request->nombreDestinatario,
             'DireccionPartida' => $request->puntoPartida,
@@ -857,7 +858,7 @@ class OrdenServicio extends Controller
             'ConductorLicencia2' => empty($request->numeroLicenciaConductorSecundario) ? "" : $request->numeroLicenciaConductorSecundario,
             'VehiculoPlaca' => $request->numeroPlacaPrincipal,
             'VehiculoPlaca2' => empty($request->numeroPlacaSecundario) ? "" : $request->numeroPlacaSecundario,
-            'TransportistaNombreRazonSocial' => $request->nombreTransportista,
+            'TransportistaNombreRazonSocial' => empty($request->nombreTransportista) ? "" : $request->nombreTransportista,
             'VehiculoCertificado' => empty($request->numeroTuceOChvPrincipal) ? "" : $request->numeroTuceOChvPrincipal,
             'VehiculoCertificado2' => empty($request->numeroTuceOChvSecundario) ? "" : $request->numeroTuceOChvSecundario,
             'ConductorTipoDocIdentidadCodigo2' => empty($request->tipoDocumentoConductorSecundario) ? "" : $request->tipoDocumentoConductorSecundario,
@@ -878,12 +879,13 @@ class OrdenServicio extends Controller
             return response()->json(['session' => true]);
         }
         $configuracion = Configuracion::obtener();
+        $destinatario = $ordenServicio->cliente;
         $response = [
-            'modalPuntoPartida' => $ordenServicio->cliente->usuario->direccion,
-            'modalpuntoLlegada' => $configuracion->where('descripcion','direccion')->first()->valor,
-            'modalagenteNumeroDocumento' => $configuracion->where('descripcion','ruc')->first()->valor,
-            'modalagente' => $configuracion->where('descripcion','razon_social_largo')->first()->valor,
-            'modalDireccionDestinatario' => $configuracion->where('descripcion','direccion')->first()->valor,
+            'modalPuntoPartida' => $configuracion->where('descripcion','direccion')->first()->valor,
+            'modalpuntoLlegada' => '',
+            'modalagenteNumeroDocumento' => $destinatario->usuario->nroDocumento,
+            'modalagente' => $destinatario->nombreCliente,
+            'modalDireccionDestinatario' => $destinatario->usuario->direccion,
             'modalnumeroDocumentoTransportista' => $configuracion->where('descripcion','ruc')->first()->valor,
             'modalnombreTransportista' => $configuracion->where('descripcion','razon_social_largo')->first()->valor,
         ];
@@ -969,8 +971,8 @@ class OrdenServicio extends Controller
             }
             foreach ($cotizaciones->get() as $cotizacion) {
                 //verificamos si todos los servicios y productos relacionados a la cotizacion se han asignado a sus ordenes
-                $cantidadTotalServicios = $cotizacion->cotizacionSerivicios()->count();
-                $cantidadTotalProductos = $cotizacion->cotizacionProductos()->count();
+                $cantidadTotalServicios = $cotizacion->cotizacionSerivicios()->where('estado','>',0)->count();
+                $cantidadTotalProductos = $cotizacion->cotizacionProductos()->where('estado','>',0)->count();
                 $cantidadServiosOs = $cotizacion->cotizacionSerivicios()->where('estado',2)->count();
                 $cantidadProductosOs = $cotizacion->cotizacionProductos()->where('estado',2)->count();
                 if(($cantidadTotalServicios + $cantidadTotalProductos) === ($cantidadServiosOs + $cantidadProductosOs)){

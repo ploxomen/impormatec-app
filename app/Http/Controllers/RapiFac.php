@@ -404,9 +404,8 @@ class RapiFac extends Controller
             "ClienteTelefono" => "",
             "ClienteTipoDocIdentidadCodigo" => "6",
             "ClienteTipoSunat" => 1,
-            "ClienteUbigeo" => "",
+            "ClienteUbigeo" => "150106",
             "ConductorLicencia" => $datosFactura['ConductorLicencia'],
-            "ConductorLicencia2" => $datosFactura['ConductorLicencia2'],
             "ConductorNumeroDocIdentidad" => $datosFactura['ConductorNumeroDocIdentidad'],
             "ConductorTipoDocIdentidadCodigo" => $datosFactura['ConductorTipoDocIdentidadCodigo'],
             "Correlativo" => 144,
@@ -448,7 +447,7 @@ class RapiFac extends Controller
             "ListaDetalles" => $detallesFacturacion,
             "ListaDocumentosRelacionados" => isset($datosFactura['ListaDocumentosRelacionados']) ? $datosFactura['ListaDocumentosRelacionados'] : [],
             "ListaMovimientos" => [],
-            "ModalidadTrasladoCodigo" => "01",
+            "ModalidadTrasladoCodigo" => "02", //MODALIDAD DE TRASNPORTE PUBLICO 01 O PRIBADO 02
             "MonedaCodigo" => "USD",
             "MontoRetencion" => 0,
             "MotivoTrasladoCodigo" => $datosFactura['MotivoTrasladoCodigo'],
@@ -483,12 +482,13 @@ class RapiFac extends Controller
             "TotalPago" => 0,
             "TotalPrecioVenta" => 0,
             "TotalValorVenta" => 0,
-            "TransportistaNombreRazonSocial" => $datosFactura['TransportistaNombreRazonSocial'],
-            "TransportistaNombreRazonSocial2" => "",
-            "TransportistaNumeroDocIdentidad" => $datosFactura['TransportistaNumeroDocIdentidad'],
-            "TransportistaNumeroDocIdentidad2" => "",
-            "TransportistaTipoDocIdentidadCodigo" => "6",
-            "TransportistaTipoDocIdentidadCodigo2" => "",
+            //CAMBIAR ESTE VALOR CUANDO ES TRASNPORTE PUBLICO EL VALOR DE DE LA EMPRESA QUIEN TRANSPORTA, SI ES PRIVADO VA LOS DATOS DEL CONDUCTOR, EN ESTE CASO COMO ES PRIBADO VA LAS DEL CONDUCTOR 
+            "TransportistaNombreRazonSocial" => $datosFactura['ConductorNombreApeCompleto'],
+            // "TransportistaNombreRazonSocial2" => "",
+            "TransportistaNumeroDocIdentidad" => $datosFactura['ConductorNumeroDocIdentidad'],
+            // "TransportistaNumeroDocIdentidad2" => "",
+            "TransportistaTipoDocIdentidadCodigo" => $datosFactura['ConductorTipoDocIdentidadCodigo'],
+            // "TransportistaTipoDocIdentidadCodigo2" => "",
             "Ubigeo" => "150115",
             "UbigeoLlegada" => "070101",
             "UbigeoPartida" => "150115",
@@ -512,6 +512,7 @@ class RapiFac extends Controller
             'Content-Type' => 'application/json'
         ];
         $body = json_encode($parametros);
+        // dd($body);
         $response = $client->post($this->urlComprobanteGuiaRemision,[
             'headers' => $headers,
             'body' => $body

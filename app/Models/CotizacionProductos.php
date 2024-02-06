@@ -48,4 +48,9 @@ class CotizacionProductos extends Model
         }
         return $productosServicios->union($servicios)->orderBy("orden")->get();
     }
+    public static function productosServiciosCotizacion($servicios,$idCotizacion,$estado = 0) {
+        return CotizacionProductos::select("cotizacion_productos.id","cotizacion_productos.id_cotizacion","cotizacion_productos.id_producto","cotizacion_productos.orden","cotizacion_productos.precio","cotizacion_productos.cantidad","cotizacion_productos.importe","cotizacion_productos.descuento","cotizacion_productos.igv","cotizacion_productos.total","productos.nombreProducto AS nombreDescripcion","cotizacion_productos.estado")->selectRaw("'producto' AS tipo,null AS detalleProductos")
+        ->join("productos","cotizacion_productos.id_producto","=","productos.id")
+        ->where('id_cotizacion',$idCotizacion)->where('cotizacion_productos.estado','>',$estado)->union($servicios)->orderBy("orden")->get();
+    }
 }
