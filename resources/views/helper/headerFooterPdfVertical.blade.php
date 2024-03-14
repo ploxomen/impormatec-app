@@ -17,6 +17,7 @@
     @page{
         font-family: 'Courier New', Courier, monospace;
         margin-top: 130px;
+        margin-bottom: 55px;
     }
     .nota{
         font-size: 16px;
@@ -33,7 +34,7 @@
     }
     footer{
         position: fixed;
-        bottom: -30px;
+        bottom: -45px;
         left: 0;
         font-size: 13px;
         border-top: 2px solid #1F2B53;
